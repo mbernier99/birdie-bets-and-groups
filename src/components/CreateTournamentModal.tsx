@@ -41,10 +41,23 @@ export interface TournamentData {
     type: string;
     rules: Record<string, any>;
   };
+  players: Array<{
+    id: string;
+    name: string;
+    email: string;
+    handicap?: number;
+    invited: boolean;
+  }>;
   teams: Array<{
     id: string;
     name: string;
-    players: string[];
+    playerIds: string[];
+  }>;
+  pairings: Array<{
+    id: string;
+    name: string;
+    playerIds: string[];
+    teeTime?: string;
   }>;
   wagering: {
     entryFee: number;
@@ -88,7 +101,9 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
       type: '',
       rules: {}
     },
+    players: [],
     teams: [],
+    pairings: [],
     wagering: {
       entryFee: 0,
       payoutStructure: 'winner-takes-all',
@@ -101,7 +116,7 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
     { title: 'Basic Info', component: BasicInfoStep },
     { title: 'Course Setup', component: CourseSetupStep },
     { title: 'Game Type', component: GameTypeStep },
-    { title: 'Teams & Players', component: TeamOrganizationStep },
+    { title: 'Players & Teams', component: TeamOrganizationStep },
     { title: 'Wagering', component: WageringStep },
     { title: 'Side Bets', component: SideBetsStep },
     { title: 'Review', component: ReviewStep }
