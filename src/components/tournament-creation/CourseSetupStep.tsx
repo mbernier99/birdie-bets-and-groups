@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -42,12 +41,18 @@ const CourseSetupStep: React.FC<CourseSetupStepProps> = ({ data, onDataChange })
     handleCourseChange('holes', updatedHoles);
   };
 
-  const handleScorecardCapture = async (imageFile: File) => {
-    console.log('Scorecard image captured:', imageFile);
+  const handleScorecardCapture = async (courseData: any) => {
+    console.log('Received OCR course data:', courseData);
     
-    // For Phase 1, we'll just show a placeholder message
-    // In Phase 2, this will call the Supabase Edge Function for OCR
-    alert('Scorecard captured! OCR processing will be implemented in the next phase. For now, please enter course data manually.');
+    // Update the course data with OCR results
+    onDataChange('course', {
+      ...data.course,
+      name: courseData.name || data.course.name,
+      teeBox: courseData.teeBox || data.course.teeBox,
+      rating: courseData.rating || data.course.rating,
+      slope: courseData.slope || data.course.slope,
+      holes: courseData.holes || data.course.holes
+    });
     
     setShowScanner(false);
   };

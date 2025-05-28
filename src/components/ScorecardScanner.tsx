@@ -1,11 +1,11 @@
-
 import React, { useState, useRef } from 'react';
 import { Camera, Upload, X, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
 
 interface ScorecardScannerProps {
-  onImageCapture: (imageFile: File) => void;
+  onImageCapture: (courseData: any) => void;
   onClose: () => void;
 }
 
@@ -17,6 +17,8 @@ const ScorecardScanner: React.FC<ScorecardScannerProps> = ({ onImageCapture, onC
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [showCamera, setShowCamera] = useState(false);
+
+  const { toast } = useToast();
 
   const startCamera = async () => {
     try {
@@ -80,14 +82,46 @@ const ScorecardScanner: React.FC<ScorecardScannerProps> = ({ onImageCapture, onC
     
     setIsProcessing(true);
     
-    // Convert data URL to File object
-    const response = await fetch(capturedImage);
-    const blob = await response.blob();
-    const file = new File([blob], 'scorecard.jpg', { type: 'image/jpeg' });
-    
-    // For now, just pass the file to parent - OCR processing will be added in Phase 2
-    onImageCapture(file);
-    setIsProcessing(false);
+    try {
+      // Convert data URL to File object
+      const response = await fetch(capturedImage);
+      const blob = await response.blob();
+      const file = new File([blob], 'scorecard.jpg', { type: 'image/jpeg' });
+      
+      // Create FormData for the Edge Function
+      const formData = new FormData();
+      formData.append('image', file);
+      
+      // Call Supabase Edge Function
+      const ocrResponse = await fetch('/functions/v1/process-scorecard', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      const result = await ocrResponse.json();
+      
+      if (result.success && result.courseData) {
+        toast({
+          title: "Scorecard processed successfully!",
+          description: "Course data has been extracted and populated.",
+        });
+        
+        // Pass the extracted course data to parent
+        onImageCapture(result.courseData);
+      } else {
+        throw new Error(result.error || 'Failed to process scorecard');
+      }
+      
+    } catch (error) {
+      console.error('Error processing scorecard:', error);
+      toast({
+        title: "Processing failed",
+        description: "Failed to extract course data. Please try again or enter manually.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const resetCapture = () => {
