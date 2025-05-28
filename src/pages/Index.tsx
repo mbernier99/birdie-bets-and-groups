@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { Trophy, Users, Target, TrendingUp, Plus, Calendar } from 'lucide-react';
 import Navbar from '../components/Navbar';
@@ -41,23 +42,25 @@ const Index = () => {
       <Navbar />
       
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-emerald-600 to-emerald-800 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="bg-gradient-to-r from-emerald-600 to-emerald-800 text-white relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative z-10">
           <div className="text-center">
-            <div className="flex justify-center mb-6">
+            {/* Large background logo */}
+            <div className="absolute inset-0 flex items-center justify-center opacity-10">
               <img 
                 src="/lovable-uploads/fc297cde-a9d2-4fb0-acf6-d28aacc56592.png" 
-                alt="Suntory Cup" 
-                className="h-24 w-24"
+                alt="Suntory Cup Background" 
+                className="h-96 w-96 object-contain"
               />
             </div>
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 relative z-20">
               Welcome to <span className="text-emerald-200">Suntory Cup</span>
             </h1>
-            <p className="text-xl md:text-2xl text-emerald-100 mb-8 max-w-3xl mx-auto">
+            <p className="text-xl md:text-2xl text-emerald-100 mb-8 max-w-3xl mx-auto relative z-20">
               Manage tournaments, track bets, and compete with friends in the ultimate golf wagering platform
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-20">
               <button className="bg-white text-emerald-600 px-8 py-4 rounded-lg font-semibold hover:bg-emerald-50 transition-colors flex items-center justify-center space-x-2">
                 <Plus className="h-5 w-5" />
                 <span>Create Tournament</span>
@@ -173,3 +176,4 @@ const Index = () => {
 };
 
 export default Index;
+
