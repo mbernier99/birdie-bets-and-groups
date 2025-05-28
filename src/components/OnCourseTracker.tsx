@@ -29,7 +29,7 @@ const OnCourseTracker = () => {
   const [currentHole, setCurrentHole] = useState(1);
   const [shots, setShots] = useState<Shot[]>([]);
   const [isTracking, setIsTracking] = useState(false);
-  const [watchId, setWatchId] = useState<string | null>(null);
+  const [watchId, setWatchId] = useState<number | null>(null);
 
   useEffect(() => {
     loadSavedShots();
@@ -54,7 +54,7 @@ const OnCourseTracker = () => {
       console.log('Location updated:', location);
     });
     
-    if (id) {
+    if (id && typeof id === 'number') {
       setWatchId(id);
     }
   };
@@ -62,7 +62,10 @@ const OnCourseTracker = () => {
   const stopTracking = () => {
     setIsTracking(false);
     if (watchId) {
-      // Capacitor's watchPosition returns a watch ID that can be cleared
+      // Clear the watch ID
+      if (navigator.geolocation) {
+        navigator.geolocation.clearWatch(watchId);
+      }
       setWatchId(null);
     }
   };
@@ -173,7 +176,22 @@ const OnCourseTracker = () => {
         </Button>
 
         <Button
-          onClick={recordShot}
+          onClick={async () => {
+            const currentLocation = await getCurrentLocation();
+            if (!currentLocation) return;
+
+            const shot: Shot = {
+              id: Date.now().toString(),
+              hole: currentHole,
+              latitude: currentLocation.latitude,
+              longitude: currentLocation.longitude,
+              timestamp: currentLocation.timestamp
+            };
+
+            const newShots = [...shots, shot];
+            setShots(newShots);
+            await saveShots(newShots);
+          }}
           disabled={!isLocationEnabled}
           variant="outline"
         >
@@ -184,7 +202,25 @@ const OnCourseTracker = () => {
 
       {/* Photo Shot */}
       <Button
-        onClick={recordShotWithPhoto}
+        onClick={async () => {
+          const photo = await takePhoto();
+          const currentLocation = await getCurrentLocation();
+          
+          if (!currentLocation) return;
+
+          const shot: Shot = {
+            id: Date.now().toString(),
+            hole: currentHole,
+            latitude: currentLocation.latitude,
+            longitude: currentLocation.longitude,
+            timestamp: currentLocation.timestamp,
+            photo: photo || undefined
+          };
+
+          const newShots = [...shots, shot];
+          setShots(newShots);
+          await saveShots(newShots);
+        }}
         disabled={!isLocationEnabled}
         className="w-full mb-6 bg-blue-600 hover:bg-blue-700"
       >
@@ -195,32 +231,49 @@ const OnCourseTracker = () => {
       {/* Shot History */}
       <div className="space-y-3">
         <h3 className="font-semibold text-gray-900">Recent Shots</h3>
-        {shots.filter(shot => shot.hole === currentHole).slice(-3).map((shot, index, arr) => (
-          <div key={shot.id} className="bg-gray-50 rounded-lg p-3">
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium">
-                Shot {index + 1} - Hole {shot.hole}
-              </span>
-              <span className="text-xs text-gray-500">
-                {new Date(shot.timestamp).toLocaleTimeString()}
-              </span>
+        {shots.filter(shot => shot.hole === currentHole).slice(-3).map((shot, index, arr) => {
+          const calculateDistance = (shot1: Shot, shot2: Shot): number => {
+            const R = 6371e3; // Earth's radius in meters
+            const φ1 = (shot1.latitude * Math.PI) / 180;
+            const φ2 = (shot2.latitude * Math.PI) / 180;
+            const Δφ = ((shot2.latitude - shot1.latitude) * Math.PI) / 180;
+            const Δλ = ((shot2.longitude - shot1.longitude) * Math.PI) / 180;
+
+            const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+              Math.cos(φ1) * Math.cos(φ2) *
+              Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+            return R * c; // Distance in meters
+          };
+
+          return (
+            <div key={shot.id} className="bg-gray-50 rounded-lg p-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">
+                  Shot {index + 1} - Hole {shot.hole}
+                </span>
+                <span className="text-xs text-gray-500">
+                  {new Date(shot.timestamp).toLocaleTimeString()}
+                </span>
+              </div>
+              {index > 0 && (
+                <div className="text-sm text-gray-600 mt-1">
+                  Distance: {calculateDistance(arr[index - 1], shot).toFixed(0)}m
+                </div>
+              )}
+              {shot.photo && (
+                <div className="mt-2">
+                  <img
+                    src={`data:image/jpeg;base64,${shot.photo}`}
+                    alt="Shot"
+                    className="w-16 h-16 rounded object-cover"
+                  />
+                </div>
+              )}
             </div>
-            {index > 0 && (
-              <div className="text-sm text-gray-600 mt-1">
-                Distance: {calculateDistance(arr[index - 1], shot).toFixed(0)}m
-              </div>
-            )}
-            {shot.photo && (
-              <div className="mt-2">
-                <img
-                  src={`data:image/jpeg;base64,${shot.photo}`}
-                  alt="Shot"
-                  className="w-16 h-16 rounded object-cover"
-                />
-              </div>
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
