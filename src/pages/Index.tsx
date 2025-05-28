@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Trophy, Users, Target, TrendingUp, Plus, Calendar } from 'lucide-react';
 import Navbar from '../components/Navbar';
@@ -45,7 +46,7 @@ const Index = () => {
           <div className="text-center">
             <div className="flex justify-center mb-6">
               <img 
-                src="/lovable-uploads/9cbc607b-7ea2-46a9-b4e9-7f80ffa620dc.png" 
+                src="/lovable-uploads/fc297cde-a9d2-4fb0-acf6-d28aacc56592.png" 
                 alt="Suntory Cup" 
                 className="h-24 w-24"
               />

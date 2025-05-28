@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Trophy, Users, Target, User } from 'lucide-react';
@@ -13,7 +14,7 @@ const Navbar = () => {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-3">
             <img 
-              src="/lovable-uploads/9cbc607b-7ea2-46a9-b4e9-7f80ffa620dc.png" 
+              src="/lovable-uploads/fc297cde-a9d2-4fb0-acf6-d28aacc56592.png" 
               alt="Suntory Cup" 
               className="h-12 w-12"
             />
