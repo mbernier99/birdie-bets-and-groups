@@ -61,10 +61,13 @@ const Navbar = () => {
           </div>
           
           <div className="flex items-center">
-            <button className="flex items-center space-x-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors">
+            <Link 
+              to="/profile"
+              className="flex items-center space-x-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
+            >
               <User className="h-4 w-4" />
               <span className="hidden sm:inline">Profile</span>
-            </button>
+            </Link>
           </div>
         </div>
       </div>
