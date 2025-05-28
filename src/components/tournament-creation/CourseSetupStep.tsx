@@ -4,7 +4,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { Camera } from 'lucide-react';
 import { TournamentData } from '../CreateTournamentModal';
+import ScorecardScanner from '../ScorecardScanner';
 
 interface CourseSetupStepProps {
   data: TournamentData;
@@ -13,6 +15,7 @@ interface CourseSetupStepProps {
 
 const CourseSetupStep: React.FC<CourseSetupStepProps> = ({ data, onDataChange }) => {
   const [viewMode, setViewMode] = useState<'summary' | 'holes'>('summary');
+  const [showScanner, setShowScanner] = useState(false);
 
   const handleCourseChange = (field: string, value: any) => {
     onDataChange('course', {
@@ -39,12 +42,32 @@ const CourseSetupStep: React.FC<CourseSetupStepProps> = ({ data, onDataChange })
     handleCourseChange('holes', updatedHoles);
   };
 
+  const handleScorecardCapture = async (imageFile: File) => {
+    console.log('Scorecard image captured:', imageFile);
+    
+    // For Phase 1, we'll just show a placeholder message
+    // In Phase 2, this will call the Supabase Edge Function for OCR
+    alert('Scorecard captured! OCR processing will be implemented in the next phase. For now, please enter course data manually.');
+    
+    setShowScanner(false);
+  };
+
   const totalPar = data.course.holes.reduce((sum, hole) => sum + hole.par, 0);
   const totalYardage = data.course.holes.reduce((sum, hole) => sum + hole.yardage, 0);
 
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-semibold text-gray-900">Course Setup</h3>
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-semibold text-gray-900">Course Setup</h3>
+        <Button 
+          onClick={() => setShowScanner(true)}
+          variant="outline"
+          className="flex items-center space-x-2"
+        >
+          <Camera className="h-4 w-4" />
+          <span>Scan Scorecard</span>
+        </Button>
+      </div>
       
       {/* Course Basic Info */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -179,6 +202,13 @@ const CourseSetupStep: React.FC<CourseSetupStepProps> = ({ data, onDataChange })
             ))}
           </div>
         </div>
+      )}
+
+      {showScanner && (
+        <ScorecardScanner
+          onImageCapture={handleScorecardCapture}
+          onClose={() => setShowScanner(false)}
+        />
       )}
     </div>
   );
