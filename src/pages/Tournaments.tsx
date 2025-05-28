@@ -8,6 +8,19 @@ const Tournaments = () => {
   const [filterStatus, setFilterStatus] = useState('all');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
+  console.log('Tournaments component rendered, modal state:', isCreateModalOpen);
+
+  const handleCreateTournament = () => {
+    console.log('Create tournament button clicked!');
+    setIsCreateModalOpen(true);
+    console.log('Modal state set to true');
+  };
+
+  const handleCloseModal = () => {
+    console.log('Closing modal');
+    setIsCreateModalOpen(false);
+  };
+
   const mockTournaments = [
     {
       title: 'Sunday Singles Championship',
@@ -62,7 +75,7 @@ const Tournaments = () => {
             <p className="text-gray-600 mt-2">Join or create golf tournaments with your groups</p>
           </div>
           <button 
-            onClick={() => setIsCreateModalOpen(true)}
+            onClick={handleCreateTournament}
             className="bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 transition-colors flex items-center space-x-2"
           >
             <Plus className="h-5 w-5" />
@@ -116,7 +129,7 @@ const Tournaments = () => {
 
       <CreateTournamentModal 
         isOpen={isCreateModalOpen} 
-        onClose={() => setIsCreateModalOpen(false)} 
+        onClose={handleCloseModal} 
       />
     </div>
   );

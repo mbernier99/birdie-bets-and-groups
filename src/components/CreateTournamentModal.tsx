@@ -61,6 +61,8 @@ export interface TournamentData {
 }
 
 const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, onClose }) => {
+  console.log('CreateTournamentModal rendered with props:', { isOpen, onClose });
+
   const [currentStep, setCurrentStep] = useState(0);
   const [tournamentData, setTournamentData] = useState<TournamentData>({
     basicInfo: {
@@ -106,18 +108,21 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
   ];
 
   const handleNext = () => {
+    console.log('Next button clicked, current step:', currentStep);
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     }
   };
 
   const handlePrevious = () => {
+    console.log('Previous button clicked, current step:', currentStep);
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
   };
 
   const handleStepData = (stepKey: keyof TournamentData, data: any) => {
+    console.log('Step data updated:', stepKey, data);
     setTournamentData(prev => ({
       ...prev,
       [stepKey]: data
@@ -131,6 +136,8 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
   };
 
   const CurrentStepComponent = steps[currentStep].component;
+
+  console.log('Rendering modal with isOpen:', isOpen);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
