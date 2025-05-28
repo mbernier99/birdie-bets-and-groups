@@ -2,6 +2,8 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Trophy, Users, Target, User, BookOpen } from 'lucide-react';
+import MobileHeader from './MobileHeader';
+import MobileNavigation from './MobileNavigation';
 
 const Navbar = () => {
   const location = useLocation();
@@ -9,81 +11,89 @@ const Navbar = () => {
   const isActive = (path: string) => location.pathname === path;
   
   return (
-    <nav className="bg-white shadow-lg border-b border-emerald-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <div className="flex items-center space-x-3">
-            <img 
-              src="/lovable-uploads/fc297cde-a9d2-4fb0-acf6-d28aacc56592.png" 
-              alt="Suntory Cup" 
-              className="h-12 w-12"
-            />
-            <span className="text-2xl font-bold text-gray-900">Suntory Cup</span>
-          </div>
-          
-          
-          <div className="hidden md:flex items-center space-x-8">
-            <Link 
-              to="/" 
-              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive('/') 
-                  ? 'text-emerald-600 bg-emerald-50' 
-                  : 'text-gray-600 hover:text-emerald-600 hover:bg-emerald-50'
-              }`}
-            >
-              <Trophy className="h-4 w-4" />
-              <span>Dashboard</span>
-            </Link>
+    <>
+      {/* Mobile Header */}
+      <MobileHeader />
+      
+      {/* Desktop Navigation */}
+      <nav className="bg-white shadow-lg border-b border-emerald-100 hidden md:block">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-3">
+              <img 
+                src="/lovable-uploads/fc297cde-a9d2-4fb0-acf6-d28aacc56592.png" 
+                alt="Suntory Cup" 
+                className="h-12 w-12"
+              />
+              <span className="text-2xl font-bold text-gray-900">Suntory Cup</span>
+            </div>
             
-            <Link 
-              to="/tournaments" 
-              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive('/tournaments') 
-                  ? 'text-emerald-600 bg-emerald-50' 
-                  : 'text-gray-600 hover:text-emerald-600 hover:bg-emerald-50'
-              }`}
-            >
-              <Trophy className="h-4 w-4" />
-              <span>Tournaments</span>
-            </Link>
-            
-            <Link 
-              to="/groups" 
-              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive('/groups') 
-                  ? 'text-emerald-600 bg-emerald-50' 
-                  : 'text-gray-600 hover:text-emerald-600 hover:bg-emerald-50'
-              }`}
-            >
-              <Users className="h-4 w-4" />
-              <span>Groups</span>
-            </Link>
+            <div className="flex items-center space-x-8">
+              <Link 
+                to="/" 
+                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive('/') 
+                    ? 'text-emerald-600 bg-emerald-50' 
+                    : 'text-gray-600 hover:text-emerald-600 hover:bg-emerald-50'
+                }`}
+              >
+                <Trophy className="h-4 w-4" />
+                <span>Dashboard</span>
+              </Link>
+              
+              <Link 
+                to="/tournaments" 
+                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive('/tournaments') 
+                    ? 'text-emerald-600 bg-emerald-50' 
+                    : 'text-gray-600 hover:text-emerald-600 hover:bg-emerald-50'
+                }`}
+              >
+                <Trophy className="h-4 w-4" />
+                <span>Tournaments</span>
+              </Link>
+              
+              <Link 
+                to="/groups" 
+                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive('/groups') 
+                    ? 'text-emerald-600 bg-emerald-50' 
+                    : 'text-gray-600 hover:text-emerald-600 hover:bg-emerald-50'
+                }`}
+              >
+                <Users className="h-4 w-4" />
+                <span>Groups</span>
+              </Link>
 
-            <Link 
-              to="/rules" 
-              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive('/rules') 
-                  ? 'text-emerald-600 bg-emerald-50' 
-                  : 'text-gray-600 hover:text-emerald-600 hover:bg-emerald-50'
-              }`}
-            >
-              <BookOpen className="h-4 w-4" />
-              <span>Rules</span>
-            </Link>
-          </div>
-          
-          <div className="flex items-center">
-            <Link 
-              to="/profile"
-              className="flex items-center space-x-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
-            >
-              <User className="h-4 w-4" />
-              <span className="hidden sm:inline">Profile</span>
-            </Link>
+              <Link 
+                to="/rules" 
+                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive('/rules') 
+                    ? 'text-emerald-600 bg-emerald-50' 
+                    : 'text-gray-600 hover:text-emerald-600 hover:bg-emerald-50'
+                }`}
+              >
+                <BookOpen className="h-4 w-4" />
+                <span>Rules</span>
+              </Link>
+            </div>
+            
+            <div className="flex items-center">
+              <Link 
+                to="/profile"
+                className="flex items-center space-x-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
+              >
+                <User className="h-4 w-4" />
+                <span>Profile</span>
+              </Link>
+            </div>
           </div>
         </div>
-      </div>
-    </nav>
+      </nav>
+
+      {/* Mobile Bottom Navigation */}
+      <MobileNavigation />
+    </>
   );
 };
 
