@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { Trophy, Users, Target, TrendingUp, Plus, Calendar } from 'lucide-react';
+import { Trophy, Users, Target, TrendingUp, Plus, Calendar, DollarSign } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import TournamentCard from '../components/TournamentCard';
@@ -24,13 +25,6 @@ const Index = () => {
   const handleCloseCreateTournamentModal = () => {
     setIsCreateTournamentModalOpen(false);
   };
-
-  const quickStats = [
-    { label: 'Active Tournaments', value: '3', icon: Trophy, color: 'text-emerald-600' },
-    { label: 'Groups Joined', value: '5', icon: Users, color: 'text-blue-600' },
-    { label: 'Total Winnings', value: '$234', icon: TrendingUp, color: 'text-green-600' },
-    { label: 'Rounds Played', value: '28', icon: Target, color: 'text-purple-600' }
-  ];
 
   const upcomingTournaments = [
     {
@@ -97,26 +91,6 @@ const Index = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          {quickStats.map((stat, index) => {
-            const IconComponent = stat.icon;
-            return (
-              <div key={index} className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-gray-600 text-sm">{stat.label}</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-1">{stat.value}</p>
-                  </div>
-                  <div className="p-3 rounded-full bg-gray-50">
-                    <IconComponent className={`h-6 w-6 ${stat.color}`} />
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
         {/* Main Content Tabs */}
         <div className="mb-8">
           <div className="border-b border-gray-200">
@@ -174,6 +148,36 @@ const Index = () => {
             <Leaderboard />
           </div>
         )}
+
+        {/* Total Winnings Display */}
+        <div className="mt-12 bg-gradient-to-r from-green-600 to-emerald-600 rounded-3xl p-12 text-white shadow-2xl">
+          <div className="text-center">
+            <div className="flex justify-center mb-6">
+              <div className="p-4 bg-white/20 rounded-full">
+                <DollarSign className="h-12 w-12 text-white" />
+              </div>
+            </div>
+            <h3 className="text-2xl font-semibold text-green-100 mb-2">Total Winnings</h3>
+            <div className="text-7xl md:text-8xl font-bold mb-4">$234</div>
+            <p className="text-xl text-green-100 mb-6">
+              Across 28 rounds and 5 tournaments
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
+              <div className="bg-white/10 rounded-lg p-4">
+                <div className="text-2xl font-bold">3</div>
+                <div className="text-green-100">Active Tournaments</div>
+              </div>
+              <div className="bg-white/10 rounded-lg p-4">
+                <div className="text-2xl font-bold">5</div>
+                <div className="text-green-100">Groups Joined</div>
+              </div>
+              <div className="bg-white/10 rounded-lg p-4">
+                <div className="text-2xl font-bold">28</div>
+                <div className="text-green-100">Rounds Played</div>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* Quick Actions */}
         <div className="mt-12 bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-2xl p-8 text-white">
