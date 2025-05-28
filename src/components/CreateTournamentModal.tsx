@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import BasicInfoStep from './tournament-creation/BasicInfoStep';
@@ -144,6 +144,9 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create Tournament</DialogTitle>
+          <DialogDescription>
+            Set up a new golf tournament with customizable rules, teams, and wagering options.
+          </DialogDescription>
         </DialogHeader>
 
         {/* Step Progress */}
