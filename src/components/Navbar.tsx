@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Trophy, Users, Target, User } from 'lucide-react';
+import { Trophy, Users, Target, User, BookOpen } from 'lucide-react';
 
 const Navbar = () => {
   const location = useLocation();
@@ -57,6 +57,18 @@ const Navbar = () => {
             >
               <Users className="h-4 w-4" />
               <span>Groups</span>
+            </Link>
+
+            <Link 
+              to="/rules" 
+              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                isActive('/rules') 
+                  ? 'text-emerald-600 bg-emerald-50' 
+                  : 'text-gray-600 hover:text-emerald-600 hover:bg-emerald-50'
+              }`}
+            >
+              <BookOpen className="h-4 w-4" />
+              <span>Rules</span>
             </Link>
           </div>
           
