@@ -1,11 +1,12 @@
-
 import React, { useState } from 'react';
 import { Plus, Calendar, Filter } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import TournamentCard from '../components/TournamentCard';
+import CreateTournamentModal from '../components/CreateTournamentModal';
 
 const Tournaments = () => {
   const [filterStatus, setFilterStatus] = useState('all');
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const mockTournaments = [
     {
@@ -60,13 +61,15 @@ const Tournaments = () => {
             <h1 className="text-3xl font-bold text-gray-900">Tournaments</h1>
             <p className="text-gray-600 mt-2">Join or create golf tournaments with your groups</p>
           </div>
-          <button className="bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 transition-colors flex items-center space-x-2">
+          <button 
+            onClick={() => setIsCreateModalOpen(true)}
+            className="bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 transition-colors flex items-center space-x-2"
+          >
             <Plus className="h-5 w-5" />
             <span>Create Tournament</span>
           </button>
         </div>
 
-        {/* Filters */}
         <div className="flex flex-wrap items-center gap-4 mb-8">
           <div className="flex items-center space-x-2">
             <Filter className="h-5 w-5 text-gray-500" />
@@ -90,14 +93,12 @@ const Tournaments = () => {
           </div>
         </div>
 
-        {/* Tournament Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredTournaments.map((tournament, index) => (
             <TournamentCard key={index} {...tournament} />
           ))}
         </div>
 
-        {/* Empty State */}
         {filteredTournaments.length === 0 && (
           <div className="text-center py-12">
             <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -112,6 +113,11 @@ const Tournaments = () => {
           </div>
         )}
       </div>
+
+      <CreateTournamentModal 
+        isOpen={isCreateModalOpen} 
+        onClose={() => setIsCreateModalOpen(false)} 
+      />
     </div>
   );
 };
