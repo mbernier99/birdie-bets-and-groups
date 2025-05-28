@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Trophy, Users, Target, TrendingUp, Plus, Calendar } from 'lucide-react';
 import Navbar from '../components/Navbar';
@@ -44,8 +43,15 @@ const Index = () => {
       <div className="bg-gradient-to-r from-emerald-600 to-emerald-800 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center">
+            <div className="flex justify-center mb-6">
+              <img 
+                src="/lovable-uploads/9cbc607b-7ea2-46a9-b4e9-7f80ffa620dc.png" 
+                alt="Suntory Cup" 
+                className="h-24 w-24"
+              />
+            </div>
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              Welcome to <span className="text-emerald-200">GolfBet Pro</span>
+              Welcome to <span className="text-emerald-200">Suntory Cup</span>
             </h1>
             <p className="text-xl md:text-2xl text-emerald-100 mb-8 max-w-3xl mx-auto">
               Manage tournaments, track bets, and compete with friends in the ultimate golf wagering platform

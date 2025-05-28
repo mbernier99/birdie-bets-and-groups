@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Trophy, Users, Target, User } from 'lucide-react';
@@ -12,10 +11,15 @@ const Navbar = () => {
     <nav className="bg-white shadow-lg border-b border-emerald-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center space-x-2">
-            <Target className="h-8 w-8 text-emerald-600" />
-            <span className="text-2xl font-bold text-gray-900">GolfBet Pro</span>
+          <div className="flex items-center space-x-3">
+            <img 
+              src="/lovable-uploads/9cbc607b-7ea2-46a9-b4e9-7f80ffa620dc.png" 
+              alt="Suntory Cup" 
+              className="h-12 w-12"
+            />
+            <span className="text-2xl font-bold text-gray-900">Suntory Cup</span>
           </div>
+          
           
           <div className="hidden md:flex items-center space-x-8">
             <Link 
