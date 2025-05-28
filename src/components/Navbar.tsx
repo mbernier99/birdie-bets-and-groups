@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Trophy, Users, Target, User, BookOpen } from 'lucide-react';
@@ -25,7 +24,6 @@ const Navbar = () => {
                 alt="Suntory Cup" 
                 className="h-12 w-12"
               />
-              <span className="text-2xl font-bold text-gray-900">Suntory Cup</span>
             </div>
             
             <div className="flex items-center space-x-8">

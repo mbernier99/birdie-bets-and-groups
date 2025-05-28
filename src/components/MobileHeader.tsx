@@ -12,7 +12,6 @@ const MobileHeader = () => {
             alt="Suntory Cup" 
             className="h-10 w-10"
           />
-          <span className="text-xl font-bold text-gray-900">Suntory Cup</span>
         </Link>
       </div>
     </header>

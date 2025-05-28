@@ -64,7 +64,7 @@ const Index = () => {
             </div>
             
             <h1 className="text-4xl md:text-6xl font-bold mb-6 relative z-20">
-              Welcome to <span className="text-emerald-200">Suntory Cup</span>
+              Welcome to <span className="text-emerald-200">The Suntory Cup</span>
             </h1>
             <p className="text-xl md:text-2xl text-emerald-100 mb-8 max-w-3xl mx-auto relative z-20">
               Manage tournaments, track bets, and compete with friends in the ultimate golf wagering platform
