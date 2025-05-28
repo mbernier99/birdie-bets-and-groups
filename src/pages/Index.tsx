@@ -1,13 +1,29 @@
-
-
 import React, { useState } from 'react';
 import { Trophy, Users, Target, TrendingUp, Plus, Calendar } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import TournamentCard from '../components/TournamentCard';
 import Leaderboard from '../components/Leaderboard';
+import CreateTournamentModal from '../components/CreateTournamentModal';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('tournaments');
+  const [isCreateTournamentModalOpen, setIsCreateTournamentModalOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleCreateTournament = () => {
+    console.log('Create Tournament button clicked on homepage');
+    setIsCreateTournamentModalOpen(true);
+  };
+
+  const handleJoinGroup = () => {
+    console.log('Join Group button clicked on homepage');
+    navigate('/groups');
+  };
+
+  const handleCloseCreateTournamentModal = () => {
+    setIsCreateTournamentModalOpen(false);
+  };
 
   const quickStats = [
     { label: 'Active Tournaments', value: '3', icon: Trophy, color: 'text-emerald-600' },
@@ -61,11 +77,17 @@ const Index = () => {
               Manage tournaments, track bets, and compete with friends in the ultimate golf wagering platform
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-20">
-              <button className="bg-white text-emerald-600 px-8 py-4 rounded-lg font-semibold hover:bg-emerald-50 transition-colors flex items-center justify-center space-x-2">
+              <button 
+                onClick={handleCreateTournament}
+                className="bg-white text-emerald-600 px-8 py-4 rounded-lg font-semibold hover:bg-emerald-50 transition-colors flex items-center justify-center space-x-2"
+              >
                 <Plus className="h-5 w-5" />
                 <span>Create Tournament</span>
               </button>
-              <button className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-emerald-600 transition-colors flex items-center justify-center space-x-2">
+              <button 
+                onClick={handleJoinGroup}
+                className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-emerald-600 transition-colors flex items-center justify-center space-x-2"
+              >
                 <Users className="h-5 w-5" />
                 <span>Join Group</span>
               </button>
@@ -161,19 +183,30 @@ const Index = () => {
               Create your first tournament, join a group, or start tracking your games with our comprehensive golf management tools.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="bg-white text-emerald-600 px-6 py-3 rounded-lg font-semibold hover:bg-emerald-50 transition-colors">
+              <button 
+                onClick={handleCreateTournament}
+                className="bg-white text-emerald-600 px-6 py-3 rounded-lg font-semibold hover:bg-emerald-50 transition-colors"
+              >
                 Create Tournament
               </button>
-              <button className="border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-emerald-600 transition-colors">
+              <button 
+                onClick={handleJoinGroup}
+                className="border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-emerald-600 transition-colors"
+              >
                 Browse Groups
               </button>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Create Tournament Modal */}
+      <CreateTournamentModal 
+        isOpen={isCreateTournamentModalOpen} 
+        onClose={handleCloseCreateTournamentModal} 
+      />
     </div>
   );
 };
 
 export default Index;
-
