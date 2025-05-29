@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Press, PressCounter } from '../../types/press';
-import { timer } from 'lucide-react';
+import { Timer } from 'lucide-react';
 
 interface PressNotificationModalProps {
   isOpen: boolean;
@@ -62,7 +62,7 @@ const PressNotificationModal: React.FC<PressNotificationModalProps> = ({
           <DialogTitle className="flex items-center space-x-2">
             <span>Press Challenge!</span>
             <div className="flex items-center text-sm text-orange-600">
-              <timer className="h-4 w-4 mr-1" />
+              <Timer className="h-4 w-4 mr-1" />
               {formatTime(timeRemaining)}
             </div>
           </DialogTitle>
