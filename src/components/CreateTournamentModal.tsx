@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -156,70 +155,81 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Create Tournament</DialogTitle>
-          <DialogDescription>
-            Set up a new golf tournament with customizable rules, teams, and wagering options.
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="w-[95vw] max-w-4xl h-[95vh] max-h-[95vh] p-0 overflow-hidden">
+        <div className="flex flex-col h-full">
+          <DialogHeader className="px-4 py-3 border-b shrink-0">
+            <DialogTitle className="text-lg">Create Tournament</DialogTitle>
+            <DialogDescription className="text-sm">
+              Set up a new golf tournament with customizable rules, teams, and wagering options.
+            </DialogDescription>
+          </DialogHeader>
 
-        {/* Step Progress */}
-        <div className="flex items-center justify-between mb-6">
-          {steps.map((step, index) => (
-            <div key={index} className="flex items-center">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                index <= currentStep ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-600'
-              }`}>
-                {index + 1}
-              </div>
-              <span className={`ml-2 text-sm ${
-                index <= currentStep ? 'text-emerald-600' : 'text-gray-500'
-              }`}>
-                {step.title}
-              </span>
-              {index < steps.length - 1 && (
-                <div className={`w-8 h-0.5 mx-4 ${
-                  index < currentStep ? 'bg-emerald-600' : 'bg-gray-200'
-                }`} />
-              )}
+          {/* Step Progress - Mobile Optimized */}
+          <div className="px-4 py-3 border-b bg-gray-50 shrink-0">
+            <div className="flex items-center justify-between overflow-x-auto pb-2">
+              {steps.map((step, index) => (
+                <div key={index} className="flex items-center min-w-0 flex-shrink-0">
+                  <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium ${
+                    index <= currentStep ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-600'
+                  }`}>
+                    {index + 1}
+                  </div>
+                  <span className={`ml-1 sm:ml-2 text-xs sm:text-sm truncate max-w-20 sm:max-w-none ${
+                    index <= currentStep ? 'text-emerald-600' : 'text-gray-500'
+                  }`}>
+                    {step.title}
+                  </span>
+                  {index < steps.length - 1 && (
+                    <div className={`w-4 sm:w-8 h-0.5 mx-2 sm:mx-4 ${
+                      index < currentStep ? 'bg-emerald-600' : 'bg-gray-200'
+                    }`} />
+                  )}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
 
-        {/* Step Content */}
-        <div className="min-h-[400px] mb-6">
-          <CurrentStepComponent
-            data={tournamentData}
-            onDataChange={handleStepData}
-          />
-        </div>
+          {/* Step Content - Scrollable */}
+          <div className="flex-1 overflow-y-auto px-4 py-4">
+            <CurrentStepComponent
+              data={tournamentData}
+              onDataChange={handleStepData}
+            />
+          </div>
 
-        {/* Navigation */}
-        <div className="flex justify-between">
-          <Button
-            variant="outline"
-            onClick={handlePrevious}
-            disabled={currentStep === 0}
-            className="flex items-center space-x-2"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            <span>Previous</span>
-          </Button>
-
-          {currentStep === steps.length - 1 ? (
-            <Button onClick={handleCreateTournament} className="bg-emerald-600 hover:bg-emerald-700">
-              Create Tournament
-            </Button>
-          ) : (
+          {/* Navigation - Fixed at bottom */}
+          <div className="flex justify-between p-4 border-t bg-white shrink-0">
             <Button
-              onClick={handleNext}
-              className="flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700"
+              variant="outline"
+              onClick={handlePrevious}
+              disabled={currentStep === 0}
+              className="flex items-center space-x-1 sm:space-x-2"
+              size="sm"
             >
-              <span>Next</span>
-              <ChevronRight className="h-4 w-4" />
+              <ChevronLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">Previous</span>
             </Button>
-          )}
+
+            {currentStep === steps.length - 1 ? (
+              <Button 
+                onClick={handleCreateTournament} 
+                className="bg-emerald-600 hover:bg-emerald-700"
+                size="sm"
+              >
+                Create Tournament
+              </Button>
+            ) : (
+              <Button
+                onClick={handleNext}
+                className="flex items-center space-x-1 sm:space-x-2 bg-emerald-600 hover:bg-emerald-700"
+                size="sm"
+              >
+                <span className="hidden sm:inline">Next</span>
+                <span className="sm:hidden">Next</span>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
         </div>
       </DialogContent>
     </Dialog>

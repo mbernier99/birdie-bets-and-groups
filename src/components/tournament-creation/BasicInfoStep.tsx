@@ -28,7 +28,7 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ data, onDataChange }) => 
     <div className="space-y-6">
       <h3 className="text-lg font-semibold text-gray-900">Tournament Details</h3>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         <div className="space-y-2">
           <Label htmlFor="tournament-name">Tournament Name</Label>
           <Input
@@ -36,19 +36,34 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ data, onDataChange }) => 
             value={data.basicInfo.name}
             onChange={(e) => handleBasicInfoChange('name', e.target.value)}
             placeholder="Sunday Morning Championship"
+            className="w-full"
           />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="max-players">Maximum Players</Label>
-          <Input
-            id="max-players"
-            type="number"
-            value={data.basicInfo.maxPlayers}
-            onChange={(e) => handleBasicInfoChange('maxPlayers', parseInt(e.target.value))}
-            min="2"
-            max="144"
-          />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="max-players">Maximum Players</Label>
+            <Input
+              id="max-players"
+              type="number"
+              value={data.basicInfo.maxPlayers}
+              onChange={(e) => handleBasicInfoChange('maxPlayers', parseInt(e.target.value))}
+              min="2"
+              max="144"
+              className="w-full"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="start-time">Start Time</Label>
+            <Input
+              id="start-time"
+              type="time"
+              value={data.basicInfo.time}
+              onChange={(e) => handleBasicInfoChange('time', e.target.value)}
+              className="w-full"
+            />
+          </div>
         </div>
 
         <div className="space-y-2">
@@ -79,25 +94,15 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ data, onDataChange }) => 
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="start-time">Start Time</Label>
-          <Input
-            id="start-time"
-            type="time"
-            value={data.basicInfo.time}
-            onChange={(e) => handleBasicInfoChange('time', e.target.value)}
+          <Label htmlFor="description">Description (Optional)</Label>
+          <Textarea
+            id="description"
+            value={data.basicInfo.description}
+            onChange={(e) => handleBasicInfoChange('description', e.target.value)}
+            placeholder="Tournament details, special rules, or additional information..."
+            className="min-h-[80px] w-full resize-none"
           />
         </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="description">Description (Optional)</Label>
-        <Textarea
-          id="description"
-          value={data.basicInfo.description}
-          onChange={(e) => handleBasicInfoChange('description', e.target.value)}
-          placeholder="Tournament details, special rules, or additional information..."
-          className="min-h-[100px]"
-        />
       </div>
     </div>
   );
