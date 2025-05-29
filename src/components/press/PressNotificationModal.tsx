@@ -55,6 +55,16 @@ const PressNotificationModal: React.FC<PressNotificationModalProps> = ({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const getGameTypeDisplay = (gameType: string) => {
+    switch (gameType) {
+      case 'total-strokes': return 'Total Strokes';
+      case 'head-to-head': return 'Head-to-Head';
+      case 'this-hole': return 'This Hole';
+      case 'remaining-holes': return 'Remaining Holes';
+      default: return gameType.replace('-', ' ');
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
@@ -76,7 +86,7 @@ const PressNotificationModal: React.FC<PressNotificationModalProps> = ({
             <div className="text-sm text-emerald-700 mt-2 space-y-1">
               <p>Amount: ${press.amount}</p>
               <p>Start: Hole {press.startHole}</p>
-              <p>Game: {press.gameType.replace('-', ' ')}</p>
+              <p>Game: {getGameTypeDisplay(press.gameType)}</p>
               <p>Condition: {press.winCondition}</p>
             </div>
           </div>
@@ -123,12 +133,13 @@ const PressNotificationModal: React.FC<PressNotificationModalProps> = ({
                 <Label>Game Type (optional)</Label>
                 <Select value={counterGameType} onValueChange={setCounterGameType}>
                   <SelectTrigger>
-                    <SelectValue placeholder={`Current: ${press.gameType}`} />
+                    <SelectValue placeholder={`Current: ${getGameTypeDisplay(press.gameType)}`} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="match-play">Match Play</SelectItem>
-                    <SelectItem value="stroke-play">Stroke Play</SelectItem>
-                    <SelectItem value="hole-only">Hole Only</SelectItem>
+                    <SelectItem value="total-strokes">Total Strokes</SelectItem>
+                    <SelectItem value="head-to-head">Head-to-Head</SelectItem>
+                    <SelectItem value="this-hole">This Hole</SelectItem>
+                    <SelectItem value="remaining-holes">Remaining Holes</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

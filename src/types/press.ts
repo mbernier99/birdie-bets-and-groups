@@ -7,8 +7,8 @@ export interface Press {
   amount: number;
   currency: string;
   startHole: number;
-  gameType: 'match-play' | 'stroke-play' | 'hole-only';
-  winCondition: string; // e.g., "next 3 holes", "back 9", "best ball"
+  gameType: 'total-strokes' | 'head-to-head' | 'this-hole' | 'remaining-holes';
+  winCondition: string;
   status: 'pending' | 'accepted' | 'declined' | 'expired' | 'active' | 'completed';
   initiatedAt: number;
   respondedAt?: number;
@@ -23,14 +23,14 @@ export interface PressRequest {
   targetId: string;
   amount: number;
   startHole: number;
-  gameType: 'match-play' | 'stroke-play' | 'hole-only';
+  gameType: 'total-strokes' | 'head-to-head' | 'this-hole' | 'remaining-holes';
   winCondition: string;
 }
 
 export interface PressCounter {
   pressId: string;
   amount?: number;
-  gameType?: 'match-play' | 'stroke-play' | 'hole-only';
+  gameType?: 'total-strokes' | 'head-to-head' | 'this-hole' | 'remaining-holes';
   winCondition?: string;
 }
 
@@ -43,4 +43,17 @@ export interface PressNotification {
   message: string;
   timestamp: number;
   isRead: boolean;
+}
+
+export interface CourseHole {
+  number: number;
+  par: number;
+  yardage: number;
+  handicapIndex: number;
+}
+
+export interface PressValidation {
+  isValid: boolean;
+  reason?: string;
+  warning?: string;
 }

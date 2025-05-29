@@ -1,12 +1,13 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Press, PressRequest, PressCounter } from '../../types/press';
+import { MapPin, Users } from 'lucide-react';
+import { Press, PressRequest, PressCounter, CourseHole } from '../../types/press';
 import PressInitiationModal from './PressInitiationModal';
 import PressNotificationModal from './PressNotificationModal';
 import { useToast } from '@/hooks/use-toast';
+import { validatePress } from '../../utils/pressValidation';
 
 interface PressManagerProps {
   tournamentId: string;
@@ -24,10 +25,18 @@ const PressManager: React.FC<PressManagerProps> = ({
   const [presses, setPresses] = useState<Press[]>([]);
   const [showInitiationModal, setShowInitiationModal] = useState(false);
   const [showNotificationModal, setShowNotificationModal] = useState(false);
-  const [selectedPlayer, setSelectedPlayer] = useState<{ id: string; name: string } | null>(null);
+  const [selectedPlayer, setSelectedPlayer] = useState<{ id: string; name: string; currentHole: number } | null>(null);
   const [pendingPress, setPendingPress] = useState<Press | null>(null);
   const [timeRemaining, setTimeRemaining] = useState(60);
   const { toast } = useToast();
+
+  // Mock course data - in real app this would come from props/context
+  const courseHoles: CourseHole[] = Array.from({ length: 18 }, (_, i) => ({
+    number: i + 1,
+    par: i % 3 === 0 ? 5 : i % 3 === 1 ? 4 : 3,
+    yardage: 350 + (i * 10),
+    handicapIndex: i + 1
+  }));
 
   // Mock data - replace with actual data fetching
   useEffect(() => {
@@ -61,7 +70,7 @@ const PressManager: React.FC<PressManagerProps> = ({
     };
   }, [pendingPress, showNotificationModal]);
 
-  const handleInitiatePress = (player: { id: string; name: string }) => {
+  const handleInitiatePress = (player: { id: string; name: string; currentHole: number }) => {
     setSelectedPlayer(player);
     setShowInitiationModal(true);
   };
@@ -188,10 +197,17 @@ const PressManager: React.FC<PressManagerProps> = ({
   };
 
   const getEligiblePlayers = () => {
-    return players.filter(player => 
-      player.id !== currentUserId && 
-      Math.abs(player.currentHole - currentHole) <= 1
-    );
+    return players
+      .filter(player => player.id !== currentUserId)
+      .map(player => {
+        const validation = validatePress(currentHole, player.currentHole, 'head-to-head', courseHoles);
+        return {
+          ...player,
+          isEligible: validation.isValid,
+          reason: validation.reason,
+          warning: validation.warning
+        };
+      });
   };
 
   const getStatusColor = (status: Press['status']) => {
@@ -211,6 +227,8 @@ const PressManager: React.FC<PressManagerProps> = ({
     ['pending', 'accepted', 'active'].includes(p.status)
   );
 
+  const eligiblePlayers = getEligiblePlayers();
+
   return (
     <div className="space-y-4">
       <Card>
@@ -219,18 +237,46 @@ const PressManager: React.FC<PressManagerProps> = ({
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="flex flex-wrap gap-2">
-              {getEligiblePlayers().map(player => (
-                <Button
-                  key={player.id}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleInitiatePress(player)}
-                  className="text-xs"
-                >
-                  Press {player.name}
-                </Button>
-              ))}
+            {/* Player List */}
+            <div className="space-y-2">
+              <h4 className="font-medium text-sm flex items-center">
+                <Users className="h-4 w-4 mr-1" />
+                Available Players
+              </h4>
+              <div className="space-y-2">
+                {eligiblePlayers.map(player => {
+                  const holeDiff = Math.abs(currentHole - player.currentHole);
+                  
+                  return (
+                    <div key={player.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                      <div className="flex items-center space-x-2">
+                        <span className="font-medium text-sm">{player.name}</span>
+                        <div className="flex items-center text-xs text-gray-500">
+                          <MapPin className="h-3 w-3 mr-1" />
+                          Hole {player.currentHole}
+                        </div>
+                        {holeDiff > 0 && (
+                          <Badge 
+                            variant={holeDiff <= 1 ? "secondary" : holeDiff <= 3 ? "outline" : "destructive"}
+                            className="text-xs"
+                          >
+                            {holeDiff} apart
+                          </Badge>
+                        )}
+                      </div>
+                      <Button
+                        size="sm"
+                        variant={player.isEligible ? "outline" : "secondary"}
+                        disabled={!player.isEligible}
+                        onClick={() => handleInitiatePress(player)}
+                        className="text-xs"
+                      >
+                        {player.isEligible ? 'Press' : 'Not Available'}
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
             {activePresses.length > 0 && (
@@ -247,6 +293,9 @@ const PressManager: React.FC<PressManagerProps> = ({
                           {isInitiator ? 'vs' : 'from'} {opponent?.name}
                         </span>
                         <span className="text-gray-600 ml-2">${press.amount}</span>
+                        <div className="text-xs text-gray-500">
+                          {press.gameType.replace('-', ' ')} • {press.winCondition}
+                        </div>
                       </div>
                       <Badge className={getStatusColor(press.status)}>
                         {press.status}
@@ -265,6 +314,7 @@ const PressManager: React.FC<PressManagerProps> = ({
         onClose={() => setShowInitiationModal(false)}
         targetPlayer={selectedPlayer}
         currentHole={currentHole}
+        courseHoles={courseHoles}
         onSubmit={handleSubmitPress}
       />
 
