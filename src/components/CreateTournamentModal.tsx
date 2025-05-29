@@ -1,7 +1,9 @@
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import BasicInfoStep from './tournament-creation/BasicInfoStep';
 import CourseSetupStep from './tournament-creation/CourseSetupStep';
 import GameTypeStep from './tournament-creation/GameTypeStep';
@@ -18,10 +20,7 @@ interface CreateTournamentModalProps {
 export interface TournamentData {
   basicInfo: {
     name: string;
-    date: Date | undefined;
-    time: string;
     maxPlayers: number;
-    description: string;
     groupId?: string;
   };
   course: {
@@ -76,13 +75,11 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
   console.log('CreateTournamentModal rendered with props:', { isOpen, onClose });
 
   const [currentStep, setCurrentStep] = useState(0);
+  const { toast } = useToast();
   const [tournamentData, setTournamentData] = useState<TournamentData>({
     basicInfo: {
       name: '',
-      date: undefined,
-      time: '',
-      maxPlayers: 16,
-      description: ''
+      maxPlayers: 16
     },
     course: {
       name: '',
@@ -143,9 +140,26 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
     }));
   };
 
-  const handleCreateTournament = () => {
-    console.log('Creating tournament with data:', tournamentData);
-    // Here you would typically save to database/backend
+  const handleSaveTournament = () => {
+    console.log('Saving tournament with data:', tournamentData);
+    
+    // Save tournament to localStorage for now (later this would be saved to database)
+    const savedTournaments = JSON.parse(localStorage.getItem('savedTournaments') || '[]');
+    const newTournament = {
+      id: Date.now().toString(),
+      ...tournamentData,
+      status: 'created',
+      createdAt: new Date().toISOString()
+    };
+    
+    savedTournaments.push(newTournament);
+    localStorage.setItem('savedTournaments', JSON.stringify(savedTournaments));
+    
+    toast({
+      title: "Tournament Saved!",
+      description: "Your tournament has been saved successfully. You can now start it from your homepage.",
+    });
+    
     onClose();
   };
 
@@ -194,6 +208,7 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
             <CurrentStepComponent
               data={tournamentData}
               onDataChange={handleStepData}
+              onSaveTournament={currentStep === steps.length - 1 ? handleSaveTournament : undefined}
             />
           </div>
 
@@ -210,15 +225,7 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
               <span className="hidden sm:inline">Previous</span>
             </Button>
 
-            {currentStep === steps.length - 1 ? (
-              <Button 
-                onClick={handleCreateTournament} 
-                className="bg-emerald-600 hover:bg-emerald-700"
-                size="sm"
-              >
-                Create Tournament
-              </Button>
-            ) : (
+            {currentStep < steps.length - 1 && (
               <Button
                 onClick={handleNext}
                 className="flex items-center space-x-1 sm:space-x-2 bg-emerald-600 hover:bg-emerald-700"

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Trophy, Users, Target, TrendingUp, Plus, Calendar, DollarSign } from 'lucide-react';
+
+import React, { useState, useEffect } from 'react';
+import { Trophy, Users, Target, TrendingUp, Plus, Calendar, DollarSign, Play } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import TournamentCard from '../components/TournamentCard';
@@ -9,7 +10,14 @@ import CreateTournamentModal from '../components/CreateTournamentModal';
 const Index = () => {
   const [activeTab, setActiveTab] = useState('tournaments');
   const [isCreateTournamentModalOpen, setIsCreateTournamentModalOpen] = useState(false);
+  const [savedTournaments, setSavedTournaments] = useState([]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Load saved tournaments from localStorage
+    const tournaments = JSON.parse(localStorage.getItem('savedTournaments') || '[]');
+    setSavedTournaments(tournaments);
+  }, [isCreateTournamentModalOpen]); // Refresh when modal closes
 
   const handleCreateTournament = () => {
     console.log('Create Tournament button clicked on homepage');
@@ -23,6 +31,17 @@ const Index = () => {
 
   const handleCloseCreateTournamentModal = () => {
     setIsCreateTournamentModalOpen(false);
+  };
+
+  const handleStartTournament = (tournamentId: string) => {
+    console.log('Starting tournament:', tournamentId);
+    // Update tournament status to 'live'
+    const tournaments = JSON.parse(localStorage.getItem('savedTournaments') || '[]');
+    const updatedTournaments = tournaments.map((t: any) => 
+      t.id === tournamentId ? { ...t, status: 'live' } : t
+    );
+    localStorage.setItem('savedTournaments', JSON.stringify(updatedTournaments));
+    setSavedTournaments(updatedTournaments);
   };
 
   const upcomingTournaments = [
@@ -90,6 +109,34 @@ const Index = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Saved Tournaments Prompt */}
+        {savedTournaments.filter((t: any) => t.status === 'created').length > 0 && (
+          <div className="mb-8 bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-xl p-6 text-white">
+            <h3 className="text-xl font-semibold mb-4">Ready to Start Your Tournaments?</h3>
+            <div className="space-y-3">
+              {savedTournaments
+                .filter((t: any) => t.status === 'created')
+                .map((tournament: any) => (
+                  <div key={tournament.id} className="bg-white/10 rounded-lg p-4 flex justify-between items-center">
+                    <div>
+                      <h4 className="font-medium">{tournament.basicInfo.name}</h4>
+                      <p className="text-emerald-100 text-sm">
+                        Max {tournament.basicInfo.maxPlayers} players • {tournament.gameType.type || 'Game type not set'}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => handleStartTournament(tournament.id)}
+                      className="bg-white text-emerald-600 px-4 py-2 rounded-lg hover:bg-emerald-50 transition-colors flex items-center space-x-2 font-medium"
+                    >
+                      <Play className="h-4 w-4" />
+                      <span>Start Tournament</span>
+                    </button>
+                  </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Main Content Tabs */}
         <div className="mb-8">
           <div className="border-b border-gray-200">
