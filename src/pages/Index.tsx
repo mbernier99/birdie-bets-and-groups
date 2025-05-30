@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Trophy, Target, TrendingUp, Plus, Calendar, DollarSign, Play } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -79,7 +78,7 @@ const Index = () => {
       
       {/* Hero Section */}
       <div className="mx-4 sm:mx-6 lg:mx-8 mt-8">
-        <div className="bg-gradient-to-r from-emerald-700/70 to-emerald-800/70 text-white relative overflow-hidden rounded-3xl">
+        <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white relative overflow-hidden rounded-2xl">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative z-10">
             <div className="text-center">
               {/* Large background logo */}
