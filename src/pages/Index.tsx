@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Trophy, Target, TrendingUp, Plus, Calendar, DollarSign, Play } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -96,7 +95,7 @@ const Index = () => {
               </h1>
               
               <p className="text-xl md:text-2xl text-emerald-100 mb-8 max-w-3xl mx-auto relative z-20">
-                create tournaments, manage games, bets and side wagers - clever, cheeky and live
+                create tournaments, manage games, bets and side wagers -- clever, competitive, live and a bit cheeky :)
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-20">
                 <button 
