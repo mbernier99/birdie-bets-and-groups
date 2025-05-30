@@ -1,8 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { Edit2, Check, X } from 'lucide-react';
 import { TournamentData } from '../CreateTournamentModal';
 
 interface TeamOrganizationStepProps {
@@ -15,6 +17,23 @@ const TeamOrganizationStep: React.FC<TeamOrganizationStepProps> = ({ data, onDat
   const [newPlayerEmail, setNewPlayerEmail] = useState('');
   const [newPlayerHandicap, setNewPlayerHandicap] = useState('');
   const [bulkEmails, setBulkEmails] = useState('');
+  const [editingPlayer, setEditingPlayer] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState('');
+
+  // Get players per team based on game type
+  const getPlayersPerTeam = () => {
+    if (data.gameType.type === 'best-ball-match-play') return 2;
+    if (data.gameType.type === 'best-ball') return 2;
+    if (data.gameType.type === 'scramble') return 4;
+    return 2; // default
+  };
+
+  // Calculate optimal number of teams
+  const calculateOptimalTeamCount = () => {
+    const acceptedPlayers = data.players.filter(p => p.status === 'accepted').length;
+    const playersPerTeam = getPlayersPerTeam();
+    return Math.floor(acceptedPlayers / playersPerTeam);
+  };
 
   // Auto-generate teams for 2-Man Best Ball Match Play
   const autoGenerateTeams = () => {
@@ -23,12 +42,15 @@ const TeamOrganizationStep: React.FC<TeamOrganizationStepProps> = ({ data, onDat
     if (availablePlayers.length < 2) return;
 
     const teams = [];
-    for (let i = 0; i < availablePlayers.length; i += 2) {
-      if (i + 1 < availablePlayers.length) {
+    const playersPerTeam = getPlayersPerTeam();
+    
+    for (let i = 0; i < availablePlayers.length; i += playersPerTeam) {
+      const teamPlayers = availablePlayers.slice(i, i + playersPerTeam);
+      if (teamPlayers.length === playersPerTeam) {
         const team = {
-          id: `team-${i / 2 + 1}`,
-          name: `Team ${i / 2 + 1}`,
-          playerIds: [availablePlayers[i].id, availablePlayers[i + 1].id]
+          id: `team-${Math.floor(i / playersPerTeam) + 1}`,
+          name: `Team ${Math.floor(i / playersPerTeam) + 1}`,
+          playerIds: teamPlayers.map(p => p.id)
         };
         teams.push(team);
       }
@@ -37,9 +59,9 @@ const TeamOrganizationStep: React.FC<TeamOrganizationStepProps> = ({ data, onDat
     onDataChange('teams', teams);
   };
 
-  // Auto-generate teams when game type is best-ball-match-play and players change
+  // Auto-generate teams when game type is team-based and players change
   useEffect(() => {
-    if (data.gameType.type === 'best-ball-match-play') {
+    if (['best-ball-match-play', 'best-ball', 'scramble'].includes(data.gameType.type)) {
       autoGenerateTeams();
     }
   }, [data.players, data.gameType.type]);
@@ -72,6 +94,31 @@ const TeamOrganizationStep: React.FC<TeamOrganizationStepProps> = ({ data, onDat
     onDataChange('players', updatedPlayers);
   };
 
+  const updatePlayerName = (playerId: string, newName: string) => {
+    const updatedPlayers = data.players.map(p => 
+      p.id === playerId ? { ...p, name: newName } : p
+    );
+    onDataChange('players', updatedPlayers);
+  };
+
+  const startEditingPlayer = (playerId: string, currentName: string) => {
+    setEditingPlayer(playerId);
+    setEditingName(currentName);
+  };
+
+  const savePlayerName = () => {
+    if (editingPlayer && editingName.trim()) {
+      updatePlayerName(editingPlayer, editingName.trim());
+    }
+    setEditingPlayer(null);
+    setEditingName('');
+  };
+
+  const cancelEditingPlayer = () => {
+    setEditingPlayer(null);
+    setEditingName('');
+  };
+
   const processBulkEmails = () => {
     const emails = bulkEmails
       .split(/[,\n]/)
@@ -90,47 +137,63 @@ const TeamOrganizationStep: React.FC<TeamOrganizationStepProps> = ({ data, onDat
     setBulkEmails('');
   };
 
-  const createTeam = () => {
-    const newTeam = {
-      id: `team-${Date.now()}`,
-      name: `Team ${data.teams.length + 1}`,
-      playerIds: []
-    };
-    onDataChange('teams', [...data.teams, newTeam]);
+  // Find or create team by number
+  const findOrCreateTeam = (teamNumber: number) => {
+    const teamId = `team-${teamNumber}`;
+    let team = data.teams.find(t => t.id === teamId);
+    
+    if (!team) {
+      team = {
+        id: teamId,
+        name: `Team ${teamNumber}`,
+        playerIds: []
+      };
+      onDataChange('teams', [...data.teams, team]);
+    }
+    
+    return team;
   };
 
-  const updateTeam = (teamId: string, updates: Partial<{ name: string; playerIds: string[] }>) => {
-    const updatedTeams = data.teams.map(team =>
-      team.id === teamId ? { ...team, ...updates } : team
+  const addPlayerToTeam = (teamNumber: number, playerId: string) => {
+    const team = findOrCreateTeam(teamNumber);
+    const playersPerTeam = getPlayersPerTeam();
+    
+    // Check if team is full
+    if (team.playerIds.length >= playersPerTeam) {
+      return;
+    }
+    
+    // Remove player from any existing team
+    const updatedTeams = data.teams.map(t => ({
+      ...t,
+      playerIds: t.playerIds.filter(id => id !== playerId)
+    }));
+    
+    // Add player to selected team
+    const finalTeams = updatedTeams.map(t => 
+      t.id === team.id 
+        ? { ...t, playerIds: [...t.playerIds, playerId] }
+        : t
     );
-    onDataChange('teams', updatedTeams);
-  };
-
-  const deleteTeam = (teamId: string) => {
-    onDataChange('teams', data.teams.filter(t => t.id !== teamId));
-  };
-
-  const addPlayerToTeam = (teamId: string, playerId: string) => {
-    const team = data.teams.find(t => t.id === teamId);
-    if (team && !team.playerIds.includes(playerId)) {
-      // For 2-Man Best Ball Match Play, limit teams to 2 players
-      if (data.gameType.type === 'best-ball-match-play' && team.playerIds.length >= 2) {
-        return; // Don't add more than 2 players
-      }
-      
-      updateTeam(teamId, {
-        playerIds: [...team.playerIds, playerId]
+    
+    // Ensure the new team exists in the final array
+    if (!finalTeams.find(t => t.id === team.id)) {
+      finalTeams.push({
+        ...team,
+        playerIds: [playerId]
       });
     }
+    
+    onDataChange('teams', finalTeams);
   };
 
   const removePlayerFromTeam = (teamId: string, playerId: string) => {
-    const team = data.teams.find(t => t.id === teamId);
-    if (team) {
-      updateTeam(teamId, {
-        playerIds: team.playerIds.filter(id => id !== playerId)
-      });
-    }
+    const updatedTeams = data.teams.map(team =>
+      team.id === teamId
+        ? { ...team, playerIds: team.playerIds.filter(id => id !== playerId) }
+        : team
+    );
+    onDataChange('teams', updatedTeams);
   };
 
   const unassignedPlayers = data.players.filter(player => 
@@ -138,6 +201,15 @@ const TeamOrganizationStep: React.FC<TeamOrganizationStepProps> = ({ data, onDat
   );
 
   const isTeamBased = ['best-ball', 'best-ball-match-play', 'scramble'].includes(data.gameType.type);
+  const optimalTeamCount = calculateOptimalTeamCount();
+  const playersPerTeam = getPlayersPerTeam();
+
+  // Get team capacity info
+  const getTeamCapacity = (teamNumber: number) => {
+    const team = data.teams.find(t => t.id === `team-${teamNumber}`);
+    const currentCount = team ? team.playerIds.length : 0;
+    return { current: currentCount, max: playersPerTeam, isFull: currentCount >= playersPerTeam };
+  };
 
   return (
     <div className="space-y-6">
@@ -198,7 +270,39 @@ player3@email.com"
           {data.players.map(player => (
             <div key={player.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
               <div>
-                <div className="font-medium">{player.name}</div>
+                <div className="flex items-center space-x-2">
+                  {editingPlayer === player.id ? (
+                    <div className="flex items-center space-x-2">
+                      <Input
+                        value={editingName}
+                        onChange={(e) => setEditingName(e.target.value)}
+                        className="w-48"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') savePlayerName();
+                          if (e.key === 'Escape') cancelEditingPlayer();
+                        }}
+                      />
+                      <Button size="sm" variant="ghost" onClick={savePlayerName}>
+                        <Check className="h-4 w-4 text-green-600" />
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={cancelEditingPlayer}>
+                        <X className="h-4 w-4 text-red-600" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center space-x-2">
+                      <span className="font-medium">{player.name}</span>
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        onClick={() => startEditingPlayer(player.id, player.name)}
+                        className="h-6 w-6 p-0"
+                      >
+                        <Edit2 className="h-3 w-3 text-gray-400" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
                 <div className="text-sm text-gray-600">{player.email}</div>
                 <div className="text-sm text-gray-600">HCP: {player.handicapIndex}</div>
               </div>
@@ -230,16 +334,11 @@ player3@email.com"
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <h4 className="font-medium text-gray-900">
-              Teams {data.gameType.type === 'best-ball-match-play' ? '(2 players each)' : ''}
+              Teams ({playersPerTeam} players each) - Optimal: {optimalTeamCount} teams
             </h4>
-            {data.gameType.type !== 'best-ball-match-play' && (
-              <Button onClick={createTeam} variant="outline">Add Team</Button>
-            )}
-            {data.gameType.type === 'best-ball-match-play' && (
-              <Button onClick={autoGenerateTeams} variant="outline">
-                Auto-Generate Teams
-              </Button>
-            )}
+            <Button onClick={autoGenerateTeams} variant="outline">
+              Auto-Generate Teams
+            </Button>
           </div>
 
           {/* Teams */}
@@ -249,14 +348,17 @@ player3@email.com"
                 <div className="flex justify-between items-center mb-3">
                   <Input
                     value={team.name}
-                    onChange={(e) => updateTeam(team.id, { name: e.target.value })}
+                    onChange={(e) => {
+                      const updatedTeams = data.teams.map(t =>
+                        t.id === team.id ? { ...t, name: e.target.value } : t
+                      );
+                      onDataChange('teams', updatedTeams);
+                    }}
                     className="font-medium"
                   />
-                  {data.gameType.type !== 'best-ball-match-play' && (
-                    <Button variant="outline" size="sm" onClick={() => deleteTeam(team.id)}>
-                      Delete Team
-                    </Button>
-                  )}
+                  <span className="text-sm text-gray-600">
+                    {team.playerIds.length}/{playersPerTeam} players
+                  </span>
                 </div>
                 
                 <div className="space-y-2">
@@ -284,7 +386,7 @@ player3@email.com"
             ))}
           </div>
 
-          {/* Unassigned Players */}
+          {/* Unassigned Players with Numerical Team Assignment */}
           {unassignedPlayers.length > 0 && (
             <div className="space-y-2">
               <h5 className="font-medium text-gray-700">Available Players</h5>
@@ -292,20 +394,24 @@ player3@email.com"
                 {unassignedPlayers.map(player => (
                   <div key={player.id} className="flex justify-between items-center p-2 bg-gray-100 rounded">
                     <span>{player.name} (HCP: {player.handicapIndex})</span>
-                    <Select onValueChange={(teamId) => addPlayerToTeam(teamId, player.id)}>
+                    <Select onValueChange={(teamNumber) => addPlayerToTeam(parseInt(teamNumber), player.id)}>
                       <SelectTrigger className="w-32">
                         <SelectValue placeholder="Add to team" />
                       </SelectTrigger>
                       <SelectContent>
-                        {data.teams
-                          .filter(team => 
-                            data.gameType.type !== 'best-ball-match-play' || team.playerIds.length < 2
-                          )
-                          .map(team => (
-                          <SelectItem key={team.id} value={team.id}>
-                            {team.name}
-                          </SelectItem>
-                        ))}
+                        {Array.from({ length: Math.max(optimalTeamCount, data.teams.length + 1) }, (_, i) => {
+                          const teamNumber = i + 1;
+                          const capacity = getTeamCapacity(teamNumber);
+                          return (
+                            <SelectItem 
+                              key={teamNumber} 
+                              value={teamNumber.toString()}
+                              disabled={capacity.isFull}
+                            >
+                              Team {teamNumber} ({capacity.current}/{capacity.max})
+                            </SelectItem>
+                          );
+                        })}
                       </SelectContent>
                     </Select>
                   </div>
@@ -321,7 +427,8 @@ player3@email.com"
           <h5 className="font-medium text-blue-900 mb-2">2-Man Best Ball Match Play Format</h5>
           <ul className="text-sm text-blue-700 space-y-1">
             <li>• Teams are automatically created with 2 players each</li>
-            <li>• Excess players (if odd number) will be left unassigned</li>
+            <li>• Use numerical team assignment for easy organization</li>
+            <li>• Players can edit their display names for the leaderboard</li>
             <li>• Teams will be paired against each other for matches</li>
             <li>• Each hole is won, lost, or halved between teams</li>
           </ul>
