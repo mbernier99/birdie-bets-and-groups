@@ -147,7 +147,7 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
 
   const handlePrevious = () => {
     console.log('Previous button clicked, current step:', currentStep);
-    setValidationErrors([]); // Clear errors when going back
+    setValidationErrors([]);
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
@@ -164,7 +164,6 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
   const handleSaveTournament = () => {
     console.log('Saving tournament with data:', tournamentData);
     
-    // Save tournament to localStorage for now (later this would be saved to database)
     const savedTournaments = JSON.parse(localStorage.getItem('savedTournaments') || '[]');
     const newTournament = {
       id: Date.now().toString(),
@@ -178,7 +177,7 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
     
     toast({
       title: "Tournament Saved!",
-      description: "Your tournament has been saved successfully. You can now start it from your homepage.",
+      description: "Your tournament has been saved successfully.",
     });
     
     onClose();
@@ -186,17 +185,15 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
 
   const CurrentStepComponent = steps[currentStep].component;
 
-  console.log('Rendering modal with isOpen:', isOpen);
-
   const StepProgress = () => (
-    <div className="px-4 py-3 border-b bg-gray-50 shrink-0">
-      <div className="flex items-center justify-between overflow-x-auto pb-2">
+    <div className="flex-shrink-0 px-4 py-3 border-b bg-gray-50">
+      <div className="flex items-center justify-between overflow-x-auto">
         {steps.map((step, index) => {
           const validation = validateStep(index, tournamentData);
           const isCompleted = index < currentStep || (index <= currentStep && validation.isValid);
           
           return (
-            <div key={index} className="flex items-center min-w-0 flex-shrink-0">
+            <div key={index} className="flex items-center flex-shrink-0">
               <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium ${
                 isCompleted ? 'bg-emerald-600 text-white' : 
                 index === currentStep ? 'bg-blue-600 text-white' :
@@ -204,7 +201,7 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
               }`}>
                 {index + 1}
               </div>
-              <span className={`ml-1 sm:ml-2 text-xs sm:text-sm truncate max-w-16 sm:max-w-none ${
+              <span className={`ml-1 sm:ml-2 text-xs sm:text-sm truncate max-w-20 sm:max-w-none ${
                 isCompleted ? 'text-emerald-600' : 
                 index === currentStep ? 'text-blue-600' :
                 'text-gray-500'
@@ -228,7 +225,7 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
     const canProceed = currentStepValidation.isValid;
     
     return (
-      <div className="p-4 border-t bg-white shrink-0">
+      <div className="flex-shrink-0 p-4 border-t bg-white">
         {/* Validation Errors */}
         {validationErrors.length > 0 && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -246,7 +243,7 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
           </div>
         )}
         
-        <div className="flex justify-between">
+        <div className="flex justify-between items-center">
           <Button
             variant="outline"
             onClick={handlePrevious}
@@ -258,7 +255,11 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
             <span>Previous</span>
           </Button>
 
-          {currentStep < steps.length - 1 && (
+          <div className="text-sm text-gray-500">
+            Step {currentStep + 1} of {steps.length}
+          </div>
+
+          {currentStep < steps.length - 1 ? (
             <Button
               onClick={handleNext}
               disabled={!canProceed}
@@ -272,6 +273,14 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
               <span>Next</span>
               <ChevronRight className="h-4 w-4" />
             </Button>
+          ) : (
+            <Button
+              onClick={handleSaveTournament}
+              className="bg-emerald-600 hover:bg-emerald-700"
+              size={isMobile ? "sm" : "default"}
+            >
+              Create Tournament
+            </Button>
           )}
         </div>
       </div>
@@ -281,46 +290,17 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
   if (isMobile) {
     return (
       <Sheet open={isOpen} onOpenChange={onClose}>
-        <SheetContent side="bottom" className="h-[95vh] p-0 overflow-hidden">
-          <div className="flex flex-col h-full">
-            <SheetHeader className="px-4 py-3 border-b shrink-0">
-              <SheetTitle className="text-lg">Create Tournament</SheetTitle>
-              <SheetDescription className="text-sm">
-                Set up a new golf tournament with customizable rules and teams.
-              </SheetDescription>
-            </SheetHeader>
-
-            <StepProgress />
-
-            <div className="flex-1 overflow-y-auto px-4 py-4">
-              <CurrentStepComponent
-                data={tournamentData}
-                onDataChange={handleStepData}
-                {...(currentStep === steps.length - 1 && { onSaveTournament: handleSaveTournament })}
-              />
-            </div>
-
-            <NavigationButtons />
-          </div>
-        </SheetContent>
-      </Sheet>
-    );
-  }
-
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-5xl h-[90vh] max-h-[90vh] p-0 overflow-hidden">
-        <div className="flex flex-col h-full">
-          <DialogHeader className="px-6 py-4 border-b shrink-0">
-            <DialogTitle className="text-xl">Create Tournament</DialogTitle>
-            <DialogDescription className="text-sm">
-              Set up a new golf tournament with customizable rules, teams, and wagering options.
-            </DialogDescription>
-          </DialogHeader>
+        <SheetContent side="bottom" className="h-[95vh] flex flex-col p-0">
+          <SheetHeader className="flex-shrink-0 px-4 py-3 border-b">
+            <SheetTitle className="text-lg">Create Tournament</SheetTitle>
+            <SheetDescription className="text-sm">
+              Set up a new golf tournament with customizable rules and teams.
+            </SheetDescription>
+          </SheetHeader>
 
           <StepProgress />
 
-          <div className="flex-1 overflow-y-auto px-6 py-6">
+          <div className="flex-1 overflow-y-auto p-4 min-h-0">
             <CurrentStepComponent
               data={tournamentData}
               onDataChange={handleStepData}
@@ -329,7 +309,32 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
           </div>
 
           <NavigationButtons />
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="w-[95vw] max-w-5xl h-[90vh] flex flex-col p-0 gap-0">
+        <DialogHeader className="flex-shrink-0 px-6 py-4 border-b">
+          <DialogTitle className="text-xl">Create Tournament</DialogTitle>
+          <DialogDescription className="text-sm">
+            Set up a new golf tournament with customizable rules, teams, and wagering options.
+          </DialogDescription>
+        </DialogHeader>
+
+        <StepProgress />
+
+        <div className="flex-1 overflow-y-auto px-6 py-6 min-h-0">
+          <CurrentStepComponent
+            data={tournamentData}
+            onDataChange={handleStepData}
+            {...(currentStep === steps.length - 1 && { onSaveTournament: handleSaveTournament })}
+          />
         </div>
+
+        <NavigationButtons />
       </DialogContent>
     </Dialog>
   );
