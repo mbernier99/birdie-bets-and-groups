@@ -41,17 +41,13 @@ const Index = () => {
 
   const handleStartTournament = (tournamentId: string) => {
     console.log('Starting tournament:', tournamentId);
-    // Update tournament status to 'live'
-    const tournaments = JSON.parse(localStorage.getItem('savedTournaments') || '[]');
-    const updatedTournaments = tournaments.map((t: any) => 
-      t.id === tournamentId ? { ...t, status: 'live' } : t
-    );
-    localStorage.setItem('savedTournaments', JSON.stringify(updatedTournaments));
-    setSavedTournaments(updatedTournaments);
+    // Navigate directly to tournament lobby instead of updating status
+    navigate(`/tournament/${tournamentId}/lobby`);
   };
 
   const upcomingTournaments = [
     {
+      id: 'demo-1',
       title: 'Sunday Singles Championship',
       players: 12,
       maxPlayers: 16,
@@ -61,6 +57,7 @@ const Index = () => {
       status: 'live' as const
     },
     {
+      id: 'demo-2',
       title: 'Weekend Warriors Best Ball',
       players: 8,
       maxPlayers: 12,
@@ -70,6 +67,11 @@ const Index = () => {
       status: 'upcoming' as const
     }
   ];
+
+  // Filter active tournaments from saved tournaments
+  const activeSavedTournaments = savedTournaments.filter((t: any) => 
+    t.status === 'created' || t.status === 'live'
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 pb-20 md:pb-0">
@@ -135,7 +137,7 @@ const Index = () => {
                       className="bg-white text-emerald-600 px-4 py-2 rounded-lg hover:bg-emerald-50 transition-colors flex items-center space-x-2 font-medium"
                     >
                       <Play className="h-4 w-4" />
-                      <span>Start Tournament</span>
+                      <span>Enter Lobby</span>
                     </button>
                   </div>
               ))}
@@ -182,15 +184,56 @@ const Index = () => {
           <div>
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-900">Your Tournaments</h2>
-              <button className="text-emerald-600 hover:text-emerald-700 flex items-center space-x-1">
+              <button 
+                onClick={() => navigate('/tournaments')}
+                className="text-emerald-600 hover:text-emerald-700 flex items-center space-x-1"
+              >
                 <span>View all</span>
                 <Calendar className="h-4 w-4" />
               </button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {upcomingTournaments.map((tournament, index) => (
-                <TournamentCard key={index} {...tournament} />
+              {/* Display saved tournaments first */}
+              {activeSavedTournaments.slice(0, 2).map((tournament: any) => (
+                <TournamentCard 
+                  key={tournament.id}
+                  id={tournament.id}
+                  title={tournament.basicInfo.name}
+                  players={tournament.players.length}
+                  maxPlayers={tournament.basicInfo.maxPlayers}
+                  gameType={tournament.gameType.type || 'Custom Game'}
+                  prize={tournament.wagering.entryFee > 0 ? 
+                    `${tournament.wagering.currency}${tournament.wagering.entryFee * tournament.basicInfo.maxPlayers} Pool` : 
+                    'No Entry Fee'}
+                  date={tournament.createdAt ? new Date(tournament.createdAt).toLocaleDateString() : 'Today'}
+                  status={tournament.status}
+                  onAction={() => handleStartTournament(tournament.id)}
+                />
               ))}
+              
+              {/* Fill with demo tournaments if not enough saved ones */}
+              {activeSavedTournaments.length < 2 && 
+                upcomingTournaments.slice(0, 2 - activeSavedTournaments.length).map((tournament) => (
+                  <TournamentCard 
+                    key={tournament.id}
+                    id={tournament.id}
+                    title={tournament.title}
+                    players={tournament.players}
+                    maxPlayers={tournament.maxPlayers}
+                    gameType={tournament.gameType}
+                    prize={tournament.prize}
+                    date={tournament.date}
+                    status={tournament.status}
+                    onAction={() => {
+                      if (tournament.status === 'live') {
+                        navigate(`/tournament/${tournament.id}/live`);
+                      } else {
+                        navigate(`/tournament/${tournament.id}/lobby`);
+                      }
+                    }}
+                  />
+                ))
+              }
             </div>
           </div>
         )}

@@ -2,8 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Trophy, Target, ArrowLeft, Users, Flag } from 'lucide-react';
+import { Trophy, Target, ArrowLeft, Users, Flag, Settings, Medal } from 'lucide-react';
 import { calculateNetScore } from '@/utils/handicapCalculations';
+import { formatMatchScore } from '@/utils/matchPlayCalculations';
+import { TeamMatch, createTeamMatch, updateTeamMatch, getMatchDisplayStatus } from '@/utils/teamMatchPlayCalculations';
+import { useToast } from '@/hooks/use-toast';
 import Navbar from '@/components/Navbar';
 
 interface PlayerScore {
@@ -25,17 +28,35 @@ interface LiveTournamentPlayer {
   totalGross: number;
   totalNet: number;
   position: number;
+  teamId?: string;
+}
+
+interface Team {
+  id: string;
+  name: string;
+  players: string[];
+}
+
+interface Match {
+  id: string;
+  team1Id: string;
+  team2Id: string;
+  status: TeamMatch;
 }
 
 const LiveTournament = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [tournament, setTournament] = useState<any>(null);
   const [players, setPlayers] = useState<LiveTournamentPlayer[]>([]);
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [matches, setMatches] = useState<Match[]>([]);
   const [currentHole, setCurrentHole] = useState(1);
   const [selectedPlayer, setSelectedPlayer] = useState<string>('');
   const [scoreInput, setScoreInput] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'scoring' | 'leaderboard'>('scoring');
+  const [activeTab, setActiveTab] = useState<'scoring' | 'leaderboard' | 'matches'>('scoring');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Load tournament data
@@ -52,14 +73,69 @@ const LiveTournament = () => {
         scores: [],
         totalGross: 0,
         totalNet: 0,
-        position: 1
+        position: 1,
+        teamId: player.teamId  // May be undefined initially
       })) || [];
       
+      // Initialize teams if they exist
+      let tournamentTeams: Team[] = [];
+      if (foundTournament.teams && foundTournament.teams.length > 0) {
+        tournamentTeams = foundTournament.teams;
+      } else if (foundTournament.gameType.type === '2-Man Best Ball' || 
+                 foundTournament.gameType.type === 'Match Play') {
+        // Auto-create teams for match play if not defined
+        // For simplicity, just pair consecutive players
+        tournamentTeams = [];
+        for (let i = 0; i < livePlayers.length; i += 2) {
+          if (i + 1 < livePlayers.length) {
+            const teamId = `team-${Math.floor(i/2) + 1}`;
+            tournamentTeams.push({
+              id: teamId,
+              name: `Team ${Math.floor(i/2) + 1}`,
+              players: [livePlayers[i].id, livePlayers[i + 1].id]
+            });
+            
+            // Assign team IDs to players
+            livePlayers[i].teamId = teamId;
+            livePlayers[i + 1].teamId = teamId;
+          }
+        }
+      }
+      
+      // Initialize matches for match play
+      let tournamentMatches: Match[] = [];
+      if (tournamentTeams.length >= 2) {
+        // For simplicity, match first team against second, third against fourth, etc.
+        for (let i = 0; i < tournamentTeams.length; i += 2) {
+          if (i + 1 < tournamentTeams.length) {
+            const team1 = tournamentTeams[i];
+            const team2 = tournamentTeams[i + 1];
+            const matchId = `match-${Math.floor(i/2) + 1}`;
+            
+            tournamentMatches.push({
+              id: matchId,
+              team1Id: team1.id,
+              team2Id: team2.id,
+              status: createTeamMatch(
+                matchId,
+                team1.id,
+                team2.id,
+                team1.players,
+                team2.players
+              )
+            });
+          }
+        }
+      }
+      
+      setTeams(tournamentTeams);
+      setMatches(tournamentMatches);
       setPlayers(livePlayers);
       if (livePlayers.length > 0) {
         setSelectedPlayer(livePlayers[0].id);
       }
     }
+    setLoading(false);
   }, [id]);
 
   const handleScoreEntry = (playerId: string, hole: number, grossScore: number) => {
@@ -111,6 +187,66 @@ const LiveTournament = () => {
     });
 
     setScoreInput('');
+    
+    // Update match scores if in team play
+    if (matches.length > 0) {
+      updateMatchScores(hole);
+    }
+  };
+
+  const updateMatchScores = (holeNumber: number) => {
+    // Only update matches when all scores for the hole are entered
+    const playersWithScoreForHole = players.filter(p => 
+      p.scores.some(s => s.hole === holeNumber)
+    );
+    
+    // Check if all players have entered their scores for this hole
+    if (playersWithScoreForHole.length === players.length) {
+      // Update each match
+      const updatedMatches = matches.map(match => {
+        const { team1Id, team2Id, status } = match;
+        
+        // Get team players
+        const team1Players = players.filter(p => p.teamId === team1Id);
+        const team2Players = players.filter(p => p.teamId === team2Id);
+        
+        // Calculate team scores for this hole
+        const team1Score = Math.min(
+          ...team1Players.map(p => {
+            const score = p.scores.find(s => s.hole === holeNumber);
+            return score ? score.net : 999; // Large number if no score
+          })
+        );
+        
+        const team2Score = Math.min(
+          ...team2Players.map(p => {
+            const score = p.scores.find(s => s.hole === holeNumber);
+            return score ? score.net : 999; // Large number if no score
+          })
+        );
+        
+        // Update match status
+        const updatedStatus = updateTeamMatch(
+          status,
+          holeNumber,
+          team1Score,
+          team2Score
+        );
+        
+        return {
+          ...match,
+          status: updatedStatus
+        };
+      });
+      
+      setMatches(updatedMatches);
+      
+      // Show toast when a hole is completed
+      toast({
+        title: `Hole ${holeNumber} Complete`,
+        description: "All scores entered. Match statuses updated.",
+      });
+    }
   };
 
   const getScoreColor = (score: number, par: number, strokes: number) => {
@@ -122,6 +258,20 @@ const LiveTournament = () => {
 
   const currentHoleData = tournament?.course?.holes?.[currentHole - 1];
   const selectedPlayerData = players.find(p => p.id === selectedPlayer);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 pb-20 md:pb-0">
+        <Navbar />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading tournament...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!tournament) {
     return (
@@ -138,6 +288,12 @@ const LiveTournament = () => {
       </div>
     );
   }
+
+  const getPlayerTeam = (playerId: string) => {
+    const player = players.find(p => p.id === playerId);
+    if (!player?.teamId) return null;
+    return teams.find(t => t.id === player.teamId);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 pb-20 md:pb-0">
@@ -181,6 +337,19 @@ const LiveTournament = () => {
               <div className="flex items-center justify-center space-x-2">
                 <Target className="h-4 w-4" />
                 <span>Scoring</span>
+              </div>
+            </button>
+            <button
+              onClick={() => setActiveTab('matches')}
+              className={`flex-1 px-4 py-3 text-center font-medium transition-colors ${
+                activeTab === 'matches'
+                  ? 'text-emerald-600 border-b-2 border-emerald-600'
+                  : 'text-gray-600 hover:text-emerald-600'
+              }`}
+            >
+              <div className="flex items-center justify-center space-x-2">
+                <Medal className="h-4 w-4" />
+                <span>Matches</span>
               </div>
             </button>
             <button
@@ -248,9 +417,14 @@ const LiveTournament = () => {
                     onChange={(e) => setSelectedPlayer(e.target.value)}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2"
                   >
-                    {players.map(player => (
-                      <option key={player.id} value={player.id}>{player.name}</option>
-                    ))}
+                    {players.map(player => {
+                      const team = getPlayerTeam(player.id);
+                      return (
+                        <option key={player.id} value={player.id}>
+                          {player.name} {team ? `(${team.name})` : ''}
+                        </option>
+                      );
+                    })}
                   </select>
                 </div>
 
@@ -272,6 +446,12 @@ const LiveTournament = () => {
                         <span className="font-bold ml-1">{selectedPlayerData.currentHole}</span>
                       </div>
                     </div>
+                    {getPlayerTeam(selectedPlayerData.id) && (
+                      <div className="mt-2 text-sm">
+                        <span className="text-gray-600">Team:</span>
+                        <span className="font-bold ml-1">{getPlayerTeam(selectedPlayerData.id)?.name}</span>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -328,6 +508,108 @@ const LiveTournament = () => {
             </div>
           )}
 
+          {activeTab === 'matches' && (
+            <div className="p-6">
+              {matches.length > 0 ? (
+                <div className="space-y-4">
+                  {matches.map((match) => {
+                    const team1 = teams.find(t => t.id === match.team1Id);
+                    const team2 = teams.find(t => t.id === match.team2Id);
+                    
+                    // Get players from each team
+                    const team1Players = players.filter(p => team1?.players.includes(p.id));
+                    const team2Players = players.filter(p => team2?.players.includes(p.id));
+                    
+                    return (
+                      <div key={match.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                        <h3 className="font-medium text-lg mb-3">
+                          Match {match.id.replace('match-', '')}
+                        </h3>
+                        
+                        <div className="flex justify-between items-center mb-4 bg-white p-3 rounded-lg border border-gray-100">
+                          <div className="font-medium">Match Status:</div>
+                          <div className="font-bold text-emerald-600">
+                            {getMatchDisplayStatus(match.status)}
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {/* Team 1 */}
+                          <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-100">
+                            <h4 className="font-medium text-emerald-800 mb-2">{team1?.name || 'Team 1'}</h4>
+                            <div className="space-y-2">
+                              {team1Players.map(player => (
+                                <div key={player.id} className="flex justify-between text-sm">
+                                  <div>{player.name}</div>
+                                  <div className="font-medium text-emerald-700">
+                                    {player.scores.length > 0 ? 
+                                      `${player.totalGross} gross / ${player.totalNet} net` : 
+                                      'No scores yet'}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                            <div className="mt-3 pt-2 border-t border-emerald-200 text-sm">
+                              <div className="flex justify-between">
+                                <span>Holes Won:</span>
+                                <span className="font-bold">{match.status.team1Score.holesWon}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Holes Lost:</span>
+                                <span className="font-bold">{match.status.team1Score.holesLost}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Holes Halved:</span>
+                                <span className="font-bold">{match.status.team1Score.holesHalved}</span>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Team 2 */}
+                          <div className="bg-blue-50 rounded-lg p-3 border border-blue-100">
+                            <h4 className="font-medium text-blue-800 mb-2">{team2?.name || 'Team 2'}</h4>
+                            <div className="space-y-2">
+                              {team2Players.map(player => (
+                                <div key={player.id} className="flex justify-between text-sm">
+                                  <div>{player.name}</div>
+                                  <div className="font-medium text-blue-700">
+                                    {player.scores.length > 0 ? 
+                                      `${player.totalGross} gross / ${player.totalNet} net` : 
+                                      'No scores yet'}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                            <div className="mt-3 pt-2 border-t border-blue-200 text-sm">
+                              <div className="flex justify-between">
+                                <span>Holes Won:</span>
+                                <span className="font-bold">{match.status.team2Score.holesWon}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Holes Lost:</span>
+                                <span className="font-bold">{match.status.team2Score.holesLost}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Holes Halved:</span>
+                                <span className="font-bold">{match.status.team2Score.holesHalved}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Medal className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                  <h3 className="text-lg font-medium text-gray-800 mb-2">No Matches Set Up</h3>
+                  <p className="text-gray-600">This tournament doesn't have any team matches configured.</p>
+                </div>
+              )}
+            </div>
+          )}
+
           {activeTab === 'leaderboard' && (
             <div className="p-6">
               <div className="space-y-4">
@@ -339,7 +621,10 @@ const LiveTournament = () => {
                       </div>
                       <div>
                         <div className="font-medium text-gray-900">{player.name}</div>
-                        <div className="text-sm text-gray-600">Hole {player.currentHole - 1}</div>
+                        <div className="text-sm text-gray-600">
+                          {getPlayerTeam(player.id) ? `${getPlayerTeam(player.id)?.name}, ` : ''}
+                          Hole {player.currentHole - 1}
+                        </div>
                       </div>
                     </div>
                     <div className="text-right">

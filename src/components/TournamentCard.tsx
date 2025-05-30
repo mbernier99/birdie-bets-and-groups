@@ -1,37 +1,80 @@
 
 import React from 'react';
 import { Trophy, Users, Calendar, DollarSign } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface TournamentCardProps {
+  id: string;
   title: string;
   players: number;
   maxPlayers: number;
   gameType: string;
   prize: string;
   date: string;
-  status: 'upcoming' | 'live' | 'completed';
+  status: 'upcoming' | 'live' | 'created' | 'completed';
+  onAction?: () => void;
 }
 
 const TournamentCard: React.FC<TournamentCardProps> = ({
+  id,
   title,
   players,
   maxPlayers,
   gameType,
   prize,
   date,
-  status
+  status,
+  onAction
 }) => {
+  const navigate = useNavigate();
+  
   const getStatusColor = () => {
     switch (status) {
       case 'live':
         return 'bg-green-100 text-green-800 border-green-200';
       case 'upcoming':
+      case 'created':
         return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'completed':
         return 'bg-gray-100 text-gray-800 border-gray-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
+  };
+
+  const getActionButtonText = () => {
+    switch (status) {
+      case 'created':
+        return 'Enter Lobby';
+      case 'upcoming':
+        return 'Join Tournament';
+      case 'live':
+        return 'View Live';
+      case 'completed':
+        return 'View Results';
+      default:
+        return 'View Details';
+    }
+  };
+
+  const handleAction = () => {
+    if (onAction) {
+      onAction();
+    } else {
+      // Default navigation based on status
+      if (status === 'created' || status === 'upcoming') {
+        navigate(`/tournament/${id}/lobby`);
+      } else if (status === 'live') {
+        navigate(`/tournament/${id}/live`);
+      } else {
+        // For completed tournaments or any other status
+        navigate(`/tournament/${id}/lobby`);
+      }
+    }
+  };
+
+  const handleDetails = () => {
+    navigate(`/tournament/${id}/lobby`);
   };
 
   return (
@@ -67,10 +110,16 @@ const TournamentCard: React.FC<TournamentCardProps> = ({
         </div>
         
         <div className="flex space-x-3">
-          <button className="flex-1 bg-emerald-600 text-white py-2 px-4 rounded-lg hover:bg-emerald-700 transition-colors font-medium">
-            {status === 'upcoming' ? 'Join Tournament' : status === 'live' ? 'View Live' : 'View Results'}
+          <button 
+            onClick={handleAction}
+            className="flex-1 bg-emerald-600 text-white py-2 px-4 rounded-lg hover:bg-emerald-700 transition-colors font-medium"
+          >
+            {getActionButtonText()}
           </button>
-          <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+          <button 
+            onClick={handleDetails}
+            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+          >
             Details
           </button>
         </div>

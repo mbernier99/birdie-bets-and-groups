@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { Play, Clock, Users, Trophy, Calendar } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface PlayNowModalProps {
   isOpen: boolean;
@@ -30,6 +31,7 @@ interface Tournament {
 
 const PlayNowModal: React.FC<PlayNowModalProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [savedTournaments, setSavedTournaments] = useState<Tournament[]>([]);
   const [invitedTournaments] = useState<Tournament[]>([
     {
@@ -54,7 +56,12 @@ const PlayNowModal: React.FC<PlayNowModalProps> = ({ isOpen, onClose }) => {
 
   useEffect(() => {
     const tournaments = JSON.parse(localStorage.getItem('savedTournaments') || '[]');
-    setSavedTournaments(tournaments);
+    // Mark saved tournaments as owned by the current user
+    const tournamentsWithOwnership = tournaments.map((t: any) => ({
+      ...t,
+      isOwner: true
+    }));
+    setSavedTournaments(tournamentsWithOwnership);
   }, [isOpen]);
 
   const handleEnterTournament = (tournamentId: string, status: string) => {
@@ -69,8 +76,14 @@ const PlayNowModal: React.FC<PlayNowModalProps> = ({ isOpen, onClose }) => {
   };
 
   const handleJoinTournament = (tournamentId: string) => {
+    // In a real app, this would update the tournament player list
     console.log('Joining tournament:', tournamentId);
-    // Here you would implement the join logic, then navigate
+    
+    toast({
+      title: "Joined Tournament",
+      description: "You've successfully joined the tournament.",
+    });
+    
     onClose();
     navigate(`/tournament/${tournamentId}/lobby`);
   };
