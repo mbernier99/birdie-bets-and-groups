@@ -48,10 +48,10 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ data, onDataChange }) => 
   const players = data.players || [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-4xl mx-auto">
       <h3 className="text-lg font-semibold text-gray-900">Tournament Details</h3>
       
-      <div className="grid grid-cols-1 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl">
         <div className="space-y-2">
           <Label htmlFor="tournament-name">Tournament Name</Label>
           <Input
@@ -80,12 +80,11 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ data, onDataChange }) => 
       {/* Player Management */}
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <h4 className="text-md font-semibold text-gray-900">Players</h4>
+          <h4 className="text-md font-semibold text-gray-900">Add Players</h4>
           <Button
             type="button"
             onClick={addPlayer}
-            variant="outline"
-            className="flex items-center space-x-2"
+            className="flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700"
           >
             <Plus className="h-4 w-4" />
             <span>Add Player</span>
@@ -93,14 +92,14 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ data, onDataChange }) => 
         </div>
 
         {players.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg">
             <p>No players added yet. Click "Add Player" to get started.</p>
           </div>
         ) : (
           <div className="space-y-3">
             {players.map((player, index) => (
               <div key={player.id} className="bg-gray-50 rounded-lg p-4">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor={`player-name-${index}`}>Name</Label>
                     <Input
@@ -108,6 +107,7 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ data, onDataChange }) => 
                       value={player.name}
                       onChange={(e) => handlePlayerChange(index, 'name', e.target.value)}
                       placeholder="Player Name"
+                      className="w-full"
                     />
                   </div>
                   <div className="space-y-2">
@@ -118,6 +118,7 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ data, onDataChange }) => 
                       value={player.email}
                       onChange={(e) => handlePlayerChange(index, 'email', e.target.value)}
                       placeholder="player@email.com"
+                      className="w-full"
                     />
                   </div>
                   <div className="space-y-2">
@@ -130,6 +131,7 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ data, onDataChange }) => 
                       max="54"
                       value={player.handicapIndex}
                       onChange={(e) => handlePlayerChange(index, 'handicapIndex', e.target.value)}
+                      className="w-full"
                     />
                   </div>
                   <div className="flex items-end">
@@ -148,8 +150,9 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ data, onDataChange }) => 
           </div>
         )}
 
-        <div className="text-sm text-gray-600">
-          <p>Players: {players.length} / {data.basicInfo.maxPlayers}</p>
+        <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
+          <p><strong>Players:</strong> {players.length} / {data.basicInfo.maxPlayers}</p>
+          <p className="text-xs mt-1">You can add more players later in the Players & Teams step.</p>
         </div>
       </div>
     </div>
