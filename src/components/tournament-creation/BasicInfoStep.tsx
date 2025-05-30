@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -79,7 +78,7 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ data, onDataChange }) => 
 
       {/* Player Management */}
       <div className="space-y-4">
-        <div className="flex justify-between items-center">
+        <div className="flex items-center space-x-4">
           <h4 className="text-md font-semibold text-gray-900">Add Players</h4>
           <Button
             type="button"
