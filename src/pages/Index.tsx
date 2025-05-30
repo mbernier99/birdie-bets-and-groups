@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Trophy, Target, TrendingUp, Plus, Calendar, DollarSign, Play } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -81,12 +82,12 @@ const Index = () => {
         <div className="bg-gradient-to-r from-emerald-700/70 to-emerald-800/70 text-white relative overflow-hidden rounded-3xl">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative z-10">
             <div className="text-center">
-              {/* Large background logo positioned at bottom center */}
-              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 opacity-40">
+              {/* Large background logo */}
+              <div className="absolute inset-0 flex items-center justify-center opacity-30">
                 <img 
                   src="/lovable-uploads/fc297cde-a9d2-4fb0-acf6-d28aacc56592.png" 
                   alt="Suntory Cup Background" 
-                  className="h-32 w-32 object-contain"
+                  className="h-96 w-96 object-contain"
                 />
               </div>
               
