@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Camera, Target, Navigation } from 'lucide-react';
+import { MapPin, Camera, Target, Navigation, Calculator } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useMobileFeatures, LocationData } from '../hooks/useMobileFeatures';
 import PressManager from './press/PressManager';
 import PressLedger from './press/PressLedger';
+import ScoreEntry from './ScoreEntry';
 import { Press } from '../types/press';
 
 interface Shot {
@@ -160,14 +161,35 @@ const OnCourseTracker = () => {
 
   return (
     <div className="bg-white rounded-lg shadow-lg">
-      <Tabs defaultValue="tracker" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+      <Tabs defaultValue="score" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="score">Score</TabsTrigger>
           <TabsTrigger value="tracker">Tracker</TabsTrigger>
           <TabsTrigger value="press">Press</TabsTrigger>
           <TabsTrigger value="ledger">Ledger</TabsTrigger>
         </TabsList>
 
+        <TabsContent value="score" className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-900">Score Entry</h2>
+            <Calculator className="h-6 w-6 text-emerald-600" />
+          </div>
+          <ScoreEntry 
+            playerId={currentUserId}
+            playerName="You"
+            onScoreChange={(scores) => {
+              console.log('Scores updated:', scores);
+              // Future: Sync with tournament/match play system
+            }}
+            onRoundComplete={(finalScores) => {
+              console.log('Round completed:', finalScores);
+              // Future: Submit to tournament system
+            }}
+          />
+        </TabsContent>
+
         <TabsContent value="tracker" className="p-6">
+          
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-900">Shot Tracker</h2>
             <div className="flex items-center space-x-2">
