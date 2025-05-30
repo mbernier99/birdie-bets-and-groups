@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -49,7 +48,7 @@ const CourseSetupStep: React.FC<CourseSetupStepProps> = ({ data, onDataChange })
       <h3 className="text-lg font-semibold text-gray-900">Course Setup</h3>
       
       {/* Course Basic Info */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
         <div className="space-y-2">
           <Label htmlFor="course-name" className="flex items-center space-x-1">
             <span>Course Name</span>
@@ -85,7 +84,9 @@ const CourseSetupStep: React.FC<CourseSetupStepProps> = ({ data, onDataChange })
             </SelectContent>
           </Select>
         </div>
+      </div>
 
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
           <Label htmlFor="course-rating">Course Rating</Label>
           <Input
