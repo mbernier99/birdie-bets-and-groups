@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -43,8 +42,8 @@ export interface TournamentData {
     id: string;
     name: string;
     email: string;
-    handicap?: number;
-    invited: boolean;
+    handicapIndex: number;
+    status: 'invited' | 'accepted' | 'declined';
   }>;
   teams: Array<{
     id: string;
