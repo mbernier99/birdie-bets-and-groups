@@ -14,6 +14,7 @@ interface GameTypeStepProps {
 const gameTypes = [
   { id: 'stroke-play', name: 'Stroke Play', description: 'Individual stroke play tournament', minPlayers: 2, maxPlayers: 32 },
   { id: 'best-ball', name: 'Best Ball', description: 'Teams of 2, lowest score on each hole counts', minPlayers: 4, maxPlayers: 16 },
+  { id: 'best-ball-match-play', name: '2-Man Best Ball Match Play', description: 'Teams of 2 compete hole-by-hole in match play format', minPlayers: 4, maxPlayers: 16 },
   { id: 'scramble', name: 'Scramble', description: 'Team scramble format - all play from best shot', minPlayers: 4, maxPlayers: 16 },
   { id: 'match-play', name: 'Match Play', description: 'Head-to-head elimination format', minPlayers: 2, maxPlayers: 8 },
   { id: 'nassau', name: 'Nassau', description: 'Three separate bets: front 9, back 9, and overall', minPlayers: 2, maxPlayers: 8 },
@@ -49,6 +50,53 @@ const GameTypeStep: React.FC<GameTypeStepProps> = ({ data, onDataChange }) => {
                 onCheckedChange={(checked) => handleRuleChange('handicapAllowed', checked)}
               />
               <Label htmlFor="handicap-allowed">Allow Handicaps</Label>
+            </div>
+          </div>
+        );
+
+      case 'best-ball-match-play':
+        return (
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="handicap-allowed-bbmp"
+                checked={data.gameType.rules.handicapAllowed || true}
+                onCheckedChange={(checked) => handleRuleChange('handicapAllowed', checked)}
+              />
+              <Label htmlFor="handicap-allowed-bbmp">Allow Handicaps</Label>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="match-length">Match Length</Label>
+              <Select 
+                value={data.gameType.rules.matchLength || '18'} 
+                onValueChange={(value) => handleRuleChange('matchLength', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="9">9 Holes</SelectItem>
+                  <SelectItem value="18">18 Holes</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="allow-concede"
+                checked={data.gameType.rules.allowConcede || true}
+                onCheckedChange={(checked) => handleRuleChange('allowConcede', checked)}
+              />
+              <Label htmlFor="allow-concede">Allow Conceding Holes/Putts</Label>
+            </div>
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <h5 className="font-medium text-blue-900 mb-2">Team Format Rules</h5>
+              <ul className="text-sm text-blue-700 space-y-1">
+                <li>• Teams of exactly 2 players each</li>
+                <li>• Both players play their own ball</li>
+                <li>• Lower net score counts for the team on each hole</li>
+                <li>• Teams compete hole-by-hole (win/lose/halve)</li>
+                <li>• Match ends when one team cannot catch up</li>
+              </ul>
             </div>
           </div>
         );

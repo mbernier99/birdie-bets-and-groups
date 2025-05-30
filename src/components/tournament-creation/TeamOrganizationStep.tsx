@@ -1,27 +1,14 @@
-
-import React, { useState } from 'react';
-import { TournamentData } from '../CreateTournamentModal';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import React, { useState, useEffect } from 'react';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
-import { Plus, X, Mail, Users, Shuffle } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { TournamentData } from '../CreateTournamentModal';
 
 interface TeamOrganizationStepProps {
   data: TournamentData;
   onDataChange: (key: keyof TournamentData, value: any) => void;
 }
-
-const gameTypes = [
-  { id: 'best-ball', name: 'Best Ball', teamSize: 2, maxTeams: 8, needsPairings: true },
-  { id: 'scramble', name: 'Scramble', teamSize: 4, maxTeams: 4, needsPairings: true },
-  { id: 'match-play', name: 'Match Play', teamSize: 1, maxTeams: 8, needsPairings: false },
-  { id: 'stroke-play', name: 'Stroke Play', teamSize: 1, maxTeams: 32, needsPairings: true },
-  { id: 'nassau', name: 'Nassau', teamSize: 1, maxTeams: 8, needsPairings: true },
-  { id: 'skins', name: 'Skins', teamSize: 1, maxTeams: 8, needsPairings: true },
-];
 
 const TeamOrganizationStep: React.FC<TeamOrganizationStepProps> = ({ data, onDataChange }) => {
   const [newPlayerName, setNewPlayerName] = useState('');
@@ -29,38 +16,73 @@ const TeamOrganizationStep: React.FC<TeamOrganizationStepProps> = ({ data, onDat
   const [newPlayerHandicap, setNewPlayerHandicap] = useState('');
   const [bulkEmails, setBulkEmails] = useState('');
 
-  const selectedGame = gameTypes.find(g => g.id === data.gameType.type);
+  // Auto-generate teams for 2-Man Best Ball Match Play
+  const autoGenerateTeams = () => {
+    const availablePlayers = data.players.filter(p => p.status === 'accepted');
+    
+    if (availablePlayers.length < 2) return;
 
-  const addPlayer = () => {
-    if (!newPlayerName || !newPlayerEmail) return;
+    const teams = [];
+    for (let i = 0; i < availablePlayers.length; i += 2) {
+      if (i + 1 < availablePlayers.length) {
+        const team = {
+          id: `team-${i / 2 + 1}`,
+          name: `Team ${i / 2 + 1}`,
+          playerIds: [availablePlayers[i].id, availablePlayers[i + 1].id]
+        };
+        teams.push(team);
+      }
+    }
 
-    const newPlayer = {
-      id: Date.now().toString(),
-      name: newPlayerName,
-      email: newPlayerEmail,
-      handicapIndex: newPlayerHandicap ? parseInt(newPlayerHandicap) : 0,
-      status: 'invited' as const
-    };
-
-    onDataChange('players', [...data.players, newPlayer]);
-    setNewPlayerName('');
-    setNewPlayerEmail('');
-    setNewPlayerHandicap('');
+    onDataChange('teams', teams);
   };
 
-  const addBulkPlayers = () => {
-    if (!bulkEmails.trim()) return;
+  // Auto-generate teams when game type is best-ball-match-play and players change
+  useEffect(() => {
+    if (data.gameType.type === 'best-ball-match-play') {
+      autoGenerateTeams();
+    }
+  }, [data.players, data.gameType.type]);
 
+  const addPlayer = () => {
+    if (newPlayerName && newPlayerEmail && newPlayerHandicap) {
+      const newPlayer = {
+        id: Date.now().toString(),
+        name: newPlayerName,
+        email: newPlayerEmail,
+        handicapIndex: parseFloat(newPlayerHandicap),
+        status: 'invited' as const
+      };
+
+      onDataChange('players', [...data.players, newPlayer]);
+      setNewPlayerName('');
+      setNewPlayerEmail('');
+      setNewPlayerHandicap('');
+    }
+  };
+
+  const removePlayer = (playerId: string) => {
+    onDataChange('players', data.players.filter(p => p.id !== playerId));
+  };
+
+  const updatePlayerStatus = (playerId: string, status: 'invited' | 'accepted' | 'declined') => {
+    const updatedPlayers = data.players.map(p => 
+      p.id === playerId ? { ...p, status } : p
+    );
+    onDataChange('players', updatedPlayers);
+  };
+
+  const processBulkEmails = () => {
     const emails = bulkEmails
-      .split('\n')
-      .map(line => line.trim())
-      .filter(line => line && line.includes('@'));
+      .split(/[,\n]/)
+      .map(email => email.trim())
+      .filter(email => email && email.includes('@'));
 
-    const newPlayers = emails.map((email, index) => ({
-      id: `${Date.now()}-${index}`,
-      name: email.split('@')[0], // Use email prefix as default name
+    const newPlayers = emails.map(email => ({
+      id: Date.now().toString() + Math.random(),
+      name: email.split('@')[0],
       email: email,
-      handicapIndex: 18, // Default handicap
+      handicapIndex: 18,
       status: 'invited' as const
     }));
 
@@ -68,270 +90,242 @@ const TeamOrganizationStep: React.FC<TeamOrganizationStepProps> = ({ data, onDat
     setBulkEmails('');
   };
 
-  const removePlayer = (playerId: string) => {
-    onDataChange('players', data.players.filter(p => p.id !== playerId));
-    // Also remove from teams
-    const updatedTeams = data.teams.map(team => ({
-      ...team,
-      playerIds: team.playerIds.filter(id => id !== playerId)
-    }));
+  const createTeam = () => {
+    const newTeam = {
+      id: `team-${Date.now()}`,
+      name: `Team ${data.teams.length + 1}`,
+      playerIds: []
+    };
+    onDataChange('teams', [...data.teams, newTeam]);
+  };
+
+  const updateTeam = (teamId: string, updates: Partial<{ name: string; playerIds: string[] }>) => {
+    const updatedTeams = data.teams.map(team =>
+      team.id === teamId ? { ...team, ...updates } : team
+    );
     onDataChange('teams', updatedTeams);
   };
 
-  const createTeamsAutomatically = () => {
-    if (!selectedGame) return;
-
-    const shuffledPlayers = [...data.players].sort(() => Math.random() - 0.5);
-    const teams = [];
-    
-    for (let i = 0; i < shuffledPlayers.length; i += selectedGame.teamSize) {
-      const teamPlayers = shuffledPlayers.slice(i, i + selectedGame.teamSize);
-      if (teamPlayers.length === selectedGame.teamSize) {
-        teams.push({
-          id: `team-${teams.length + 1}`,
-          name: `Team ${teams.length + 1}`,
-          playerIds: teamPlayers.map(p => p.id)
-        });
-      }
-    }
-
-    onDataChange('teams', teams);
+  const deleteTeam = (teamId: string) => {
+    onDataChange('teams', data.teams.filter(t => t.id !== teamId));
   };
 
-  const createPairings = () => {
-    if (!selectedGame?.needsPairings) return;
-
-    const pairings = [];
-    let pairingSize = 4; // Default foursome
-
-    if (selectedGame.id === 'match-play') pairingSize = 2;
-
-    for (let i = 0; i < data.players.length; i += pairingSize) {
-      const pairingPlayers = data.players.slice(i, i + pairingSize);
-      if (pairingPlayers.length >= 2) {
-        pairings.push({
-          id: `pairing-${pairings.length + 1}`,
-          name: `Group ${pairings.length + 1}`,
-          playerIds: pairingPlayers.map(p => p.id),
-          teeTime: ''
-        });
+  const addPlayerToTeam = (teamId: string, playerId: string) => {
+    const team = data.teams.find(t => t.id === teamId);
+    if (team && !team.playerIds.includes(playerId)) {
+      // For 2-Man Best Ball Match Play, limit teams to 2 players
+      if (data.gameType.type === 'best-ball-match-play' && team.playerIds.length >= 2) {
+        return; // Don't add more than 2 players
       }
+      
+      updateTeam(teamId, {
+        playerIds: [...team.playerIds, playerId]
+      });
     }
-
-    onDataChange('pairings', pairings);
   };
 
-  if (!data.gameType.type) {
-    return (
-      <div className="space-y-6">
-        <h3 className="text-lg font-semibold text-gray-900">Players & Teams</h3>
-        <div className="bg-yellow-50 p-8 rounded-lg text-center border border-yellow-200">
-          <p className="text-yellow-800 font-medium">Please select a game type first</p>
-          <p className="text-sm text-yellow-600 mt-2">Go back to the Game Type step to choose your tournament format.</p>
-        </div>
-      </div>
-    );
-  }
+  const removePlayerFromTeam = (teamId: string, playerId: string) => {
+    const team = data.teams.find(t => t.id === teamId);
+    if (team) {
+      updateTeam(teamId, {
+        playerIds: team.playerIds.filter(id => id !== playerId)
+      });
+    }
+  };
+
+  const unassignedPlayers = data.players.filter(player => 
+    !data.teams.some(team => team.playerIds.includes(player.id))
+  );
+
+  const isTeamBased = ['best-ball', 'best-ball-match-play', 'scramble'].includes(data.gameType.type);
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900">Players & Teams</h3>
-        {selectedGame && (
-          <Badge variant="outline" className="text-sm">
-            {selectedGame.name} - {selectedGame.teamSize === 1 ? 'Individual' : `${selectedGame.teamSize}-person teams`}
-          </Badge>
-        )}
+      <h3 className="text-lg font-semibold text-gray-900">Players & Teams</h3>
+
+      {/* Player Management */}
+      <div className="space-y-4">
+        <h4 className="font-medium text-gray-900">Invite Players</h4>
+        
+        {/* Single Player Add */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Input
+            placeholder="Player name"
+            value={newPlayerName}
+            onChange={(e) => setNewPlayerName(e.target.value)}
+          />
+          <Input
+            placeholder="Email address"
+            value={newPlayerEmail}
+            onChange={(e) => setNewPlayerEmail(e.target.value)}
+          />
+          <Input
+            placeholder="Handicap index"
+            type="number"
+            step="0.1"
+            value={newPlayerHandicap}
+            onChange={(e) => setNewPlayerHandicap(e.target.value)}
+          />
+          <Button onClick={addPlayer} className="bg-emerald-600 hover:bg-emerald-700">
+            Add Player
+          </Button>
+        </div>
+
+        {/* Bulk Email Import */}
+        <div className="space-y-2">
+          <Label>Bulk Add Players (one email per line or comma-separated)</Label>
+          <textarea
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 min-h-20"
+            placeholder="player1@email.com, player2@email.com
+player3@email.com"
+            value={bulkEmails}
+            onChange={(e) => setBulkEmails(e.target.value)}
+          />
+          <Button 
+            onClick={processBulkEmails}
+            variant="outline"
+            disabled={!bulkEmails.trim()}
+          >
+            Import Players
+          </Button>
+        </div>
       </div>
 
-      {/* Add Single Player */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Plus className="h-5 w-5" />
-            Add Individual Player
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="player-name">Player Name</Label>
-              <Input
-                id="player-name"
-                value={newPlayerName}
-                onChange={(e) => setNewPlayerName(e.target.value)}
-                placeholder="Enter name"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="player-email">Email Address</Label>
-              <Input
-                id="player-email"
-                type="email"
-                value={newPlayerEmail}
-                onChange={(e) => setNewPlayerEmail(e.target.value)}
-                placeholder="Enter email"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="player-handicap">Handicap (optional)</Label>
-              <Input
-                id="player-handicap"
-                type="number"
-                value={newPlayerHandicap}
-                onChange={(e) => setNewPlayerHandicap(e.target.value)}
-                placeholder="18"
-              />
-            </div>
-            <div className="flex items-end">
-              <Button onClick={addPlayer} className="w-full">
-                Add Player
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Bulk Email Import */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Mail className="h-5 w-5" />
-            Bulk Add Players by Email
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="bulk-emails">Email Addresses (one per line)</Label>
-            <Textarea
-              id="bulk-emails"
-              value={bulkEmails}
-              onChange={(e) => setBulkEmails(e.target.value)}
-              placeholder="player1@email.com&#10;player2@email.com&#10;player3@email.com"
-              rows={4}
-            />
-          </div>
-          <Button onClick={addBulkPlayers} variant="outline" className="w-full">
-            Add All Players
-          </Button>
-        </CardContent>
-      </Card>
-
       {/* Players List */}
-      {data.players.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Players ({data.players.length})
-              </span>
-              <div className="space-x-2">
-                {selectedGame && selectedGame.teamSize > 1 && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={createTeamsAutomatically}
-                  >
-                    <Shuffle className="h-4 w-4 mr-2" />
-                    Auto Create Teams
-                  </Button>
-                )}
-                {selectedGame?.needsPairings && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={createPairings}
-                  >
-                    <Shuffle className="h-4 w-4 mr-2" />
-                    Create Pairings
-                  </Button>
-                )}
+      <div className="space-y-4">
+        <h4 className="font-medium text-gray-900">Players ({data.players.length})</h4>
+        <div className="space-y-2">
+          {data.players.map(player => (
+            <div key={player.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+              <div>
+                <div className="font-medium">{player.name}</div>
+                <div className="text-sm text-gray-600">{player.email}</div>
+                <div className="text-sm text-gray-600">HCP: {player.handicapIndex}</div>
               </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {data.players.map((player) => (
-                <div key={player.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex-1">
-                    <div className="font-medium">{player.name}</div>
-                    <div className="text-sm text-gray-600">{player.email}</div>
-                    <div className="text-sm text-gray-500">Handicap: {player.handicapIndex}</div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Badge variant="secondary" className="bg-green-100 text-green-700">
-                      Ready
-                    </Badge>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => removePlayer(player.id)}
-                    >
-                      <X className="h-4 w-4" />
+              <div className="flex items-center space-x-2">
+                <Select 
+                  value={player.status} 
+                  onValueChange={(value: 'invited' | 'accepted' | 'declined') => updatePlayerStatus(player.id, value)}
+                >
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="invited">Invited</SelectItem>
+                    <SelectItem value="accepted">Accepted</SelectItem>
+                    <SelectItem value="declined">Declined</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button variant="outline" size="sm" onClick={() => removePlayer(player.id)}>
+                  Remove
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Team Organization */}
+      {isTeamBased && (
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h4 className="font-medium text-gray-900">
+              Teams {data.gameType.type === 'best-ball-match-play' ? '(2 players each)' : ''}
+            </h4>
+            {data.gameType.type !== 'best-ball-match-play' && (
+              <Button onClick={createTeam} variant="outline">Add Team</Button>
+            )}
+            {data.gameType.type === 'best-ball-match-play' && (
+              <Button onClick={autoGenerateTeams} variant="outline">
+                Auto-Generate Teams
+              </Button>
+            )}
+          </div>
+
+          {/* Teams */}
+          <div className="space-y-4">
+            {data.teams.map(team => (
+              <div key={team.id} className="border border-gray-200 rounded-lg p-4">
+                <div className="flex justify-between items-center mb-3">
+                  <Input
+                    value={team.name}
+                    onChange={(e) => updateTeam(team.id, { name: e.target.value })}
+                    className="font-medium"
+                  />
+                  {data.gameType.type !== 'best-ball-match-play' && (
+                    <Button variant="outline" size="sm" onClick={() => deleteTeam(team.id)}>
+                      Delete Team
                     </Button>
-                  </div>
+                  )}
                 </div>
-              ))}
+                
+                <div className="space-y-2">
+                  {team.playerIds.map(playerId => {
+                    const player = data.players.find(p => p.id === playerId);
+                    return player ? (
+                      <div key={playerId} className="flex justify-between items-center p-2 bg-emerald-50 rounded">
+                        <span>{player.name} (HCP: {player.handicapIndex})</span>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => removePlayerFromTeam(team.id, playerId)}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    ) : null;
+                  })}
+                  
+                  {team.playerIds.length === 0 && (
+                    <div className="text-gray-500 text-sm">No players assigned</div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Unassigned Players */}
+          {unassignedPlayers.length > 0 && (
+            <div className="space-y-2">
+              <h5 className="font-medium text-gray-700">Available Players</h5>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {unassignedPlayers.map(player => (
+                  <div key={player.id} className="flex justify-between items-center p-2 bg-gray-100 rounded">
+                    <span>{player.name} (HCP: {player.handicapIndex})</span>
+                    <Select onValueChange={(teamId) => addPlayerToTeam(teamId, player.id)}>
+                      <SelectTrigger className="w-32">
+                        <SelectValue placeholder="Add to team" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {data.teams
+                          .filter(team => 
+                            data.gameType.type !== 'best-ball-match-play' || team.playerIds.length < 2
+                          )
+                          .map(team => (
+                          <SelectItem key={team.id} value={team.id}>
+                            {team.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ))}
+              </div>
             </div>
-          </CardContent>
-        </Card>
+          )}
+        </div>
       )}
 
-      {/* Teams Display */}
-      {data.teams.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Teams</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {data.teams.map((team) => (
-                <div key={team.id} className="p-4 border rounded-lg">
-                  <h4 className="font-medium mb-2">{team.name}</h4>
-                  <div className="space-y-1">
-                    {team.playerIds.map((playerId) => {
-                      const player = data.players.find(p => p.id === playerId);
-                      return player ? (
-                        <div key={playerId} className="text-sm text-gray-600">
-                          {player.name}
-                        </div>
-                      ) : null;
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Pairings Display */}
-      {data.pairings.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Playing Groups</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {data.pairings.map((pairing) => (
-                <div key={pairing.id} className="p-4 border rounded-lg">
-                  <h4 className="font-medium mb-2">{pairing.name}</h4>
-                  <div className="space-y-1">
-                    {pairing.playerIds.map((playerId) => {
-                      const player = data.players.find(p => p.id === playerId);
-                      return player ? (
-                        <div key={playerId} className="text-sm text-gray-600">
-                          {player.name}
-                        </div>
-                      ) : null;
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+      {data.gameType.type === 'best-ball-match-play' && (
+        <div className="bg-blue-50 p-4 rounded-lg">
+          <h5 className="font-medium text-blue-900 mb-2">2-Man Best Ball Match Play Format</h5>
+          <ul className="text-sm text-blue-700 space-y-1">
+            <li>• Teams are automatically created with 2 players each</li>
+            <li>• Excess players (if odd number) will be left unassigned</li>
+            <li>• Teams will be paired against each other for matches</li>
+            <li>• Each hole is won, lost, or halved between teams</li>
+          </ul>
+        </div>
       )}
     </div>
   );
