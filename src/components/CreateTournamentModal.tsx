@@ -208,7 +208,7 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
             <CurrentStepComponent
               data={tournamentData}
               onDataChange={handleStepData}
-              onSaveTournament={currentStep === steps.length - 1 ? handleSaveTournament : undefined}
+              {...(currentStep === steps.length - 1 && { onSaveTournament: handleSaveTournament })}
             />
           </div>
 

@@ -1,14 +1,15 @@
 
 import React from 'react';
 import { TournamentData } from '../CreateTournamentModal';
-import { format } from 'date-fns';
+import { Button } from '@/components/ui/button';
 
 interface ReviewStepProps {
   data: TournamentData;
   onDataChange: (key: keyof TournamentData, value: any) => void;
+  onSaveTournament?: () => void;
 }
 
-const ReviewStep: React.FC<ReviewStepProps> = ({ data }) => {
+const ReviewStep: React.FC<ReviewStepProps> = ({ data, onSaveTournament }) => {
   const totalPar = data.course.holes.reduce((sum, hole) => sum + hole.par, 0);
   const totalYardage = data.course.holes.reduce((sum, hole) => sum + hole.yardage, 0);
 
@@ -22,8 +23,6 @@ const ReviewStep: React.FC<ReviewStepProps> = ({ data }) => {
           <h4 className="font-medium text-gray-900 border-b pb-2">Tournament Info</h4>
           <div className="space-y-2 text-sm">
             <div><span className="font-medium">Name:</span> {data.basicInfo.name}</div>
-            <div><span className="font-medium">Date:</span> {data.basicInfo.date ? format(data.basicInfo.date, 'PPP') : 'Not set'}</div>
-            <div><span className="font-medium">Time:</span> {data.basicInfo.time || 'Not set'}</div>
             <div><span className="font-medium">Max Players:</span> {data.basicInfo.maxPlayers}</div>
           </div>
         </div>
@@ -72,10 +71,16 @@ const ReviewStep: React.FC<ReviewStepProps> = ({ data }) => {
       </div>
 
       <div className="bg-emerald-50 p-4 rounded-lg">
-        <h4 className="font-medium text-emerald-900 mb-2">Ready to Create</h4>
-        <p className="text-sm text-emerald-700">
-          Review all details above and click "Create Tournament" to finalize your tournament setup.
+        <h4 className="font-medium text-emerald-900 mb-3">Save Your Tournament</h4>
+        <p className="text-sm text-emerald-700 mb-4">
+          Your tournament setup is complete! Save it now to make it available for players to join.
         </p>
+        <Button 
+          onClick={onSaveTournament}
+          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+        >
+          Save Tournament
+        </Button>
       </div>
     </div>
   );
