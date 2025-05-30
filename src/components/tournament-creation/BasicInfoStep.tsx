@@ -54,7 +54,7 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ data, onDataChange }) => 
       <div>
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Tournament Details</h3>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
           <div className="space-y-2">
             <Label htmlFor="tournament-name" className="flex items-center space-x-1">
               <span>Tournament Name</span>
@@ -117,7 +117,7 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ data, onDataChange }) => 
           <div className="space-y-3 max-h-60 overflow-y-auto">
             {players.map((player, index) => (
               <div key={player.id} className="bg-gray-50 rounded-lg p-3">
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 items-end">
                   <div className="space-y-1">
                     <Label htmlFor={`player-name-${index}`} className="text-xs flex items-center space-x-1">
                       <span>Name</span>
@@ -155,7 +155,8 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ data, onDataChange }) => 
                       className="h-8"
                     />
                   </div>
-                  <div className="flex items-end">
+                  <div className="space-y-1">
+                    <Label className="text-xs opacity-0">Remove</Label>
                     <Button
                       type="button"
                       onClick={() => removePlayer(index)}
