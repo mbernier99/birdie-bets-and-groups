@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -152,6 +153,16 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ data, onDataChange }) => 
         <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
           <p><strong>Players:</strong> {players.length} / {data.basicInfo.maxPlayers}</p>
           <p className="text-xs mt-1">You can add more players later in the Players & Teams step.</p>
+        </div>
+      </div>
+
+      <div className="bg-emerald-50 p-4 rounded-lg border border-emerald-200">
+        <h4 className="font-medium text-emerald-900 mb-2">Ready to Continue?</h4>
+        <p className="text-sm text-emerald-700 mb-3">
+          Complete the tournament name and add at least one player to proceed to course setup.
+        </p>
+        <div className="text-xs text-emerald-600">
+          Next: Configure your golf course details and hole information
         </div>
       </div>
     </div>
