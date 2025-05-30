@@ -2,6 +2,8 @@
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Plus, X } from 'lucide-react';
 import { TournamentData } from '../CreateTournamentModal';
 
 interface BasicInfoStepProps {
@@ -16,6 +18,34 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ data, onDataChange }) => 
       [field]: value
     });
   };
+
+  const handlePlayerChange = (index: number, field: string, value: any) => {
+    const updatedPlayers = [...(data.players || [])];
+    updatedPlayers[index] = {
+      ...updatedPlayers[index],
+      [field]: field === 'handicapIndex' ? parseFloat(value) : value
+    };
+    onDataChange('players', updatedPlayers);
+  };
+
+  const addPlayer = () => {
+    const newPlayer = {
+      id: `player-${Date.now()}`,
+      name: '',
+      email: '',
+      handicapIndex: 18.0,
+      status: 'invited' as const
+    };
+    onDataChange('players', [...(data.players || []), newPlayer]);
+  };
+
+  const removePlayer = (index: number) => {
+    const updatedPlayers = [...(data.players || [])];
+    updatedPlayers.splice(index, 1);
+    onDataChange('players', updatedPlayers);
+  };
+
+  const players = data.players || [];
 
   return (
     <div className="space-y-6">
@@ -44,6 +74,82 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ data, onDataChange }) => 
             max="144"
             className="w-full"
           />
+        </div>
+      </div>
+
+      {/* Player Management */}
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <h4 className="text-md font-semibold text-gray-900">Players</h4>
+          <Button
+            type="button"
+            onClick={addPlayer}
+            variant="outline"
+            className="flex items-center space-x-2"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Add Player</span>
+          </Button>
+        </div>
+
+        {players.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            <p>No players added yet. Click "Add Player" to get started.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {players.map((player, index) => (
+              <div key={player.id} className="bg-gray-50 rounded-lg p-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor={`player-name-${index}`}>Name</Label>
+                    <Input
+                      id={`player-name-${index}`}
+                      value={player.name}
+                      onChange={(e) => handlePlayerChange(index, 'name', e.target.value)}
+                      placeholder="Player Name"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor={`player-email-${index}`}>Email</Label>
+                    <Input
+                      id={`player-email-${index}`}
+                      type="email"
+                      value={player.email}
+                      onChange={(e) => handlePlayerChange(index, 'email', e.target.value)}
+                      placeholder="player@email.com"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor={`player-handicap-${index}`}>Handicap Index</Label>
+                    <Input
+                      id={`player-handicap-${index}`}
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      max="54"
+                      value={player.handicapIndex}
+                      onChange={(e) => handlePlayerChange(index, 'handicapIndex', e.target.value)}
+                    />
+                  </div>
+                  <div className="flex items-end">
+                    <Button
+                      type="button"
+                      onClick={() => removePlayer(index)}
+                      variant="outline"
+                      className="w-full text-red-600 border-red-300 hover:bg-red-50"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="text-sm text-gray-600">
+          <p>Players: {players.length} / {data.basicInfo.maxPlayers}</p>
         </div>
       </div>
     </div>

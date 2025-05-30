@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { Play, Clock, Users, Trophy, Calendar } from 'lucide-react';
@@ -22,12 +23,13 @@ interface Tournament {
     entryFee: number;
     currency: string;
   };
-  status: 'created' | 'live' | 'completed';
+  status: 'created' | 'lobby' | 'live' | 'completed';
   isOwner?: boolean;
   isInvited?: boolean;
 }
 
 const PlayNowModal: React.FC<PlayNowModalProps> = ({ isOpen, onClose }) => {
+  const navigate = useNavigate();
   const [savedTournaments, setSavedTournaments] = useState<Tournament[]>([]);
   const [invitedTournaments] = useState<Tournament[]>([
     {
@@ -55,19 +57,22 @@ const PlayNowModal: React.FC<PlayNowModalProps> = ({ isOpen, onClose }) => {
     setSavedTournaments(tournaments);
   }, [isOpen]);
 
-  const handleStartTournament = (tournamentId: string) => {
-    const tournaments = JSON.parse(localStorage.getItem('savedTournaments') || '[]');
-    const updatedTournaments = tournaments.map((t: Tournament) => 
-      t.id === tournamentId ? { ...t, status: 'live' } : t
-    );
-    localStorage.setItem('savedTournaments', JSON.stringify(updatedTournaments));
-    setSavedTournaments(updatedTournaments);
-    console.log('Started tournament:', tournamentId);
+  const handleEnterTournament = (tournamentId: string, status: string) => {
+    onClose();
+    if (status === 'created') {
+      // Go to lobby for tournaments that haven't started
+      navigate(`/tournament/${tournamentId}/lobby`);
+    } else if (status === 'live') {
+      // Go directly to live tournament
+      navigate(`/tournament/${tournamentId}/live`);
+    }
   };
 
   const handleJoinTournament = (tournamentId: string) => {
     console.log('Joining tournament:', tournamentId);
-    // Here you would implement the join logic
+    // Here you would implement the join logic, then navigate
+    onClose();
+    navigate(`/tournament/${tournamentId}/lobby`);
   };
 
   const myCreatedTournaments = savedTournaments.filter(t => t.status === 'created');
@@ -112,11 +117,11 @@ const PlayNowModal: React.FC<PlayNowModalProps> = ({ isOpen, onClose }) => {
                         </div>
                       </div>
                       <Button
-                        onClick={() => handleStartTournament(tournament.id)}
+                        onClick={() => handleEnterTournament(tournament.id, tournament.status)}
                         className="bg-emerald-600 hover:bg-emerald-700 text-white flex items-center space-x-2"
                       >
-                        <Play className="h-4 w-4" />
-                        <span>Start</span>
+                        <Trophy className="h-4 w-4" />
+                        <span>Enter Lobby</span>
                       </Button>
                     </div>
                   </div>
@@ -154,11 +159,11 @@ const PlayNowModal: React.FC<PlayNowModalProps> = ({ isOpen, onClose }) => {
                         </div>
                       </div>
                       <Button
-                        onClick={() => handleJoinTournament(tournament.id)}
+                        onClick={() => handleEnterTournament(tournament.id, tournament.status)}
                         variant={tournament.isOwner ? "default" : "outline"}
                         className={tournament.isOwner ? "bg-emerald-600 hover:bg-emerald-700 text-white" : ""}
                       >
-                        {tournament.isOwner ? 'Manage' : 'Join'}
+                        {tournament.isOwner ? 'Manage' : 'Join Live'}
                       </Button>
                     </div>
                   </div>

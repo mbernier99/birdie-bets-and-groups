@@ -9,6 +9,8 @@ import Tournaments from "./pages/Tournaments";
 import Tracker from "./pages/Tracker";
 import GolfRules from "./pages/GolfRules";
 import Profile from "./pages/Profile";
+import TournamentLobby from "./pages/TournamentLobby";
+import LiveTournament from "./pages/LiveTournament";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +27,8 @@ const App = () => (
           <Route path="/tracker" element={<Tracker />} />
           <Route path="/rules" element={<GolfRules />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/tournament/:id/lobby" element={<TournamentLobby />} />
+          <Route path="/tournament/:id/live" element={<LiveTournament />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
