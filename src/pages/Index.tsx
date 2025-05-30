@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Trophy, Target, TrendingUp, Plus, Calendar, DollarSign, Play } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -91,7 +90,7 @@ const Index = () => {
             </div>
             
             <h1 className="text-4xl md:text-6xl font-bold mb-6 relative z-20">
-              <span className="text-emerald-200">The Suntory Cup</span>
+              <span className="text-emerald-200 font-serif tracking-wide" style={{ fontFamily: 'Times New Roman, Georgia, serif', letterSpacing: '0.05em' }}>My Suntory</span>
             </h1>
             <p className="text-xl md:text-2xl text-emerald-100 mb-8 max-w-3xl mx-auto relative z-20">
               Create private tournaments, track bets, and compete with friends in the ultimate golf wagering platform
