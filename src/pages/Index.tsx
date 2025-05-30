@@ -81,12 +81,12 @@ const Index = () => {
         <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white relative overflow-hidden rounded-2xl">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative z-10">
             <div className="text-center">
-              {/* Large background logo */}
-              <div className="absolute inset-0 flex items-center justify-center opacity-30">
+              {/* Large background logo - constrained within container */}
+              <div className="absolute inset-4 flex items-center justify-center opacity-30 pointer-events-none">
                 <img 
                   src="/lovable-uploads/fc297cde-a9d2-4fb0-acf6-d28aacc56592.png" 
                   alt="Suntory Cup Background" 
-                  className="h-96 w-96 object-contain"
+                  className="max-h-72 max-w-72 object-contain"
                 />
               </div>
               
