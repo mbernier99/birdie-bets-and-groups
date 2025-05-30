@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { TournamentData } from '../CreateTournamentModal';
 import { Button } from '@/components/ui/button';
@@ -5,8 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
 import { Plus, X, Mail, Users, Shuffle } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface TeamOrganizationStepProps {
   data: TournamentData;
@@ -16,16 +17,17 @@ interface TeamOrganizationStepProps {
 const gameTypes = [
   { id: 'best-ball', name: 'Best Ball', teamSize: 2, maxTeams: 8, needsPairings: true },
   { id: 'scramble', name: 'Scramble', teamSize: 4, maxTeams: 4, needsPairings: true },
-  { id: 'wolf', name: 'Wolf', teamSize: 1, maxTeams: 4, needsPairings: true },
-  { id: 'nassau', name: 'Nassau', teamSize: 1, maxTeams: 8, needsPairings: true },
   { id: 'match-play', name: 'Match Play', teamSize: 1, maxTeams: 8, needsPairings: false },
   { id: 'stroke-play', name: 'Stroke Play', teamSize: 1, maxTeams: 32, needsPairings: true },
+  { id: 'nassau', name: 'Nassau', teamSize: 1, maxTeams: 8, needsPairings: true },
+  { id: 'skins', name: 'Skins', teamSize: 1, maxTeams: 8, needsPairings: true },
 ];
 
 const TeamOrganizationStep: React.FC<TeamOrganizationStepProps> = ({ data, onDataChange }) => {
   const [newPlayerName, setNewPlayerName] = useState('');
   const [newPlayerEmail, setNewPlayerEmail] = useState('');
   const [newPlayerHandicap, setNewPlayerHandicap] = useState('');
+  const [bulkEmails, setBulkEmails] = useState('');
 
   const selectedGame = gameTypes.find(g => g.id === data.gameType.type);
 
@@ -46,6 +48,26 @@ const TeamOrganizationStep: React.FC<TeamOrganizationStepProps> = ({ data, onDat
     setNewPlayerHandicap('');
   };
 
+  const addBulkPlayers = () => {
+    if (!bulkEmails.trim()) return;
+
+    const emails = bulkEmails
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line && line.includes('@'));
+
+    const newPlayers = emails.map((email, index) => ({
+      id: `${Date.now()}-${index}`,
+      name: email.split('@')[0], // Use email prefix as default name
+      email: email,
+      handicapIndex: 18, // Default handicap
+      status: 'invited' as const
+    }));
+
+    onDataChange('players', [...data.players, ...newPlayers]);
+    setBulkEmails('');
+  };
+
   const removePlayer = (playerId: string) => {
     onDataChange('players', data.players.filter(p => p.id !== playerId));
     // Also remove from teams
@@ -54,15 +76,6 @@ const TeamOrganizationStep: React.FC<TeamOrganizationStepProps> = ({ data, onDat
       playerIds: team.playerIds.filter(id => id !== playerId)
     }));
     onDataChange('teams', updatedTeams);
-  };
-
-  const sendInvitation = (playerId: string) => {
-    const updatedPlayers = data.players.map(player =>
-      player.id === playerId ? { ...player, status: 'invited' as const } : player
-    );
-    onDataChange('players', updatedPlayers);
-    // Here you would typically send an actual email invitation
-    console.log(`Sending invitation to player ${playerId}`);
   };
 
   const createTeamsAutomatically = () => {
@@ -91,7 +104,6 @@ const TeamOrganizationStep: React.FC<TeamOrganizationStepProps> = ({ data, onDat
     const pairings = [];
     let pairingSize = 4; // Default foursome
 
-    if (selectedGame.id === 'wolf') pairingSize = 4;
     if (selectedGame.id === 'match-play') pairingSize = 2;
 
     for (let i = 0; i < data.players.length; i += pairingSize) {
@@ -132,12 +144,12 @@ const TeamOrganizationStep: React.FC<TeamOrganizationStepProps> = ({ data, onDat
         )}
       </div>
 
-      {/* Add Players Section */}
+      {/* Add Single Player */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Plus className="h-5 w-5" />
-            Add Players
+            Add Individual Player
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -168,7 +180,7 @@ const TeamOrganizationStep: React.FC<TeamOrganizationStepProps> = ({ data, onDat
                 type="number"
                 value={newPlayerHandicap}
                 onChange={(e) => setNewPlayerHandicap(e.target.value)}
-                placeholder="Enter handicap"
+                placeholder="18"
               />
             </div>
             <div className="flex items-end">
@@ -177,6 +189,31 @@ const TeamOrganizationStep: React.FC<TeamOrganizationStepProps> = ({ data, onDat
               </Button>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Bulk Email Import */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Mail className="h-5 w-5" />
+            Bulk Add Players by Email
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="bulk-emails">Email Addresses (one per line)</Label>
+            <Textarea
+              id="bulk-emails"
+              value={bulkEmails}
+              onChange={(e) => setBulkEmails(e.target.value)}
+              placeholder="player1@email.com&#10;player2@email.com&#10;player3@email.com"
+              rows={4}
+            />
+          </div>
+          <Button onClick={addBulkPlayers} variant="outline" className="w-full">
+            Add All Players
+          </Button>
         </CardContent>
       </Card>
 
@@ -190,14 +227,6 @@ const TeamOrganizationStep: React.FC<TeamOrganizationStepProps> = ({ data, onDat
                 Players ({data.players.length})
               </span>
               <div className="space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => data.players.forEach(p => p.status !== 'invited' && sendInvitation(p.id))}
-                >
-                  <Mail className="h-4 w-4 mr-2" />
-                  Invite All
-                </Button>
                 {selectedGame && selectedGame.teamSize > 1 && (
                   <Button
                     variant="outline"
@@ -228,25 +257,12 @@ const TeamOrganizationStep: React.FC<TeamOrganizationStepProps> = ({ data, onDat
                   <div className="flex-1">
                     <div className="font-medium">{player.name}</div>
                     <div className="text-sm text-gray-600">{player.email}</div>
-                    {player.handicapIndex && (
-                      <div className="text-sm text-gray-500">Handicap: {player.handicapIndex}</div>
-                    )}
+                    <div className="text-sm text-gray-500">Handicap: {player.handicapIndex}</div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    {player.status === 'invited' ? (
-                      <Badge variant="secondary" className="bg-green-100 text-green-700">
-                        Invited
-                      </Badge>
-                    ) : (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => sendInvitation(player.id)}
-                      >
-                        <Mail className="h-4 w-4 mr-1" />
-                        Invite
-                      </Button>
-                    )}
+                    <Badge variant="secondary" className="bg-green-100 text-green-700">
+                      Ready
+                    </Badge>
                     <Button
                       size="sm"
                       variant="outline"

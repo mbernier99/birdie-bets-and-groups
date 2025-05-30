@@ -1,11 +1,10 @@
+
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Camera } from 'lucide-react';
 import { TournamentData } from '../CreateTournamentModal';
-import ScorecardScanner from '../ScorecardScanner';
 
 interface CourseSetupStepProps {
   data: TournamentData;
@@ -14,7 +13,6 @@ interface CourseSetupStepProps {
 
 const CourseSetupStep: React.FC<CourseSetupStepProps> = ({ data, onDataChange }) => {
   const [viewMode, setViewMode] = useState<'summary' | 'holes'>('summary');
-  const [showScanner, setShowScanner] = useState(false);
 
   const handleCourseChange = (field: string, value: any) => {
     onDataChange('course', {
@@ -41,38 +39,12 @@ const CourseSetupStep: React.FC<CourseSetupStepProps> = ({ data, onDataChange })
     handleCourseChange('holes', updatedHoles);
   };
 
-  const handleScorecardCapture = async (courseData: any) => {
-    console.log('Received OCR course data:', courseData);
-    
-    // Update the course data with OCR results
-    onDataChange('course', {
-      ...data.course,
-      name: courseData.name || data.course.name,
-      teeBox: courseData.teeBox || data.course.teeBox,
-      rating: courseData.rating || data.course.rating,
-      slope: courseData.slope || data.course.slope,
-      holes: courseData.holes || data.course.holes
-    });
-    
-    setShowScanner(false);
-  };
-
   const totalPar = data.course.holes.reduce((sum, hole) => sum + hole.par, 0);
   const totalYardage = data.course.holes.reduce((sum, hole) => sum + hole.yardage, 0);
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold text-gray-900">Course Setup</h3>
-        <Button 
-          onClick={() => setShowScanner(true)}
-          variant="outline"
-          className="flex items-center space-x-2"
-        >
-          <Camera className="h-4 w-4" />
-          <span>Scan Scorecard</span>
-        </Button>
-      </div>
+      <h3 className="text-lg font-semibold text-gray-900">Course Setup</h3>
       
       {/* Course Basic Info */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -124,97 +96,98 @@ const CourseSetupStep: React.FC<CourseSetupStepProps> = ({ data, onDataChange })
         </div>
       </div>
 
-      {/* View Toggle */}
-      <div className="flex space-x-2">
-        <Button
-          variant={viewMode === 'summary' ? 'default' : 'outline'}
-          onClick={() => setViewMode('summary')}
-          size="sm"
-        >
-          Summary
-        </Button>
-        <Button
-          variant={viewMode === 'holes' ? 'default' : 'outline'}
-          onClick={() => setViewMode('holes')}
-          size="sm"
-        >
-          Hole Details
-        </Button>
-      </div>
-
-      {viewMode === 'summary' ? (
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-            <div>
-              <div className="text-2xl font-bold text-emerald-600">{totalPar}</div>
-              <div className="text-sm text-gray-600">Total Par</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-emerald-600">{totalYardage.toLocaleString()}</div>
-              <div className="text-sm text-gray-600">Total Yardage</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-emerald-600">{data.course.rating}</div>
-              <div className="text-sm text-gray-600">Course Rating</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-emerald-600">{data.course.slope}</div>
-              <div className="text-sm text-gray-600">Slope Rating</div>
-            </div>
+      {/* Course Summary */}
+      <div className="bg-gray-50 p-4 rounded-lg">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+          <div>
+            <div className="text-2xl font-bold text-emerald-600">{totalPar}</div>
+            <div className="text-sm text-gray-600">Total Par</div>
           </div>
-          <Button onClick={fillStandardPars} variant="outline" className="mt-4">
+          <div>
+            <div className="text-2xl font-bold text-emerald-600">{totalYardage.toLocaleString()}</div>
+            <div className="text-sm text-gray-600">Total Yardage</div>
+          </div>
+          <div>
+            <div className="text-2xl font-bold text-emerald-600">{data.course.rating}</div>
+            <div className="text-sm text-gray-600">Course Rating</div>
+          </div>
+          <div>
+            <div className="text-2xl font-bold text-emerald-600">{data.course.slope}</div>
+            <div className="text-sm text-gray-600">Slope Rating</div>
+          </div>
+        </div>
+        <div className="flex justify-center mt-4">
+          <Button onClick={fillStandardPars} variant="outline">
             Fill Standard Pars
           </Button>
         </div>
-      ) : (
-        <div className="space-y-4">
-          <div className="grid grid-cols-4 gap-2 text-sm font-medium text-gray-600 pb-2 border-b">
-            <div>Hole</div>
-            <div>Par</div>
-            <div>Yardage</div>
-            <div>HCP Index</div>
-          </div>
-          
-          <div className="max-h-80 overflow-y-auto space-y-2">
-            {data.course.holes.map((hole, index) => (
-              <div key={hole.number} className="grid grid-cols-4 gap-2 items-center">
-                <div className="font-medium">{hole.number}</div>
-                <Input
-                  type="number"
-                  min="3"
-                  max="6"
-                  value={hole.par}
-                  onChange={(e) => handleHoleChange(index, 'par', e.target.value)}
-                  className="h-8"
-                />
-                <Input
-                  type="number"
-                  min="100"
-                  max="800"
-                  value={hole.yardage}
-                  onChange={(e) => handleHoleChange(index, 'yardage', e.target.value)}
-                  className="h-8"
-                />
-                <Input
-                  type="number"
-                  min="1"
-                  max="18"
-                  value={hole.handicapIndex}
-                  onChange={(e) => handleHoleChange(index, 'handicapIndex', e.target.value)}
-                  className="h-8"
-                />
-              </div>
-            ))}
+      </div>
+
+      {/* Optional Hole Details */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h4 className="font-medium text-gray-900">Hole Details (Optional)</h4>
+          <div className="flex space-x-2">
+            <Button
+              variant={viewMode === 'summary' ? 'default' : 'outline'}
+              onClick={() => setViewMode('summary')}
+              size="sm"
+            >
+              Hide Details
+            </Button>
+            <Button
+              variant={viewMode === 'holes' ? 'default' : 'outline'}
+              onClick={() => setViewMode('holes')}
+              size="sm"
+            >
+              Edit Holes
+            </Button>
           </div>
         </div>
-      )}
 
-      {showScanner && (
-        <ScorecardScanner
-          onImageCapture={handleScorecardCapture}
-          onClose={() => setShowScanner(false)}
-        />
-      )}
+        {viewMode === 'holes' && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-4 gap-2 text-sm font-medium text-gray-600 pb-2 border-b">
+              <div>Hole</div>
+              <div>Par</div>
+              <div>Yardage</div>
+              <div>HCP Index</div>
+            </div>
+            
+            <div className="max-h-60 overflow-y-auto space-y-2">
+              {data.course.holes.map((hole, index) => (
+                <div key={hole.number} className="grid grid-cols-4 gap-2 items-center">
+                  <div className="font-medium">{hole.number}</div>
+                  <Input
+                    type="number"
+                    min="3"
+                    max="6"
+                    value={hole.par}
+                    onChange={(e) => handleHoleChange(index, 'par', e.target.value)}
+                    className="h-8"
+                  />
+                  <Input
+                    type="number"
+                    min="100"
+                    max="800"
+                    value={hole.yardage}
+                    onChange={(e) => handleHoleChange(index, 'yardage', e.target.value)}
+                    className="h-8"
+                  />
+                  <Input
+                    type="number"
+                    min="1"
+                    max="18"
+                    value={hole.handicapIndex}
+                    onChange={(e) => handleHoleChange(index, 'handicapIndex', e.target.value)}
+                    className="h-8"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

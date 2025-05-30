@@ -1,8 +1,9 @@
 
 import React from 'react';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { TournamentData } from '../CreateTournamentModal';
 
 interface WageringStepProps {
@@ -20,7 +21,7 @@ const WageringStep: React.FC<WageringStepProps> = ({ data, onDataChange }) => {
 
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-semibold text-gray-900">Wagering Setup</h3>
+      <h3 className="text-lg font-semibold text-gray-900">Tournament Entry & Payouts</h3>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
@@ -31,9 +32,10 @@ const WageringStep: React.FC<WageringStepProps> = ({ data, onDataChange }) => {
             min="0"
             step="0.01"
             value={data.wagering.entryFee}
-            onChange={(e) => handleWageringChange('entryFee', parseFloat(e.target.value))}
+            onChange={(e) => handleWageringChange('entryFee', parseFloat(e.target.value) || 0)}
             placeholder="0.00"
           />
+          <p className="text-sm text-gray-500">Set to 0 for free tournaments</p>
         </div>
 
         <div className="space-y-2">
@@ -60,23 +62,28 @@ const WageringStep: React.FC<WageringStepProps> = ({ data, onDataChange }) => {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="winner-takes-all">Winner Takes All</SelectItem>
-            <SelectItem value="70-30">70% / 30% Split</SelectItem>
-            <SelectItem value="60-30-10">60% / 30% / 10% Split</SelectItem>
-            <SelectItem value="50-30-20">50% / 30% / 20% Split</SelectItem>
+            <SelectItem value="top-3">Top 3 Places (50%, 30%, 20%)</SelectItem>
+            <SelectItem value="50-30-20">Split: 1st (50%), 2nd (30%), 3rd (20%)</SelectItem>
+            <SelectItem value="60-40">Split: 1st (60%), 2nd (40%)</SelectItem>
             <SelectItem value="equal-split">Equal Split Among Winners</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       {data.wagering.entryFee > 0 && (
-        <div className="bg-emerald-50 p-4 rounded-lg">
-          <h4 className="font-medium text-emerald-900 mb-2">Prize Pool Calculation</h4>
-          <p className="text-sm text-emerald-700">
-            Total Prize Pool: {data.wagering.currency} {(data.wagering.entryFee * data.basicInfo.maxPlayers).toFixed(2)}
-          </p>
-          <p className="text-xs text-emerald-600 mt-1">
-            Based on {data.basicInfo.maxPlayers} maximum players
-          </p>
+        <div className="bg-green-50 p-4 rounded-lg">
+          <h4 className="font-medium text-green-800 mb-2">Prize Pool Summary</h4>
+          <div className="text-sm text-green-700">
+            <p>Total Prize Pool: {data.wagering.currency} {(data.wagering.entryFee * (data.players?.length || 0)).toFixed(2)}</p>
+            <p className="text-xs mt-1">Based on {data.players?.length || 0} current players</p>
+          </div>
+        </div>
+      )}
+
+      {data.wagering.entryFee === 0 && (
+        <div className="bg-blue-50 p-4 rounded-lg">
+          <h4 className="font-medium text-blue-800 mb-2">Free Tournament</h4>
+          <p className="text-sm text-blue-700">This tournament has no entry fee. Players compete for bragging rights!</p>
         </div>
       )}
     </div>
