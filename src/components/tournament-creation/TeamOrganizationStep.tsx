@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { TournamentData } from '../CreateTournamentModal';
 import { Button } from '@/components/ui/button';
@@ -37,8 +36,8 @@ const TeamOrganizationStep: React.FC<TeamOrganizationStepProps> = ({ data, onDat
       id: Date.now().toString(),
       name: newPlayerName,
       email: newPlayerEmail,
-      handicap: newPlayerHandicap ? parseInt(newPlayerHandicap) : undefined,
-      invited: false
+      handicapIndex: newPlayerHandicap ? parseInt(newPlayerHandicap) : 0,
+      status: 'invited' as const
     };
 
     onDataChange('players', [...data.players, newPlayer]);
@@ -59,7 +58,7 @@ const TeamOrganizationStep: React.FC<TeamOrganizationStepProps> = ({ data, onDat
 
   const sendInvitation = (playerId: string) => {
     const updatedPlayers = data.players.map(player =>
-      player.id === playerId ? { ...player, invited: true } : player
+      player.id === playerId ? { ...player, status: 'invited' as const } : player
     );
     onDataChange('players', updatedPlayers);
     // Here you would typically send an actual email invitation
@@ -194,7 +193,7 @@ const TeamOrganizationStep: React.FC<TeamOrganizationStepProps> = ({ data, onDat
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => data.players.forEach(p => !p.invited && sendInvitation(p.id))}
+                  onClick={() => data.players.forEach(p => p.status !== 'invited' && sendInvitation(p.id))}
                 >
                   <Mail className="h-4 w-4 mr-2" />
                   Invite All
@@ -229,12 +228,12 @@ const TeamOrganizationStep: React.FC<TeamOrganizationStepProps> = ({ data, onDat
                   <div className="flex-1">
                     <div className="font-medium">{player.name}</div>
                     <div className="text-sm text-gray-600">{player.email}</div>
-                    {player.handicap && (
-                      <div className="text-sm text-gray-500">Handicap: {player.handicap}</div>
+                    {player.handicapIndex && (
+                      <div className="text-sm text-gray-500">Handicap: {player.handicapIndex}</div>
                     )}
                   </div>
                   <div className="flex items-center space-x-2">
-                    {player.invited ? (
+                    {player.status === 'invited' ? (
                       <Badge variant="secondary" className="bg-green-100 text-green-700">
                         Invited
                       </Badge>
