@@ -30,30 +30,30 @@ const SampleGameCard: React.FC<SampleGameCardProps> = ({
   };
 
   return (
-    <Card className="hover:shadow-lg transition-shadow duration-300 border border-emerald-100">
+    <Card className="hover:shadow-lg transition-shadow duration-300 border-0 rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Icon className="h-5 w-5 text-emerald-600" />
-            <CardTitle className="text-lg">{title}</CardTitle>
+            <CardTitle className="text-lg text-emerald-900">{title}</CardTitle>
           </div>
           <Badge className={difficultyColors[difficulty]}>{difficulty}</Badge>
         </div>
       </CardHeader>
       <CardContent>
-        <p className="text-gray-600 text-sm mb-4">{description}</p>
+        <p className="text-emerald-700 text-sm mb-4">{description}</p>
         <div className="grid grid-cols-3 gap-2 text-xs">
-          <div className="text-center p-2 bg-emerald-50 rounded">
-            <div className="font-semibold text-emerald-700">{gameType}</div>
-            <div className="text-emerald-600">Format</div>
+          <div className="text-center p-2 bg-emerald-200 rounded-xl">
+            <div className="font-semibold text-emerald-800">{gameType}</div>
+            <div className="text-emerald-700">Format</div>
           </div>
-          <div className="text-center p-2 bg-blue-50 rounded">
-            <div className="font-semibold text-blue-700">{players}</div>
-            <div className="text-blue-600">Players</div>
+          <div className="text-center p-2 bg-emerald-200 rounded-xl">
+            <div className="font-semibold text-emerald-800">{players}</div>
+            <div className="text-emerald-700">Players</div>
           </div>
-          <div className="text-center p-2 bg-yellow-50 rounded">
-            <div className="font-semibold text-yellow-700">{prize}</div>
-            <div className="text-yellow-600">Stakes</div>
+          <div className="text-center p-2 bg-emerald-200 rounded-xl">
+            <div className="font-semibold text-emerald-800">{prize}</div>
+            <div className="text-emerald-700">Stakes</div>
           </div>
         </div>
       </CardContent>

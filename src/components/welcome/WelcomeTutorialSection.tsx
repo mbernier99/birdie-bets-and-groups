@@ -16,10 +16,10 @@ const WelcomeTutorialSection: React.FC<WelcomeTutorialSectionProps> = ({
   onViewRules
 }) => {
   return (
-    <div className="space-y-12">
+    <div className="space-y-16 mt-16">
       {/* Getting Started Section */}
       <div>
-        <div className="text-center mb-8">
+        <div className="text-center mb-10">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">Welcome to BetLoopr!</h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Get started with golf tournaments, side bets, and competitive play. Here's everything you need to know.
@@ -43,8 +43,8 @@ const WelcomeTutorialSection: React.FC<WelcomeTutorialSectionProps> = ({
             icon={Gamepad2}
             actionText="Try Quick Play"
             onAction={onPlayNow}
-            gradient="bg-gradient-to-r from-blue-500 to-blue-600"
-            iconColor="bg-blue-500"
+            gradient="bg-gradient-to-r from-emerald-500 to-emerald-600"
+            iconColor="bg-emerald-500"
           />
           
           <TutorialCard
@@ -53,8 +53,8 @@ const WelcomeTutorialSection: React.FC<WelcomeTutorialSectionProps> = ({
             icon={DollarSign}
             actionText="Explore Betting"
             onAction={() => {}}
-            gradient="bg-gradient-to-r from-yellow-500 to-yellow-600"
-            iconColor="bg-yellow-500"
+            gradient="bg-gradient-to-r from-emerald-500 to-emerald-600"
+            iconColor="bg-emerald-500"
           />
           
           <TutorialCard
@@ -63,8 +63,8 @@ const WelcomeTutorialSection: React.FC<WelcomeTutorialSectionProps> = ({
             icon={BookOpen}
             actionText="Learn Rules"
             onAction={onViewRules}
-            gradient="bg-gradient-to-r from-purple-500 to-purple-600"
-            iconColor="bg-purple-500"
+            gradient="bg-gradient-to-r from-emerald-500 to-emerald-600"
+            iconColor="bg-emerald-500"
           />
         </div>
       </div>
