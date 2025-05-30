@@ -1,11 +1,11 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { validateStep } from '../utils/tournamentValidation';
 import BasicInfoStep from './tournament-creation/BasicInfoStep';
 import CourseSetupStep from './tournament-creation/CourseSetupStep';
 import GameTypeStep from './tournament-creation/GameTypeStep';
@@ -77,6 +77,7 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
   console.log('CreateTournamentModal rendered with props:', { isOpen, onClose });
 
   const [currentStep, setCurrentStep] = useState(0);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [tournamentData, setTournamentData] = useState<TournamentData>({
@@ -123,6 +124,22 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
 
   const handleNext = () => {
     console.log('Next button clicked, current step:', currentStep);
+    
+    // Validate current step
+    const validation = validateStep(currentStep, tournamentData);
+    
+    if (!validation.isValid) {
+      setValidationErrors(validation.errors);
+      toast({
+        title: "Please complete required fields",
+        description: validation.errors.join(', '),
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Clear validation errors and proceed
+    setValidationErrors([]);
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     }
@@ -130,6 +147,7 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
 
   const handlePrevious = () => {
     console.log('Previous button clicked, current step:', currentStep);
+    setValidationErrors([]); // Clear errors when going back
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
@@ -173,54 +191,92 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
   const StepProgress = () => (
     <div className="px-4 py-3 border-b bg-gray-50 shrink-0">
       <div className="flex items-center justify-between overflow-x-auto pb-2">
-        {steps.map((step, index) => (
-          <div key={index} className="flex items-center min-w-0 flex-shrink-0">
-            <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium ${
-              index <= currentStep ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-600'
-            }`}>
-              {index + 1}
+        {steps.map((step, index) => {
+          const validation = validateStep(index, tournamentData);
+          const isCompleted = index < currentStep || (index <= currentStep && validation.isValid);
+          
+          return (
+            <div key={index} className="flex items-center min-w-0 flex-shrink-0">
+              <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium ${
+                isCompleted ? 'bg-emerald-600 text-white' : 
+                index === currentStep ? 'bg-blue-600 text-white' :
+                'bg-gray-200 text-gray-600'
+              }`}>
+                {index + 1}
+              </div>
+              <span className={`ml-1 sm:ml-2 text-xs sm:text-sm truncate max-w-16 sm:max-w-none ${
+                isCompleted ? 'text-emerald-600' : 
+                index === currentStep ? 'text-blue-600' :
+                'text-gray-500'
+              }`}>
+                {isMobile ? step.title.split(' ')[0] : step.title}
+              </span>
+              {index < steps.length - 1 && (
+                <div className={`w-2 sm:w-8 h-0.5 mx-1 sm:mx-4 ${
+                  isCompleted ? 'bg-emerald-600' : 'bg-gray-200'
+                }`} />
+              )}
             </div>
-            <span className={`ml-1 sm:ml-2 text-xs sm:text-sm truncate max-w-16 sm:max-w-none ${
-              index <= currentStep ? 'text-emerald-600' : 'text-gray-500'
-            }`}>
-              {isMobile ? step.title.split(' ')[0] : step.title}
-            </span>
-            {index < steps.length - 1 && (
-              <div className={`w-2 sm:w-8 h-0.5 mx-1 sm:mx-4 ${
-                index < currentStep ? 'bg-emerald-600' : 'bg-gray-200'
-              }`} />
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
 
-  const NavigationButtons = () => (
-    <div className="flex justify-between p-4 border-t bg-white shrink-0">
-      <Button
-        variant="outline"
-        onClick={handlePrevious}
-        disabled={currentStep === 0}
-        className="flex items-center space-x-2"
-        size={isMobile ? "sm" : "default"}
-      >
-        <ChevronLeft className="h-4 w-4" />
-        <span>Previous</span>
-      </Button>
+  const NavigationButtons = () => {
+    const currentStepValidation = validateStep(currentStep, tournamentData);
+    const canProceed = currentStepValidation.isValid;
+    
+    return (
+      <div className="p-4 border-t bg-white shrink-0">
+        {/* Validation Errors */}
+        {validationErrors.length > 0 && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-start space-x-2">
+              <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+              <div className="text-sm text-red-700">
+                <div className="font-medium mb-1">Please complete the following:</div>
+                <ul className="list-disc list-inside space-y-1">
+                  {validationErrors.map((error, index) => (
+                    <li key={index}>{error}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        <div className="flex justify-between">
+          <Button
+            variant="outline"
+            onClick={handlePrevious}
+            disabled={currentStep === 0}
+            className="flex items-center space-x-2"
+            size={isMobile ? "sm" : "default"}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            <span>Previous</span>
+          </Button>
 
-      {currentStep < steps.length - 1 && (
-        <Button
-          onClick={handleNext}
-          className="flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700"
-          size={isMobile ? "sm" : "default"}
-        >
-          <span>Next</span>
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-      )}
-    </div>
-  );
+          {currentStep < steps.length - 1 && (
+            <Button
+              onClick={handleNext}
+              disabled={!canProceed}
+              className={`flex items-center space-x-2 ${
+                canProceed 
+                  ? 'bg-emerald-600 hover:bg-emerald-700' 
+                  : 'bg-gray-400 cursor-not-allowed'
+              }`}
+              size={isMobile ? "sm" : "default"}
+            >
+              <span>Next</span>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   if (isMobile) {
     return (

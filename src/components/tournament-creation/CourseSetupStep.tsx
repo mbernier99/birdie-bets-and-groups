@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { AlertCircle } from 'lucide-react';
 import { TournamentData } from '../CreateTournamentModal';
 
 interface CourseSetupStepProps {
@@ -41,6 +42,7 @@ const CourseSetupStep: React.FC<CourseSetupStepProps> = ({ data, onDataChange })
 
   const totalPar = data.course.holes.reduce((sum, hole) => sum + hole.par, 0);
   const totalYardage = data.course.holes.reduce((sum, hole) => sum + hole.yardage, 0);
+  const isComplete = data.course.name.trim();
 
   return (
     <div className="space-y-6">
@@ -49,13 +51,23 @@ const CourseSetupStep: React.FC<CourseSetupStepProps> = ({ data, onDataChange })
       {/* Course Basic Info */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
-          <Label htmlFor="course-name">Course Name</Label>
+          <Label htmlFor="course-name" className="flex items-center space-x-1">
+            <span>Course Name</span>
+            <span className="text-red-500">*</span>
+          </Label>
           <Input
             id="course-name"
             value={data.course.name}
             onChange={(e) => handleCourseChange('name', e.target.value)}
             placeholder="Pine Valley Golf Club"
+            className={`${!data.course.name.trim() ? 'border-red-300 focus:border-red-500' : ''}`}
           />
+          {!data.course.name.trim() && (
+            <p className="text-sm text-red-600 flex items-center space-x-1">
+              <AlertCircle className="h-3 w-3" />
+              <span>Course name is required</span>
+            </p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -187,6 +199,21 @@ const CourseSetupStep: React.FC<CourseSetupStepProps> = ({ data, onDataChange })
             </div>
           </div>
         )}
+      </div>
+
+      <div className={`p-4 rounded-lg border ${isComplete ? 'bg-emerald-50 border-emerald-200' : 'bg-yellow-50 border-yellow-200'}`}>
+        <h4 className={`font-medium mb-2 ${isComplete ? 'text-emerald-900' : 'text-yellow-900'}`}>
+          {isComplete ? 'Course Setup Complete!' : 'Course Name Required'}
+        </h4>
+        <p className={`text-sm mb-3 ${isComplete ? 'text-emerald-700' : 'text-yellow-700'}`}>
+          {isComplete 
+            ? 'Course information has been provided. You can proceed to select the game format.'
+            : 'Please enter a course name to continue to the next step.'
+          }
+        </p>
+        <div className={`text-xs ${isComplete ? 'text-emerald-600' : 'text-yellow-600'}`}>
+          Next: Choose your tournament game type and rules
+        </div>
       </div>
     </div>
   );

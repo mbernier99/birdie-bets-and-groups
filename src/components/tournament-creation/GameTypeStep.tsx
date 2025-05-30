@@ -1,9 +1,9 @@
-
 import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
+import { AlertCircle } from 'lucide-react';
 import { TournamentData } from '../CreateTournamentModal';
 
 interface GameTypeStepProps {
@@ -37,6 +37,7 @@ const GameTypeStep: React.FC<GameTypeStepProps> = ({ data, onDataChange }) => {
   };
 
   const selectedGameType = gameTypes.find(gt => gt.id === data.gameType.type);
+  const isComplete = !!data.gameType.type;
 
   const renderGameSpecificRules = () => {
     switch (data.gameType.type) {
@@ -170,9 +171,12 @@ const GameTypeStep: React.FC<GameTypeStepProps> = ({ data, onDataChange }) => {
       <h3 className="text-lg font-semibold text-gray-900">Game Format</h3>
       
       <div className="space-y-2">
-        <Label>Select Game Type</Label>
+        <Label className="flex items-center space-x-1">
+          <span>Select Game Type</span>
+          <span className="text-red-500">*</span>
+        </Label>
         <Select value={data.gameType.type} onValueChange={(value) => handleGameTypeChange('type', value)}>
-          <SelectTrigger>
+          <SelectTrigger className={`${!data.gameType.type ? 'border-red-300' : ''}`}>
             <SelectValue placeholder="Choose your tournament format" />
           </SelectTrigger>
           <SelectContent>
@@ -191,6 +195,12 @@ const GameTypeStep: React.FC<GameTypeStepProps> = ({ data, onDataChange }) => {
             ))}
           </SelectContent>
         </Select>
+        {!data.gameType.type && (
+          <p className="text-sm text-red-600 flex items-center space-x-1">
+            <AlertCircle className="h-3 w-3" />
+            <span>Game type selection is required</span>
+          </p>
+        )}
       </div>
 
       {selectedGameType && (
@@ -211,6 +221,21 @@ const GameTypeStep: React.FC<GameTypeStepProps> = ({ data, onDataChange }) => {
           {renderGameSpecificRules()}
         </div>
       )}
+
+      <div className={`p-4 rounded-lg border ${isComplete ? 'bg-emerald-50 border-emerald-200' : 'bg-yellow-50 border-yellow-200'}`}>
+        <h4 className={`font-medium mb-2 ${isComplete ? 'text-emerald-900' : 'text-yellow-900'}`}>
+          {isComplete ? 'Game Format Selected!' : 'Select Game Format'}
+        </h4>
+        <p className={`text-sm mb-3 ${isComplete ? 'text-emerald-700' : 'text-yellow-700'}`}>
+          {isComplete 
+            ? 'Your game format has been selected. You can proceed to organize players and teams.'
+            : 'Please select a game format to continue to the next step.'
+          }
+        </p>
+        <div className={`text-xs ${isComplete ? 'text-emerald-600' : 'text-yellow-600'}`}>
+          Next: Organize players and teams for your tournament
+        </div>
+      </div>
     </div>
   );
 };
