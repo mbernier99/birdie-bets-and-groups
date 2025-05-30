@@ -23,6 +23,7 @@ const Tournaments = () => {
 
   const mockTournaments = [
     {
+      id: 'tournament-1',
       title: 'Sunday Singles Championship',
       players: 12,
       maxPlayers: 16,
@@ -32,6 +33,7 @@ const Tournaments = () => {
       status: 'live' as const
     },
     {
+      id: 'tournament-2',
       title: 'Weekend Warriors Best Ball',
       players: 8,
       maxPlayers: 12,
@@ -41,6 +43,7 @@ const Tournaments = () => {
       status: 'upcoming' as const
     },
     {
+      id: 'tournament-3',
       title: 'Wolf Pack Challenge',
       players: 4,
       maxPlayers: 4,
@@ -50,6 +53,7 @@ const Tournaments = () => {
       status: 'completed' as const
     },
     {
+      id: 'tournament-4',
       title: 'Nassau Night',
       players: 6,
       maxPlayers: 8,
@@ -107,8 +111,8 @@ const Tournaments = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {filteredTournaments.map((tournament, index) => (
-            <TournamentCard key={index} {...tournament} />
+          {filteredTournaments.map((tournament) => (
+            <TournamentCard key={tournament.id} {...tournament} />
           ))}
         </div>
 

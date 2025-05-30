@@ -77,7 +77,8 @@ const TournamentLobby = () => {
         return {
           ...player,
           courseHandicap,
-          strokesPerHole
+          strokesPerHole,
+          status: player.status as 'invited' | 'accepted' | 'ready' // Explicit type assertion
         };
       }) || [];
 
@@ -143,12 +144,12 @@ const TournamentLobby = () => {
     }
     
     // Add the player (in real app, would send invitation email)
-    const newPlayer = {
+    const newPlayer: TournamentPlayer = {
       id: `player-${Date.now()}`,
       name: inviteEmail.split('@')[0], // Use first part of email as name
       email: inviteEmail,
       handicapIndex: 0, // Default handicap
-      status: 'invited' as const
+      status: 'invited' as const // Explicit type assertion
     };
     
     // Update local state
@@ -183,7 +184,7 @@ const TournamentLobby = () => {
     // Update the player status
     const updatedPlayers = tournament.players.map(player => {
       if (player.id === playerId) {
-        const newStatus = player.status === 'ready' ? 'accepted' : 'ready';
+        const newStatus: 'accepted' | 'ready' = player.status === 'ready' ? 'accepted' : 'ready';
         return { ...player, status: newStatus };
       }
       return player;
