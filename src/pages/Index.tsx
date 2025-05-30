@@ -6,18 +6,29 @@ import TournamentCard from '../components/TournamentCard';
 import Leaderboard from '../components/Leaderboard';
 import CreateTournamentModal from '../components/CreateTournamentModal';
 import PlayNowModal from '../components/PlayNowModal';
+import WelcomeTutorialSection from '../components/welcome/WelcomeTutorialSection';
+import EnhancedStatsSection from '../components/stats/EnhancedStatsSection';
+import { isFirstTimeUser, detectUserActivity } from '../utils/userDetection';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('tournaments');
   const [isCreateTournamentModalOpen, setIsCreateTournamentModalOpen] = useState(false);
   const [isPlayNowModalOpen, setIsPlayNowModalOpen] = useState(false);
   const [savedTournaments, setSavedTournaments] = useState([]);
+  const [isNewUser, setIsNewUser] = useState(true);
+  const [userActivity, setUserActivity] = useState({ hasPlayedTournaments: false, totalTournaments: 0, totalWinnings: 0, lastActivity: null });
   const navigate = useNavigate();
 
   useEffect(() => {
     // Load saved tournaments from localStorage
     const tournaments = JSON.parse(localStorage.getItem('savedTournaments') || '[]');
     setSavedTournaments(tournaments);
+    
+    // Check if user is new
+    const newUser = isFirstTimeUser();
+    const activity = detectUserActivity();
+    setIsNewUser(newUser);
+    setUserActivity(activity);
   }, [isCreateTournamentModalOpen]); // Refresh when modal closes
 
   const handleCreateTournament = () => {
@@ -42,6 +53,10 @@ const Index = () => {
     console.log('Starting tournament:', tournamentId);
     // Navigate directly to tournament lobby instead of updating status
     navigate(`/tournament/${tournamentId}/lobby`);
+  };
+
+  const handleViewRules = () => {
+    navigate('/rules');
   };
 
   const upcomingTournaments = [
@@ -246,35 +261,16 @@ const Index = () => {
           </div>
         )}
 
-        {/* Total Winnings Display */}
-        <div className="mt-12 bg-gradient-to-r from-green-600 to-emerald-600 rounded-3xl p-12 text-white shadow-2xl">
-          <div className="text-center">
-            <div className="flex justify-center mb-6">
-              <div className="p-4 bg-white/20 rounded-full">
-                <DollarSign className="h-12 w-12 text-white" />
-              </div>
-            </div>
-            <h3 className="text-2xl font-semibold text-green-100 mb-2">Total Winnings</h3>
-            <div className="text-7xl md:text-8xl font-bold mb-4">$234</div>
-            <p className="text-xl text-green-100 mb-6">
-              Across 28 rounds and 5 tournaments
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
-              <div className="bg-white/10 rounded-lg p-4">
-                <div className="text-2xl font-bold">3</div>
-                <div className="text-green-100">Active Tournaments</div>
-              </div>
-              <div className="bg-white/10 rounded-lg p-4">
-                <div className="text-2xl font-bold">12</div>
-                <div className="text-green-100">Private Tournaments</div>
-              </div>
-              <div className="bg-white/10 rounded-lg p-4">
-                <div className="text-2xl font-bold">28</div>
-                <div className="text-green-100">Rounds Played</div>
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* Conditional Content Based on User Type */}
+        {isNewUser ? (
+          <WelcomeTutorialSection 
+            onCreateTournament={handleCreateTournament}
+            onPlayNow={handlePlayNow}
+            onViewRules={handleViewRules}
+          />
+        ) : (
+          <EnhancedStatsSection userActivity={userActivity} />
+        )}
 
         {/* Quick Actions */}
         <div className="mt-12 bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-2xl p-8 text-white">
