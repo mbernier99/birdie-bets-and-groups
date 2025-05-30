@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Trophy, Target, TrendingUp, Plus, Calendar, DollarSign, Play } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -77,36 +78,38 @@ const Index = () => {
       <Navbar />
       
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-emerald-600/60 to-emerald-800/60 text-white relative overflow-hidden">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative z-10">
-          <div className="text-center">
-            {/* Large background logo */}
-            <div className="absolute inset-0 flex items-center justify-center opacity-30">
-              <img 
-                src="/lovable-uploads/fc297cde-a9d2-4fb0-acf6-d28aacc56592.png" 
-                alt="Suntory Cup Background" 
-                className="h-96 w-96 object-contain"
-              />
-            </div>
-            
-            <p className="text-xl md:text-2xl text-emerald-100 mb-8 max-w-3xl mx-auto relative z-20">
-              Create private tournaments, track bets, and compete with friends in the ultimate golf wagering platform
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-20">
-              <button 
-                onClick={handleCreateTournament}
-                className="bg-white text-emerald-600 px-8 py-4 rounded-lg font-semibold hover:bg-emerald-50 transition-colors flex items-center justify-center space-x-2"
-              >
-                <Plus className="h-5 w-5" />
-                <span>Create Tournament</span>
-              </button>
-              <button 
-                onClick={handlePlayNow}
-                className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-emerald-600 transition-colors flex items-center justify-center space-x-2"
-              >
-                <Play className="h-5 w-5" />
-                <span>Play Now</span>
-              </button>
+      <div className="mx-4 sm:mx-6 lg:mx-8 mt-8">
+        <div className="bg-gradient-to-r from-emerald-700/70 to-emerald-800/70 text-white relative overflow-hidden rounded-3xl">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative z-10">
+            <div className="text-center">
+              {/* Large background logo */}
+              <div className="absolute inset-0 flex items-center justify-center opacity-30">
+                <img 
+                  src="/lovable-uploads/fc297cde-a9d2-4fb0-acf6-d28aacc56592.png" 
+                  alt="Suntory Cup Background" 
+                  className="h-96 w-96 object-contain"
+                />
+              </div>
+              
+              <p className="text-xl md:text-2xl text-emerald-100 mb-8 max-w-3xl mx-auto relative z-20">
+                Create private tournaments, track bets, and compete with friends in the ultimate golf wagering platform
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-20">
+                <button 
+                  onClick={handleCreateTournament}
+                  className="bg-white text-emerald-600 px-8 py-4 rounded-lg font-semibold hover:bg-emerald-50 transition-colors flex items-center justify-center space-x-2"
+                >
+                  <Plus className="h-5 w-5" />
+                  <span>Create Tournament</span>
+                </button>
+                <button 
+                  onClick={handlePlayNow}
+                  className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-emerald-600 transition-colors flex items-center justify-center space-x-2"
+                >
+                  <Play className="h-5 w-5" />
+                  <span>Play Now</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
