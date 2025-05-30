@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Trophy, Users, Target, User, BookOpen } from 'lucide-react';
+import { Trophy, Target, User, BookOpen } from 'lucide-react';
 import MobileHeader from './MobileHeader';
 import MobileNavigation from './MobileNavigation';
 
@@ -49,18 +50,6 @@ const Navbar = () => {
               >
                 <Trophy className="h-4 w-4" />
                 <span>Tournaments</span>
-              </Link>
-              
-              <Link 
-                to="/groups" 
-                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive('/groups') 
-                    ? 'text-emerald-600 bg-emerald-50' 
-                    : 'text-gray-600 hover:text-emerald-600 hover:bg-emerald-50'
-                }`}
-              >
-                <Users className="h-4 w-4" />
-                <span>Groups</span>
               </Link>
 
               <Link 

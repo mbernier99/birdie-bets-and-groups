@@ -1,15 +1,17 @@
 
 import React, { useState, useEffect } from 'react';
-import { Trophy, Users, Target, TrendingUp, Plus, Calendar, DollarSign, Play } from 'lucide-react';
+import { Trophy, Target, TrendingUp, Plus, Calendar, DollarSign, Play } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import TournamentCard from '../components/TournamentCard';
 import Leaderboard from '../components/Leaderboard';
 import CreateTournamentModal from '../components/CreateTournamentModal';
+import PlayNowModal from '../components/PlayNowModal';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('tournaments');
   const [isCreateTournamentModalOpen, setIsCreateTournamentModalOpen] = useState(false);
+  const [isPlayNowModalOpen, setIsPlayNowModalOpen] = useState(false);
   const [savedTournaments, setSavedTournaments] = useState([]);
   const navigate = useNavigate();
 
@@ -24,13 +26,17 @@ const Index = () => {
     setIsCreateTournamentModalOpen(true);
   };
 
-  const handleJoinGroup = () => {
-    console.log('Join Group button clicked on homepage');
-    navigate('/groups');
+  const handlePlayNow = () => {
+    console.log('Play Now button clicked on homepage');
+    setIsPlayNowModalOpen(true);
   };
 
   const handleCloseCreateTournamentModal = () => {
     setIsCreateTournamentModalOpen(false);
+  };
+
+  const handleClosePlayNowModal = () => {
+    setIsPlayNowModalOpen(false);
   };
 
   const handleStartTournament = (tournamentId: string) => {
@@ -86,7 +92,7 @@ const Index = () => {
               <span className="text-emerald-200">The Suntory Cup</span>
             </h1>
             <p className="text-xl md:text-2xl text-emerald-100 mb-8 max-w-3xl mx-auto relative z-20">
-              Manage tournaments, track bets, and compete with friends in the ultimate golf wagering platform
+              Create private tournaments, track bets, and compete with friends in the ultimate golf wagering platform
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-20">
               <button 
@@ -97,11 +103,11 @@ const Index = () => {
                 <span>Create Tournament</span>
               </button>
               <button 
-                onClick={handleJoinGroup}
+                onClick={handlePlayNow}
                 className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-emerald-600 transition-colors flex items-center justify-center space-x-2"
               >
-                <Users className="h-5 w-5" />
-                <span>Join Group</span>
+                <Play className="h-5 w-5" />
+                <span>Play Now</span>
               </button>
             </div>
           </div>
@@ -214,8 +220,8 @@ const Index = () => {
                 <div className="text-green-100">Active Tournaments</div>
               </div>
               <div className="bg-white/10 rounded-lg p-4">
-                <div className="text-2xl font-bold">5</div>
-                <div className="text-green-100">Groups Joined</div>
+                <div className="text-2xl font-bold">12</div>
+                <div className="text-green-100">Private Tournaments</div>
               </div>
               <div className="bg-white/10 rounded-lg p-4">
                 <div className="text-2xl font-bold">28</div>
@@ -230,7 +236,7 @@ const Index = () => {
           <div className="text-center">
             <h3 className="text-2xl font-bold mb-4">Ready to Get Started?</h3>
             <p className="text-emerald-100 mb-6 max-w-2xl mx-auto">
-              Create your first tournament, join a group, or start tracking your games with our comprehensive golf management tools.
+              Create your first private tournament or join a live game with our comprehensive golf management tools.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button 
@@ -240,10 +246,10 @@ const Index = () => {
                 Create Tournament
               </button>
               <button 
-                onClick={handleJoinGroup}
+                onClick={handlePlayNow}
                 className="border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-emerald-600 transition-colors"
               >
-                Browse Groups
+                Play Now
               </button>
             </div>
           </div>
@@ -254,6 +260,12 @@ const Index = () => {
       <CreateTournamentModal 
         isOpen={isCreateTournamentModalOpen} 
         onClose={handleCloseCreateTournamentModal} 
+      />
+
+      {/* Play Now Modal */}
+      <PlayNowModal 
+        isOpen={isPlayNowModalOpen} 
+        onClose={handleClosePlayNowModal} 
       />
     </div>
   );

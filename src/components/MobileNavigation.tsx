@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Trophy, Users, Target, User, Home } from 'lucide-react';
+import { Trophy, Target, User, Home } from 'lucide-react';
 
 const MobileNavigation = () => {
   const location = useLocation();
@@ -12,7 +12,6 @@ const MobileNavigation = () => {
     { path: '/', icon: Home, label: 'Home' },
     { path: '/tournaments', icon: Trophy, label: 'Tournaments' },
     { path: '/tracker', icon: Target, label: 'Tracker' },
-    { path: '/groups', icon: Users, label: 'Groups' },
     { path: '/profile', icon: User, label: 'Profile' },
   ];
   
