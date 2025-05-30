@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -8,6 +7,9 @@ import { formatMatchScore } from '@/utils/matchPlayCalculations';
 import { TeamMatch, createTeamMatch, updateTeamMatch, getMatchDisplayStatus } from '@/utils/teamMatchPlayCalculations';
 import { useToast } from '@/hooks/use-toast';
 import Navbar from '@/components/Navbar';
+import TeamLeaderboard from '@/components/TeamLeaderboard';
+import MatchPlayView from '@/components/MatchPlayView';
+import PressManager from '@/components/press/PressManager';
 
 interface PlayerScore {
   playerId: string;
@@ -210,20 +212,17 @@ const LiveTournament = () => {
         const team1Players = players.filter(p => p.teamId === team1Id);
         const team2Players = players.filter(p => p.teamId === team2Id);
         
-        // Calculate team scores for this hole
-        const team1Score = Math.min(
-          ...team1Players.map(p => {
-            const score = p.scores.find(s => s.hole === holeNumber);
-            return score ? score.net : 999; // Large number if no score
-          })
-        );
+        // Calculate team scores for this hole (best ball)
+        const team1HoleScores = team1Players
+          .map(p => p.scores.find(s => s.hole === holeNumber)?.net)
+          .filter(score => score !== undefined) as number[];
         
-        const team2Score = Math.min(
-          ...team2Players.map(p => {
-            const score = p.scores.find(s => s.hole === holeNumber);
-            return score ? score.net : 999; // Large number if no score
-          })
-        );
+        const team2HoleScores = team2Players
+          .map(p => p.scores.find(s => s.hole === holeNumber)?.net)
+          .filter(score => score !== undefined) as number[];
+        
+        const team1Score = team1HoleScores.length > 0 ? Math.min(...team1HoleScores) : 999;
+        const team2Score = team2HoleScores.length > 0 ? Math.min(...team2HoleScores) : 999;
         
         // Update match status
         const updatedStatus = updateTeamMatch(
@@ -259,6 +258,63 @@ const LiveTournament = () => {
   const currentHoleData = tournament?.course?.holes?.[currentHole - 1];
   const selectedPlayerData = players.find(p => p.id === selectedPlayer);
 
+  const getPlayerTeam = (playerId: string) => {
+    const player = players.find(p => p.id === playerId);
+    if (!player?.teamId) return null;
+    return teams.find(t => t.id === player.teamId);
+  };
+
+  // Prepare team leaderboard data
+  const teamLeaderboardData = teams.map((team, index) => {
+    const teamPlayers = players.filter(p => p.teamId === team.id);
+    const match = matches.find(m => m.team1Id === team.id || m.team2Id === team.id);
+    const isTeam1 = match?.team1Id === team.id;
+    const teamMatchScore = isTeam1 ? match?.status.team1Score : match?.status.team2Score;
+    
+    // Calculate team best ball total
+    const teamTotalScore = Array.from({ length: 18 }, (_, i) => i + 1)
+      .map(hole => {
+        const holeScores = teamPlayers
+          .map(p => p.scores.find(s => s.hole === hole)?.net)
+          .filter(score => score !== undefined) as number[];
+        return holeScores.length > 0 ? Math.min(...holeScores) : null;
+      })
+      .filter(score => score !== null)
+      .reduce((sum, score) => sum + (score as number), 0);
+    
+    return {
+      teamId: team.id,
+      teamName: team.name,
+      player1LastName: teamPlayers[0]?.name.split(' ').pop() || 'Player1',
+      player2LastName: teamPlayers[1]?.name.split(' ').pop() || 'Player2',
+      teamScore: teamTotalScore,
+      matchStatus: teamMatchScore?.matchStatus || 'active' as const,
+      currentHole: Math.min(...teamPlayers.map(p => p.currentHole)),
+      holesWon: teamMatchScore?.holesWon || 0,
+      holesLost: teamMatchScore?.holesLost || 0,
+      holesHalved: teamMatchScore?.holesHalved || 0,
+      marginOfVictory: teamMatchScore?.marginOfVictory
+    };
+  }).sort((a, b) => a.teamScore - b.teamScore);
+
+  const handleTeamPress = (teamId: string) => {
+    // This would open press dialog for team
+    console.log('Press team:', teamId);
+    toast({
+      title: "Team Press",
+      description: "Team press functionality would open here.",
+    });
+  };
+
+  const handlePlayerPress = (playerId: string) => {
+    // This would open press dialog for individual player
+    console.log('Press player:', playerId);
+    toast({
+      title: "Player Press",
+      description: "Player press functionality would open here.",
+    });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 pb-20 md:pb-0">
@@ -289,17 +345,11 @@ const LiveTournament = () => {
     );
   }
 
-  const getPlayerTeam = (playerId: string) => {
-    const player = players.find(p => p.id === playerId);
-    if (!player?.teamId) return null;
-    return teams.find(t => t.id === player.teamId);
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 pb-20 md:pb-0">
       <Navbar />
       
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Header */}
         <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 mb-6">
           <div className="flex items-center justify-between mb-4">
@@ -320,6 +370,9 @@ const LiveTournament = () => {
           <div className="text-center">
             <h1 className="text-xl font-bold text-gray-900">{tournament.basicInfo.name}</h1>
             <p className="text-gray-600">{tournament.course.name}</p>
+            {tournament.gameType?.type && (
+              <p className="text-sm text-emerald-600 font-medium mt-1">{tournament.gameType.type}</p>
+            )}
           </div>
         </div>
 
@@ -349,7 +402,7 @@ const LiveTournament = () => {
             >
               <div className="flex items-center justify-center space-x-2">
                 <Medal className="h-4 w-4" />
-                <span>Matches</span>
+                <span>Live Matches</span>
               </div>
             </button>
             <button
@@ -362,7 +415,7 @@ const LiveTournament = () => {
             >
               <div className="flex items-center justify-center space-x-2">
                 <Trophy className="h-4 w-4" />
-                <span>Leaderboard</span>
+                <span>Team Leaderboard</span>
               </div>
             </button>
           </div>
@@ -510,130 +563,38 @@ const LiveTournament = () => {
 
           {activeTab === 'matches' && (
             <div className="p-6">
-              {matches.length > 0 ? (
-                <div className="space-y-4">
-                  {matches.map((match) => {
-                    const team1 = teams.find(t => t.id === match.team1Id);
-                    const team2 = teams.find(t => t.id === match.team2Id);
-                    
-                    // Get players from each team
-                    const team1Players = players.filter(p => team1?.players.includes(p.id));
-                    const team2Players = players.filter(p => team2?.players.includes(p.id));
-                    
-                    return (
-                      <div key={match.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                        <h3 className="font-medium text-lg mb-3">
-                          Match {match.id.replace('match-', '')}
-                        </h3>
-                        
-                        <div className="flex justify-between items-center mb-4 bg-white p-3 rounded-lg border border-gray-100">
-                          <div className="font-medium">Match Status:</div>
-                          <div className="font-bold text-emerald-600">
-                            {getMatchDisplayStatus(match.status)}
-                          </div>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {/* Team 1 */}
-                          <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-100">
-                            <h4 className="font-medium text-emerald-800 mb-2">{team1?.name || 'Team 1'}</h4>
-                            <div className="space-y-2">
-                              {team1Players.map(player => (
-                                <div key={player.id} className="flex justify-between text-sm">
-                                  <div>{player.name}</div>
-                                  <div className="font-medium text-emerald-700">
-                                    {player.scores.length > 0 ? 
-                                      `${player.totalGross} gross / ${player.totalNet} net` : 
-                                      'No scores yet'}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                            <div className="mt-3 pt-2 border-t border-emerald-200 text-sm">
-                              <div className="flex justify-between">
-                                <span>Holes Won:</span>
-                                <span className="font-bold">{match.status.team1Score.holesWon}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span>Holes Lost:</span>
-                                <span className="font-bold">{match.status.team1Score.holesLost}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span>Holes Halved:</span>
-                                <span className="font-bold">{match.status.team1Score.holesHalved}</span>
-                              </div>
-                            </div>
-                          </div>
-                          
-                          {/* Team 2 */}
-                          <div className="bg-blue-50 rounded-lg p-3 border border-blue-100">
-                            <h4 className="font-medium text-blue-800 mb-2">{team2?.name || 'Team 2'}</h4>
-                            <div className="space-y-2">
-                              {team2Players.map(player => (
-                                <div key={player.id} className="flex justify-between text-sm">
-                                  <div>{player.name}</div>
-                                  <div className="font-medium text-blue-700">
-                                    {player.scores.length > 0 ? 
-                                      `${player.totalGross} gross / ${player.totalNet} net` : 
-                                      'No scores yet'}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                            <div className="mt-3 pt-2 border-t border-blue-200 text-sm">
-                              <div className="flex justify-between">
-                                <span>Holes Won:</span>
-                                <span className="font-bold">{match.status.team2Score.holesWon}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span>Holes Lost:</span>
-                                <span className="font-bold">{match.status.team2Score.holesLost}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span>Holes Halved:</span>
-                                <span className="font-bold">{match.status.team2Score.holesHalved}</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                  <MatchPlayView
+                    matches={matches}
+                    teams={teams}
+                    players={players}
+                    onTeamPress={handleTeamPress}
+                    onPlayerPress={handlePlayerPress}
+                  />
                 </div>
-              ) : (
-                <div className="text-center py-8">
-                  <Medal className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                  <h3 className="text-lg font-medium text-gray-800 mb-2">No Matches Set Up</h3>
-                  <p className="text-gray-600">This tournament doesn't have any team matches configured.</p>
+                <div>
+                  <PressManager
+                    tournamentId={tournament?.id || ''}
+                    currentUserId={players[0]?.id || 'current-user'}
+                    currentHole={currentHole}
+                    players={players.map(p => ({
+                      id: p.id,
+                      name: p.name,
+                      currentHole: p.currentHole
+                    }))}
+                  />
                 </div>
-              )}
+              </div>
             </div>
           )}
 
           {activeTab === 'leaderboard' && (
             <div className="p-6">
-              <div className="space-y-4">
-                {players.map((player, index) => (
-                  <div key={player.id} className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-emerald-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                        {player.position}
-                      </div>
-                      <div>
-                        <div className="font-medium text-gray-900">{player.name}</div>
-                        <div className="text-sm text-gray-600">
-                          {getPlayerTeam(player.id) ? `${getPlayerTeam(player.id)?.name}, ` : ''}
-                          Hole {player.currentHole - 1}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-bold text-gray-900">{player.totalNet > 0 ? `+${player.totalNet}` : player.totalNet || 'E'}</div>
-                      <div className="text-xs text-gray-600">Gross: {player.totalGross || 'E'}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <TeamLeaderboard
+                teams={teamLeaderboardData}
+                onTeamPress={handleTeamPress}
+              />
             </div>
           )}
         </div>
