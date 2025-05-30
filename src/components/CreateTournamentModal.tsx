@@ -1,8 +1,11 @@
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
 import BasicInfoStep from './tournament-creation/BasicInfoStep';
 import CourseSetupStep from './tournament-creation/CourseSetupStep';
 import GameTypeStep from './tournament-creation/GameTypeStep';
@@ -75,6 +78,7 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
 
   const [currentStep, setCurrentStep] = useState(0);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [tournamentData, setTournamentData] = useState<TournamentData>({
     basicInfo: {
       name: '',
@@ -166,44 +170,101 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
 
   console.log('Rendering modal with isOpen:', isOpen);
 
+  const StepProgress = () => (
+    <div className="px-4 py-3 border-b bg-gray-50 shrink-0">
+      <div className="flex items-center justify-between overflow-x-auto pb-2">
+        {steps.map((step, index) => (
+          <div key={index} className="flex items-center min-w-0 flex-shrink-0">
+            <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium ${
+              index <= currentStep ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-600'
+            }`}>
+              {index + 1}
+            </div>
+            <span className={`ml-1 sm:ml-2 text-xs sm:text-sm truncate max-w-16 sm:max-w-none ${
+              index <= currentStep ? 'text-emerald-600' : 'text-gray-500'
+            }`}>
+              {isMobile ? step.title.split(' ')[0] : step.title}
+            </span>
+            {index < steps.length - 1 && (
+              <div className={`w-2 sm:w-8 h-0.5 mx-1 sm:mx-4 ${
+                index < currentStep ? 'bg-emerald-600' : 'bg-gray-200'
+              }`} />
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const NavigationButtons = () => (
+    <div className="flex justify-between p-4 border-t bg-white shrink-0">
+      <Button
+        variant="outline"
+        onClick={handlePrevious}
+        disabled={currentStep === 0}
+        className="flex items-center space-x-2"
+        size={isMobile ? "sm" : "default"}
+      >
+        <ChevronLeft className="h-4 w-4" />
+        <span>Previous</span>
+      </Button>
+
+      {currentStep < steps.length - 1 && (
+        <Button
+          onClick={handleNext}
+          className="flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700"
+          size={isMobile ? "sm" : "default"}
+        >
+          <span>Next</span>
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      )}
+    </div>
+  );
+
+  if (isMobile) {
+    return (
+      <Sheet open={isOpen} onOpenChange={onClose}>
+        <SheetContent side="bottom" className="h-[95vh] p-0 overflow-hidden">
+          <div className="flex flex-col h-full">
+            <SheetHeader className="px-4 py-3 border-b shrink-0">
+              <SheetTitle className="text-lg">Create Tournament</SheetTitle>
+              <SheetDescription className="text-sm">
+                Set up a new golf tournament with customizable rules and teams.
+              </SheetDescription>
+            </SheetHeader>
+
+            <StepProgress />
+
+            <div className="flex-1 overflow-y-auto px-4 py-4">
+              <CurrentStepComponent
+                data={tournamentData}
+                onDataChange={handleStepData}
+                {...(currentStep === steps.length - 1 && { onSaveTournament: handleSaveTournament })}
+              />
+            </div>
+
+            <NavigationButtons />
+          </div>
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-4xl h-[95vh] max-h-[95vh] p-0 overflow-hidden">
+      <DialogContent className="w-[95vw] max-w-5xl h-[90vh] max-h-[90vh] p-0 overflow-hidden">
         <div className="flex flex-col h-full">
-          <DialogHeader className="px-4 py-3 border-b shrink-0">
-            <DialogTitle className="text-lg">Create Tournament</DialogTitle>
+          <DialogHeader className="px-6 py-4 border-b shrink-0">
+            <DialogTitle className="text-xl">Create Tournament</DialogTitle>
             <DialogDescription className="text-sm">
               Set up a new golf tournament with customizable rules, teams, and wagering options.
             </DialogDescription>
           </DialogHeader>
 
-          {/* Step Progress - Mobile Optimized */}
-          <div className="px-4 py-3 border-b bg-gray-50 shrink-0">
-            <div className="flex items-center justify-between overflow-x-auto pb-2">
-              {steps.map((step, index) => (
-                <div key={index} className="flex items-center min-w-0 flex-shrink-0">
-                  <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium ${
-                    index <= currentStep ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-600'
-                  }`}>
-                    {index + 1}
-                  </div>
-                  <span className={`ml-1 sm:ml-2 text-xs sm:text-sm truncate max-w-20 sm:max-w-none ${
-                    index <= currentStep ? 'text-emerald-600' : 'text-gray-500'
-                  }`}>
-                    {step.title}
-                  </span>
-                  {index < steps.length - 1 && (
-                    <div className={`w-4 sm:w-8 h-0.5 mx-2 sm:mx-4 ${
-                      index < currentStep ? 'bg-emerald-600' : 'bg-gray-200'
-                    }`} />
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
+          <StepProgress />
 
-          {/* Step Content - Scrollable */}
-          <div className="flex-1 overflow-y-auto px-4 py-4">
+          <div className="flex-1 overflow-y-auto px-6 py-6">
             <CurrentStepComponent
               data={tournamentData}
               onDataChange={handleStepData}
@@ -211,31 +272,7 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
             />
           </div>
 
-          {/* Navigation - Fixed at bottom */}
-          <div className="flex justify-between p-4 border-t bg-white shrink-0">
-            <Button
-              variant="outline"
-              onClick={handlePrevious}
-              disabled={currentStep === 0}
-              className="flex items-center space-x-1 sm:space-x-2"
-              size="sm"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">Previous</span>
-            </Button>
-
-            {currentStep < steps.length - 1 && (
-              <Button
-                onClick={handleNext}
-                className="flex items-center space-x-1 sm:space-x-2 bg-emerald-600 hover:bg-emerald-700"
-                size="sm"
-              >
-                <span className="hidden sm:inline">Next</span>
-                <span className="sm:hidden">Next</span>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
+          <NavigationButtons />
         </div>
       </DialogContent>
     </Dialog>
