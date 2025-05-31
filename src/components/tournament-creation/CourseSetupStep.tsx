@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,7 +12,7 @@ interface CourseSetupStepProps {
 }
 
 const CourseSetupStep: React.FC<CourseSetupStepProps> = ({ data, onDataChange }) => {
-  const [viewMode, setViewMode] = useState<'summary' | 'holes'>('summary');
+  const [viewMode, setViewMode] = useState<'summary' | 'scorecard'>('summary');
 
   const handleCourseChange = (field: string, value: any) => {
     onDataChange('course', {
@@ -123,29 +122,29 @@ const CourseSetupStep: React.FC<CourseSetupStepProps> = ({ data, onDataChange })
         </div>
       </div>
 
-      {/* Optional Hole Details */}
+      {/* Enter Scorecard Section */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h4 className="font-medium text-gray-900">Hole Details (Optional)</h4>
+          <h4 className="font-medium text-gray-900">Enter Scorecard (Optional)</h4>
           <div className="flex space-x-2">
             <Button
               variant={viewMode === 'summary' ? 'default' : 'outline'}
               onClick={() => setViewMode('summary')}
               size="sm"
             >
-              Hide Details
+              Hide Scorecard
             </Button>
             <Button
-              variant={viewMode === 'holes' ? 'default' : 'outline'}
-              onClick={() => setViewMode('holes')}
+              variant={viewMode === 'scorecard' ? 'default' : 'outline'}
+              onClick={() => setViewMode('scorecard')}
               size="sm"
             >
-              Edit Holes
+              Edit Scorecard
             </Button>
           </div>
         </div>
 
-        {viewMode === 'holes' && (
+        {viewMode === 'scorecard' && (
           <div className="space-y-4">
             <div className="grid grid-cols-4 gap-2 text-sm font-medium text-gray-600 pb-2 border-b">
               <div>Hole</div>
@@ -189,6 +188,7 @@ const CourseSetupStep: React.FC<CourseSetupStepProps> = ({ data, onDataChange })
         )}
       </div>
 
+      {/* Completion Status */}
       <div className={`p-4 rounded-lg border ${isComplete ? 'bg-emerald-50 border-emerald-200' : 'bg-yellow-50 border-yellow-200'}`}>
         <h4 className={`font-medium mb-2 ${isComplete ? 'text-emerald-900' : 'text-yellow-900'}`}>
           {isComplete ? 'Course Setup Complete!' : 'Course Name Required'}
