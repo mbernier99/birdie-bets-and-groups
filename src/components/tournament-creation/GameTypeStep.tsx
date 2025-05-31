@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -61,7 +62,7 @@ const GameTypeStep: React.FC<GameTypeStepProps> = ({ data, onDataChange }) => {
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="handicap-allowed-bbmp"
-                checked={data.gameType.rules.handicapAllowed || true}
+                checked={data.gameType.rules.handicapAllowed || false}
                 onCheckedChange={(checked) => handleRuleChange('handicapAllowed', checked)}
               />
               <Label htmlFor="handicap-allowed-bbmp">Allow Handicaps</Label>
@@ -80,14 +81,6 @@ const GameTypeStep: React.FC<GameTypeStepProps> = ({ data, onDataChange }) => {
                   <SelectItem value="18">18 Holes</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="allow-concede"
-                checked={data.gameType.rules.allowConcede || true}
-                onCheckedChange={(checked) => handleRuleChange('allowConcede', checked)}
-              />
-              <Label htmlFor="allow-concede">Allow Conceding Holes/Putts</Label>
             </div>
             <div className="bg-blue-50 p-4 rounded-lg">
               <h5 className="font-medium text-blue-900 mb-2">Team Format Rules</h5>
