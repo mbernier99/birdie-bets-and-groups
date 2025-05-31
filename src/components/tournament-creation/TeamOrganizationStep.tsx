@@ -1,10 +1,7 @@
 
 import React, { useEffect } from 'react';
-import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { TournamentData } from '../CreateTournamentModal';
-import { PlayerForm } from './PlayerForm';
-import { BulkPlayerImport } from './BulkPlayerImport';
 import { PlayerCard } from './PlayerCard';
 import { TeamCard } from './TeamCard';
 import { UnassignedPlayerCard } from './UnassignedPlayerCard';
@@ -61,14 +58,6 @@ const TeamOrganizationStep: React.FC<TeamOrganizationStepProps> = ({ data, onDat
       autoGenerateTeams();
     }
   }, [data.players, data.gameType.type]);
-
-  const addPlayer = (newPlayer: any) => {
-    onDataChange('players', [...data.players, newPlayer]);
-  };
-
-  const addPlayers = (newPlayers: any[]) => {
-    onDataChange('players', [...data.players, ...newPlayers]);
-  };
 
   const removePlayer = (playerId: string) => {
     onDataChange('players', data.players.filter(p => p.id !== playerId));
@@ -169,35 +158,33 @@ const TeamOrganizationStep: React.FC<TeamOrganizationStepProps> = ({ data, onDat
     return { current: currentCount, max: playersPerTeam, isFull: currentCount >= playersPerTeam };
   };
 
+  const getStepTitle = () => {
+    if (isTeamBased) return 'Team Organization';
+    return 'Player Management';
+  };
+
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-semibold text-gray-900">Players & Teams</h3>
-
-      {/* Player Management */}
-      <div className="space-y-4">
-        <h4 className="font-medium text-gray-900">Invite Players</h4>
-        
-        {/* Single Player Add */}
-        <PlayerForm onAddPlayer={addPlayer} />
-
-        {/* Bulk Email Import */}
-        <BulkPlayerImport onAddPlayers={addPlayers} />
-      </div>
+      <h3 className="text-lg font-semibold text-gray-900">{getStepTitle()}</h3>
 
       {/* Players List */}
       <div className="space-y-4">
         <h4 className="font-medium text-gray-900">Players ({data.players.length})</h4>
-        <div className="space-y-2">
-          {data.players.map(player => (
-            <PlayerCard
-              key={player.id}
-              player={player}
-              onUpdateStatus={updatePlayerStatus}
-              onUpdateName={updatePlayerName}
-              onRemovePlayer={removePlayer}
-            />
-          ))}
-        </div>
+        {data.players.length === 0 ? (
+          <div className="text-gray-500 text-sm">No players added yet. Add players in the previous step.</div>
+        ) : (
+          <div className="space-y-2">
+            {data.players.map(player => (
+              <PlayerCard
+                key={player.id}
+                player={player}
+                onUpdateStatus={updatePlayerStatus}
+                onUpdateName={updatePlayerName}
+                onRemovePlayer={removePlayer}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Team Organization */}
