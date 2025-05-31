@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -27,15 +28,6 @@ const CourseSetupStep: React.FC<CourseSetupStepProps> = ({ data, onDataChange })
       ...updatedHoles[holeIndex],
       [field]: field === 'par' || field === 'yardage' || field === 'handicapIndex' ? parseInt(value) : value
     };
-    handleCourseChange('holes', updatedHoles);
-  };
-
-  const fillStandardPars = () => {
-    const standardPars = [4, 4, 3, 5, 4, 4, 3, 4, 5, 4, 3, 4, 5, 4, 4, 3, 5, 4];
-    const updatedHoles = data.course.holes.map((hole, index) => ({
-      ...hole,
-      par: standardPars[index]
-    }));
     handleCourseChange('holes', updatedHoles);
   };
 
@@ -128,11 +120,6 @@ const CourseSetupStep: React.FC<CourseSetupStepProps> = ({ data, onDataChange })
             <div className="text-2xl font-bold text-emerald-600">{data.course.slope}</div>
             <div className="text-sm text-gray-600">Slope Rating</div>
           </div>
-        </div>
-        <div className="flex justify-center mt-4">
-          <Button onClick={fillStandardPars} variant="outline">
-            Fill Standard Pars
-          </Button>
         </div>
       </div>
 

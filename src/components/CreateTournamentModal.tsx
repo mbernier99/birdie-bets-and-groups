@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
@@ -76,6 +77,10 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  
+  // Standard par pattern for 18 holes (par 72)
+  const standardPars = [4, 4, 3, 5, 4, 4, 3, 4, 5, 4, 3, 4, 5, 4, 4, 3, 5, 4];
+  
   const [tournamentData, setTournamentData] = useState<TournamentData>({
     basicInfo: {
       name: '',
@@ -86,7 +91,7 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
       teeBox: 'white',
       holes: Array.from({ length: 18 }, (_, i) => ({
         number: i + 1,
-        par: 4,
+        par: standardPars[i],
         yardage: 400,
         handicapIndex: i + 1
       })),
