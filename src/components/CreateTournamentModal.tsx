@@ -64,13 +64,12 @@ export interface TournamentData {
     payoutStructure: string;
     currency: string;
   };
-  sideBets: Array<{
-    id: string;
-    type: string;
-    amount: number;
-    holes: number[];
-    participants: string[];
-  }>;
+  sideBets: {
+    enabled: boolean;
+    minBet: number;
+    maxBet: number;
+    currency: string;
+  };
 }
 
 const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, onClose }) => {
@@ -109,7 +108,12 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
       payoutStructure: 'winner-takes-all',
       currency: 'USD'
     },
-    sideBets: []
+    sideBets: {
+      enabled: false,
+      minBet: 5,
+      maxBet: 50,
+      currency: 'USD'
+    }
   });
 
   const steps = [
