@@ -76,7 +76,7 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ data, onDataChange }) => 
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="max-players">Maximum Players</Label>
+            <Label htmlFor="max-players">Number of Players</Label>
             <Input
               id="max-players"
               type="number"
