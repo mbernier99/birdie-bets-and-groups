@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Save, Search } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import { TournamentData } from '../CreateTournamentModal';
+import { saveCourseToDatabase, searchCoursesByName, SavedCourse } from '@/utils/courseDatabase';
 
 interface CourseSetupStepProps {
   data: TournamentData;
@@ -13,6 +16,21 @@ interface CourseSetupStepProps {
 
 const CourseSetupStep: React.FC<CourseSetupStepProps> = ({ data, onDataChange }) => {
   const [viewMode, setViewMode] = useState<'summary' | 'scorecard'>('summary');
+  const [courseSearchResults, setCourseSearchResults] = useState<SavedCourse[]>([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const { toast } = useToast();
+
+  // Search for courses when course name changes
+  useEffect(() => {
+    if (data.course.name.trim().length >= 2) {
+      const results = searchCoursesByName(data.course.name);
+      setCourseSearchResults(results);
+      setShowSearchResults(results.length > 0);
+    } else {
+      setCourseSearchResults([]);
+      setShowSearchResults(false);
+    }
+  }, [data.course.name]);
 
   const handleCourseChange = (field: string, value: any) => {
     onDataChange('course', {
@@ -30,6 +48,47 @@ const CourseSetupStep: React.FC<CourseSetupStepProps> = ({ data, onDataChange })
     handleCourseChange('holes', updatedHoles);
   };
 
+  const loadCourseData = (savedCourse: SavedCourse) => {
+    onDataChange('course', {
+      name: savedCourse.name,
+      teeBox: savedCourse.teeBox,
+      rating: savedCourse.rating,
+      slope: savedCourse.slope,
+      holes: [...savedCourse.holes]
+    });
+    setShowSearchResults(false);
+    toast({
+      title: "Course Data Loaded",
+      description: `Successfully loaded data for ${savedCourse.name}`,
+    });
+  };
+
+  const saveCourseData = () => {
+    if (!data.course.name.trim()) {
+      toast({
+        title: "Cannot Save Course",
+        description: "Please enter a course name first",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const courseToSave: SavedCourse = {
+      name: data.course.name,
+      teeBox: data.course.teeBox,
+      rating: data.course.rating,
+      slope: data.course.slope,
+      holes: [...data.course.holes],
+      lastUsed: new Date().toISOString()
+    };
+
+    saveCourseToDatabase(courseToSave);
+    toast({
+      title: "Course Saved",
+      description: `${data.course.name} has been saved to the course database`,
+    });
+  };
+
   const totalPar = data.course.holes.reduce((sum, hole) => sum + hole.par, 0);
   const totalYardage = data.course.holes.reduce((sum, hole) => sum + hole.yardage, 0);
   const isComplete = data.course.name.trim();
@@ -40,18 +99,46 @@ const CourseSetupStep: React.FC<CourseSetupStepProps> = ({ data, onDataChange })
       
       {/* Course Basic Info */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
-        <div className="space-y-2">
+        <div className="space-y-2 relative">
           <Label htmlFor="course-name" className="flex items-center space-x-1">
             <span>Course Name</span>
             <span className="text-red-500">*</span>
           </Label>
-          <Input
-            id="course-name"
-            value={data.course.name}
-            onChange={(e) => handleCourseChange('name', e.target.value)}
-            placeholder="Pine Valley Golf Club"
-            className={`${!data.course.name.trim() ? 'border-red-300 focus:border-red-500' : ''}`}
-          />
+          <div className="relative">
+            <Input
+              id="course-name"
+              value={data.course.name}
+              onChange={(e) => handleCourseChange('name', e.target.value)}
+              placeholder="Pine Valley Golf Club"
+              className={`${!data.course.name.trim() ? 'border-red-300 focus:border-red-500' : ''}`}
+            />
+            {data.course.name.trim().length >= 2 && (
+              <Search className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
+            )}
+          </div>
+          
+          {/* Course Search Results */}
+          {showSearchResults && (
+            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
+              <div className="p-2 text-xs text-gray-500 border-b">
+                Found {courseSearchResults.length} matching course{courseSearchResults.length !== 1 ? 's' : ''}
+              </div>
+              {courseSearchResults.map((course, index) => (
+                <button
+                  key={index}
+                  onClick={() => loadCourseData(course)}
+                  className="w-full text-left p-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                >
+                  <div className="font-medium text-sm">{course.name}</div>
+                  <div className="text-xs text-gray-500">
+                    {course.teeBox} tees • Par {course.holes.reduce((sum, hole) => sum + hole.par, 0)} • 
+                    Rating {course.rating} • Slope {course.slope}
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+          
           {!data.course.name.trim() && (
             <p className="text-sm text-red-600 flex items-center space-x-1">
               <AlertCircle className="h-3 w-3" />
@@ -99,6 +186,21 @@ const CourseSetupStep: React.FC<CourseSetupStepProps> = ({ data, onDataChange })
           />
         </div>
       </div>
+
+      {/* Save Course Button */}
+      {isComplete && (
+        <div className="flex justify-end">
+          <Button
+            onClick={saveCourseData}
+            variant="outline"
+            size="sm"
+            className="flex items-center space-x-2"
+          >
+            <Save className="h-4 w-4" />
+            <span>Save Course to Database</span>
+          </Button>
+        </div>
+      )}
 
       {/* Course Summary */}
       <div className="bg-gray-50 p-4 rounded-lg">
