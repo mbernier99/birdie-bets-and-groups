@@ -61,10 +61,8 @@ const WageringStep: React.FC<WageringStepProps> = ({ data, onDataChange }) => {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="winner-takes-all">Winner Takes All</SelectItem>
-            <SelectItem value="top-3">Top 3 Places (50%, 30%, 20%)</SelectItem>
-            <SelectItem value="50-30-20">Split: 1st (50%), 2nd (30%), 3rd (20%)</SelectItem>
-            <SelectItem value="60-40">Split: 1st (60%), 2nd (40%)</SelectItem>
+            <SelectItem value="winner-takes-all">Winner Takes: 1st (80%), 2nd (20%)</SelectItem>
+            <SelectItem value="balanced">Balanced: 1st (50%), 2nd (30%), 3rd (20%)</SelectItem>
             <SelectItem value="equal-split">Equal Split Among Winners</SelectItem>
           </SelectContent>
         </Select>
