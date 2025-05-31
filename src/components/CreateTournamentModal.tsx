@@ -66,9 +66,6 @@ export interface TournamentData {
   };
   sideBets: {
     enabled: boolean;
-    minBet: number;
-    maxBet: number;
-    currency: string;
   };
 }
 
@@ -109,10 +106,7 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
       currency: 'USD'
     },
     sideBets: {
-      enabled: false,
-      minBet: 5,
-      maxBet: 50,
-      currency: 'USD'
+      enabled: false
     }
   });
 
