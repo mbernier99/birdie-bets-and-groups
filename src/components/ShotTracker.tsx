@@ -1,8 +1,10 @@
 
 import React, { useState } from 'react';
-import { Navigation, Target, Camera } from 'lucide-react';
+import { Navigation, Target, Camera, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { useMobileFeatures, LocationData } from '../hooks/useMobileFeatures';
+import { getCoursePosition } from '../utils/gpsCalculations';
 import LocationStatus from './LocationStatus';
 
 interface ShotTrackerProps {
@@ -24,6 +26,22 @@ const ShotTracker: React.FC<ShotTrackerProps> = ({
   const [watchId, setWatchId] = useState<number | null>(null);
   const { watchLocation } = useMobileFeatures();
 
+  // Mock course data - would come from props in real implementation
+  const courseHoles = Array.from({ length: 18 }, (_, i) => ({
+    number: i + 1,
+    par: i % 3 === 0 ? 5 : i % 3 === 1 ? 4 : 3,
+    yardage: 350 + (i * 10),
+    handicapIndex: i + 1,
+    teeLocation: {
+      latitude: 40.7128 + (i * 0.001),
+      longitude: -74.0060 + (i * 0.001)
+    },
+    pinLocation: {
+      latitude: 40.7128 + (i * 0.001) + 0.0005,
+      longitude: -74.0060 + (i * 0.001) + 0.0005
+    }
+  }));
+
   const startTracking = () => {
     if (!isLocationEnabled) return;
 
@@ -44,6 +62,18 @@ const ShotTracker: React.FC<ShotTrackerProps> = ({
         navigator.geolocation.clearWatch(watchId);
       }
       setWatchId(null);
+    }
+  };
+
+  const currentPosition = location ? getCoursePosition(location, currentHole, courseHoles) : null;
+
+  const getPositionColor = (area: string) => {
+    switch (area) {
+      case 'tee': return 'bg-blue-100 text-blue-800';
+      case 'fairway': return 'bg-green-100 text-green-800';
+      case 'rough': return 'bg-yellow-100 text-yellow-800';
+      case 'green': return 'bg-emerald-100 text-emerald-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -69,6 +99,29 @@ const ShotTracker: React.FC<ShotTrackerProps> = ({
 
       <LocationStatus isLocationEnabled={isLocationEnabled} location={location} />
 
+      {/* Enhanced Position Display */}
+      {currentPosition && (
+        <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center space-x-2">
+              <MapPin className="h-4 w-4 text-gray-600" />
+              <span className="font-medium">Course Position</span>
+            </div>
+            <Badge className={getPositionColor(currentPosition.area)}>
+              {currentPosition.area.charAt(0).toUpperCase() + currentPosition.area.slice(1)}
+            </Badge>
+          </div>
+          <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
+            {currentPosition.distanceToTee && (
+              <div>Tee: {currentPosition.distanceToTee.toFixed(0)}m</div>
+            )}
+            {currentPosition.distanceToPin && (
+              <div>Pin: {currentPosition.distanceToPin.toFixed(0)}m</div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Tracking Controls */}
       <div className="grid grid-cols-2 gap-4 mb-6">
         <Button
@@ -90,15 +143,25 @@ const ShotTracker: React.FC<ShotTrackerProps> = ({
         </Button>
       </div>
 
-      {/* Photo Shot */}
-      <Button
-        onClick={onRecordShotWithPhoto}
-        disabled={!isLocationEnabled}
-        className="w-full mb-6 bg-blue-600 hover:bg-blue-700"
-      >
-        <Camera className="h-4 w-4 mr-2" />
-        Record Shot with Photo
-      </Button>
+      {/* Enhanced Shot Recording */}
+      <div className="space-y-2">
+        <Button
+          onClick={onRecordShotWithPhoto}
+          disabled={!isLocationEnabled}
+          className="w-full bg-blue-600 hover:bg-blue-700"
+        >
+          <Camera className="h-4 w-4 mr-2" />
+          Record Shot with Photo
+        </Button>
+
+        {location && currentPosition && (
+          <div className="text-xs text-gray-500 text-center">
+            GPS Accuracy: ±{location.accuracy.toFixed(0)}m
+            {currentPosition.area === 'tee' && ' • Perfect for drive bets'}
+            {currentPosition.area === 'green' && ' • Great for putting challenges'}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
