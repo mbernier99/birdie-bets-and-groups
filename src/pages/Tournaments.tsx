@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Calendar, Users, DollarSign, Play } from 'lucide-react';
+import { Plus, Calendar, Users, DollarSign, Play, Trophy } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import MobileNavigation from '../components/MobileNavigation';
 import MobileHeader from '../components/MobileHeader';
