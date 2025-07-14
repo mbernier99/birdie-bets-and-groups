@@ -20,8 +20,27 @@ const LiveTournament = () => {
       team1Id: 'team-1',
       team2Id: 'team-2',
       status: {
-        team1Score: { holesWon: 2, holesLost: 1, holesHalved: 0 },
-        team2Score: { holesWon: 1, holesLost: 2, holesHalved: 0 }
+        matchId: 'match-1',
+        team1Id: 'team-1',
+        team2Id: 'team-2',
+        team1Players: ['player-1', 'player-2'],
+        team2Players: ['player-3', 'player-4'],
+        team1Score: {
+          teamId: 'team-1',
+          holesWon: 2,
+          holesLost: 1,
+          holesHalved: 0,
+          matchStatus: 'active' as const
+        },
+        team2Score: {
+          teamId: 'team-2',
+          holesWon: 1,
+          holesLost: 2,
+          holesHalved: 0,
+          matchStatus: 'active' as const
+        },
+        currentHole: 4,
+        status: 'active' as const
       }
     }
   ];
@@ -218,7 +237,7 @@ const LiveTournament = () => {
               )}
               {tournament.gameType.type?.includes('Team') && (
                 <button
-                  onClick={() => setActiveTab('teams')}
+                  onClick={()={() => setActiveTab('teams')}
                   className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                     activeTab === 'teams'
                       ? 'border-emerald-500 text-emerald-600'
