@@ -1,19 +1,27 @@
-import React, { useState } from 'react';
-import { Plus, Calendar, Filter } from 'lucide-react';
-import Navbar from '../components/Navbar';
+
+import React, { useState, useEffect } from 'react';
+import { Plus, Calendar, Users, DollarSign, Play } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import MobileNavigation from '../components/MobileNavigation';
+import MobileHeader from '../components/MobileHeader';
 import TournamentCard from '../components/TournamentCard';
 import CreateTournamentModal from '../components/CreateTournamentModal';
 
 const Tournaments = () => {
-  const [filterStatus, setFilterStatus] = useState('all');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [savedTournaments, setSavedTournaments] = useState([]);
+  const navigate = useNavigate();
 
-  console.log('Tournaments component rendered, modal state:', isCreateModalOpen);
+  useEffect(() => {
+    // Load saved tournaments from localStorage
+    const tournaments = JSON.parse(localStorage.getItem('savedTournaments') || '[]');
+    setSavedTournaments(tournaments);
+    console.log('Tournaments component rendered, modal state:', isCreateModalOpen);
+  }, [isCreateModalOpen]); // Refresh when modal closes
 
   const handleCreateTournament = () => {
-    console.log('Create tournament button clicked!');
+    console.log('Create Tournament button clicked');
     setIsCreateModalOpen(true);
-    console.log('Modal state set to true');
   };
 
   const handleCloseModal = () => {
@@ -21,9 +29,15 @@ const Tournaments = () => {
     setIsCreateModalOpen(false);
   };
 
-  const mockTournaments = [
+  const handleStartTournament = (tournamentId: string) => {
+    console.log('Starting tournament:', tournamentId);
+    navigate(`/tournament/${tournamentId}/lobby`);
+  };
+
+  // Demo tournaments
+  const demoTournaments = [
     {
-      id: 'tournament-1',
+      id: 'demo-1',
       title: 'Sunday Singles Championship',
       players: 12,
       maxPlayers: 16,
@@ -33,7 +47,7 @@ const Tournaments = () => {
       status: 'live' as const
     },
     {
-      id: 'tournament-2',
+      id: 'demo-2',
       title: 'Weekend Warriors Best Ball',
       players: 8,
       maxPlayers: 12,
@@ -43,89 +57,105 @@ const Tournaments = () => {
       status: 'upcoming' as const
     },
     {
-      id: 'tournament-3',
-      title: 'Wolf Pack Challenge',
-      players: 4,
-      maxPlayers: 4,
-      gameType: 'Wolf',
-      prize: '$100 Pool',
-      date: 'Yesterday',
-      status: 'completed' as const
-    },
-    {
-      id: 'tournament-4',
-      title: 'Nassau Night',
+      id: 'demo-3',
+      title: 'Monthly Stroke Play',
       players: 6,
       maxPlayers: 8,
-      gameType: 'Nassau',
+      gameType: 'Stroke Play',
       prize: '$120 Pool',
-      date: 'Friday 4:00 PM',
+      date: 'Next Week',
       status: 'upcoming' as const
     }
   ];
 
-  const filteredTournaments = filterStatus === 'all' 
-    ? mockTournaments 
-    : mockTournaments.filter(t => t.status === filterStatus);
+  // Combine saved and demo tournaments
+  const allTournaments = [...savedTournaments, ...demoTournaments];
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
-      <Navbar />
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 pb-20 md:pb-0">
+      <MobileHeader />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 space-y-4 sm:space-y-0">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Tournaments</h1>
-            <p className="text-gray-600 mt-1 sm:mt-2 text-sm sm:text-base">Join or create golf tournaments with your groups</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Tournaments</h1>
+            <p className="text-gray-600">Create and manage your golf tournaments</p>
           </div>
-          <button 
+          <button
             onClick={handleCreateTournament}
-            className="w-full sm:w-auto bg-emerald-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-emerald-700 transition-colors flex items-center justify-center space-x-2"
+            className="mt-4 sm:mt-0 bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 transition-colors flex items-center space-x-2"
           >
-            <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span className="text-sm sm:text-base">Create Tournament</span>
+            <Plus className="h-5 w-5" />
+            <span>Create Tournament</span>
           </button>
         </div>
 
-        <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
-          <div className="flex items-center space-x-2">
-            <Filter className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500" />
-            <span className="text-sm text-gray-700">Filter by status:</span>
+        {/* Saved Tournaments Section */}
+        {savedTournaments.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Your Tournaments</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {savedTournaments.map((tournament: any) => (
+                <TournamentCard 
+                  key={tournament.id}
+                  id={tournament.id}
+                  title={tournament.basicInfo.name}
+                  players={tournament.players.length}
+                  maxPlayers={tournament.basicInfo.maxPlayers}
+                  gameType={tournament.gameType.type || 'Custom Game'}
+                  prize={tournament.wagering.entryFee > 0 ? 
+                    `${tournament.wagering.currency}${tournament.wagering.entryFee * tournament.basicInfo.maxPlayers} Pool` : 
+                    'No Entry Fee'}
+                  date={tournament.createdAt ? new Date(tournament.createdAt).toLocaleDateString() : 'Today'}
+                  status={tournament.status}
+                  onAction={() => handleStartTournament(tournament.id)}
+                />
+              ))}
+            </div>
           </div>
-          
-          <div className="flex flex-wrap gap-2">
-            {['all', 'live', 'upcoming', 'completed'].map((status) => (
-              <button
-                key={status}
-                onClick={() => setFilterStatus(status)}
-                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
-                  filterStatus === status
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-white text-gray-600 hover:bg-emerald-50 border border-gray-200'
-                }`}
-              >
-                {status.charAt(0).toUpperCase() + status.slice(1)}
-              </button>
+        )}
+
+        {/* Demo Tournaments Section */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            {savedTournaments.length > 0 ? 'Public Tournaments' : 'Available Tournaments'}
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {demoTournaments.map((tournament) => (
+              <TournamentCard 
+                key={tournament.id}
+                id={tournament.id}
+                title={tournament.title}
+                players={tournament.players}
+                maxPlayers={tournament.maxPlayers}
+                gameType={tournament.gameType}
+                prize={tournament.prize}
+                date={tournament.date}
+                status={tournament.status}
+                onAction={() => {
+                  if (tournament.status === 'live') {
+                    navigate(`/tournament/${tournament.id}/live`);
+                  } else {
+                    navigate(`/tournament/${tournament.id}/lobby`);
+                  }
+                }}
+              />
             ))}
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {filteredTournaments.map((tournament) => (
-            <TournamentCard key={tournament.id} {...tournament} />
-          ))}
-        </div>
-
-        {filteredTournaments.length === 0 && (
-          <div className="text-center py-8 sm:py-12">
-            <Calendar className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-3 sm:mb-4" />
-            <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">No tournaments found</h3>
-            <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">No tournaments match your current filter.</p>
+        {/* Empty State */}
+        {allTournaments.length === 0 && (
+          <div className="text-center py-12">
+            <Trophy className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">No Tournaments Yet</h3>
+            <p className="text-gray-600 mb-6">Create your first tournament to get started</p>
             <button
-              onClick={() => setFilterStatus('all')}
-              className="text-emerald-600 hover:text-emerald-700 font-medium text-sm sm:text-base"
+              onClick={handleCreateTournament}
+              className="bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 transition-colors"
             >
-              Show all tournaments
+              Create Your First Tournament
             </button>
           </div>
         )}
@@ -135,6 +165,8 @@ const Tournaments = () => {
         isOpen={isCreateModalOpen} 
         onClose={handleCloseModal} 
       />
+      
+      <MobileNavigation />
     </div>
   );
 };
