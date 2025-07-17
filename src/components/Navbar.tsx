@@ -1,12 +1,15 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Trophy, Target, User, BookOpen } from 'lucide-react';
+import { Trophy, Target, User, BookOpen, LogOut } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
 import MobileHeader from './MobileHeader';
 import MobileNavigation from './MobileNavigation';
 
 const Navbar = () => {
   const location = useLocation();
+  const { user, signOut } = useAuth();
   
   const isActive = (path: string) => location.pathname === path;
   
@@ -65,14 +68,35 @@ const Navbar = () => {
               </Link>
             </div>
             
-            <div className="flex items-center">
-              <Link 
-                to="/profile"
-                className="flex items-center space-x-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
-              >
-                <User className="h-4 w-4" />
-                <span>Profile</span>
-              </Link>
+            <div className="flex items-center space-x-4">
+              {user ? (
+                <>
+                  <Link 
+                    to="/profile"
+                    className="flex items-center space-x-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
+                  >
+                    <User className="h-4 w-4" />
+                    <span>Profile</span>
+                  </Link>
+                  <Button
+                    onClick={() => signOut()}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center space-x-2"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span>Logout</span>
+                  </Button>
+                </>
+              ) : (
+                <Link 
+                  to="/auth"
+                  className="flex items-center space-x-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
+                >
+                  <User className="h-4 w-4" />
+                  <span>Sign In</span>
+                </Link>
+              )}
             </div>
           </div>
         </div>

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, Target, TrendingUp, Plus, Calendar, DollarSign, Play } from 'lucide-react';
+import { Trophy, Target, TrendingUp, Plus, Calendar, DollarSign, Play, LogIn } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
 import Navbar from '../components/Navbar';
 import TournamentCard from '../components/TournamentCard';
 import Leaderboard from '../components/Leaderboard';
@@ -17,6 +19,7 @@ const Index = () => {
   const [savedTournaments, setSavedTournaments] = useState([]);
   const [isNewUser, setIsNewUser] = useState(true);
   const [userActivity, setUserActivity] = useState({ hasPlayedTournaments: false, totalTournaments: 0, totalWinnings: 0, lastActivity: null });
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -113,20 +116,32 @@ const Index = () => {
                 create tournaments, manage games, bets and side wagers -- clever, competitive, live and a bit cheeky :)
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-20">
-                <button 
-                  onClick={handleCreateTournament}
-                  className="bg-white text-emerald-600 px-8 py-4 rounded-lg font-semibold hover:bg-emerald-50 transition-colors flex items-center justify-center space-x-2"
-                >
-                  <Plus className="h-5 w-5" />
-                  <span>Create Tournament</span>
-                </button>
-                <button 
-                  onClick={handlePlayNow}
-                  className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-emerald-600 transition-colors flex items-center justify-center space-x-2"
-                >
-                  <Play className="h-5 w-5" />
-                  <span>Play Now</span>
-                </button>
+                {user ? (
+                  <>
+                    <button 
+                      onClick={handleCreateTournament}
+                      className="bg-white text-emerald-600 px-8 py-4 rounded-lg font-semibold hover:bg-emerald-50 transition-colors flex items-center justify-center space-x-2"
+                    >
+                      <Plus className="h-5 w-5" />
+                      <span>Create Tournament</span>
+                    </button>
+                    <button 
+                      onClick={handlePlayNow}
+                      className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-emerald-600 transition-colors flex items-center justify-center space-x-2"
+                    >
+                      <Play className="h-5 w-5" />
+                      <span>Play Now</span>
+                    </button>
+                  </>
+                ) : (
+                  <Button 
+                    onClick={() => navigate('/auth')}
+                    className="bg-white text-emerald-600 hover:bg-emerald-50 px-8 py-4 text-lg h-auto"
+                  >
+                    <LogIn className="h-5 w-5 mr-2" />
+                    Sign In to Get Started
+                  </Button>
+                )}
               </div>
             </div>
           </div>
