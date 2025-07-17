@@ -16,7 +16,8 @@ import {
   Clock,
   AlertCircle
 } from 'lucide-react';
-import { useMobileFeatures, LocationData } from '@/hooks/useMobileFeatures';
+import { useOptimizedGPS, LocationData } from '@/hooks/useOptimizedGPS';
+import { useMobileFeatures } from '@/hooks/useMobileFeatures';
 import { Shot } from '@/hooks/useGolfRound';
 import { calculateDistance } from '@/utils/gpsCalculations';
 
@@ -81,7 +82,11 @@ const EnhancedShotTracker: React.FC<EnhancedShotTrackerProps> = ({
   const [endLocation, setEndLocation] = useState<LocationData | null>(null);
   const [calculatedDistance, setCalculatedDistance] = useState<number | null>(null);
   
-  const { getCurrentLocation, takePhoto, isLocationEnabled } = useMobileFeatures();
+  const { getCurrentLocation, isLocationEnabled } = useOptimizedGPS({ 
+    accuracy: 'high', 
+    mode: 'tracking' 
+  });
+  const { takePhoto } = useMobileFeatures();
   
   const currentHoleShots = shots.filter(shot => shot.hole_number === currentHole);
   const nextShotNumber = currentHoleShots.length + 1;

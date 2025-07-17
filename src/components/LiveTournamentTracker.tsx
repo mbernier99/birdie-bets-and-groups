@@ -7,7 +7,7 @@ import { MapPin, Target, Trophy, Bell, AlertCircle } from 'lucide-react';
 import { useTournaments } from '@/hooks/useTournaments';
 import { useTournamentParticipants } from '@/hooks/useTournamentParticipants';
 import { usePress } from '@/hooks/usePress';
-import { useMobileFeatures } from '@/hooks/useMobileFeatures';
+import { useOptimizedGPS } from '@/hooks/useOptimizedGPS';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import PressManager from './press/PressManager';
@@ -27,7 +27,10 @@ const LiveTournamentTracker: React.FC = () => {
   const { tournaments, loading: tournamentsLoading } = useTournaments();
   const { participants, loading: participantsLoading } = useTournamentParticipants(id);
   const { pressBets, createPressBet, loading: pressLoading } = usePress(id);
-  const { location, isLocationEnabled, getCurrentLocation, watchLocation } = useMobileFeatures();
+  const { location, isLocationEnabled, getCurrentLocation } = useOptimizedGPS({ 
+    accuracy: 'medium', 
+    mode: 'betting' 
+  });
   
   const tournament = tournaments.find(t => t.id === id);
   

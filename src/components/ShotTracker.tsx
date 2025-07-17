@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { Navigation, Target, Camera, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useMobileFeatures, LocationData } from '../hooks/useMobileFeatures';
+import { useOptimizedGPS, LocationData } from '../hooks/useOptimizedGPS';
 import { getCoursePosition } from '../utils/gpsCalculations';
 import LocationStatus from './LocationStatus';
 
@@ -19,12 +18,14 @@ const ShotTracker: React.FC<ShotTrackerProps> = ({
   currentHole,
   onRecordShot,
   onRecordShotWithPhoto,
-  isLocationEnabled,
-  location
+  isLocationEnabled: propIsLocationEnabled,
+  location: propLocation
 }) => {
   const [isTracking, setIsTracking] = useState(false);
-  const [watchId, setWatchId] = useState<number | null>(null);
-  const { watchLocation } = useMobileFeatures();
+  const { location: gpsLocation, isLocationEnabled } = useOptimizedGPS({ 
+    accuracy: 'medium', 
+    mode: isTracking ? 'tracking' : 'idle'
+  });
 
   // Mock course data - would come from props in real implementation
   const courseHoles = Array.from({ length: 18 }, (_, i) => ({
@@ -43,29 +44,16 @@ const ShotTracker: React.FC<ShotTrackerProps> = ({
   }));
 
   const startTracking = () => {
-    if (!isLocationEnabled) return;
-
     setIsTracking(true);
-    const id = watchLocation((location: LocationData) => {
-      console.log('Location updated:', location);
-    });
-    
-    if (id && typeof id === 'number') {
-      setWatchId(id);
-    }
   };
 
   const stopTracking = () => {
     setIsTracking(false);
-    if (watchId) {
-      if (navigator.geolocation) {
-        navigator.geolocation.clearWatch(watchId);
-      }
-      setWatchId(null);
-    }
   };
 
-  const currentPosition = location ? getCoursePosition(location, currentHole, courseHoles) : null;
+  // Get current position for display
+  const currentLocation = gpsLocation || propLocation;
+  const currentPosition = currentLocation ? getCoursePosition(currentLocation, currentHole, courseHoles) : null;
 
   const getPositionColor = (area: string) => {
     switch (area) {
@@ -76,6 +64,8 @@ const ShotTracker: React.FC<ShotTrackerProps> = ({
       default: return 'bg-gray-100 text-gray-800';
     }
   };
+
+  const locationEnabled = isLocationEnabled || propIsLocationEnabled;
 
   return (
     <div>
@@ -97,7 +87,7 @@ const ShotTracker: React.FC<ShotTrackerProps> = ({
         </div>
       </div>
 
-      <LocationStatus isLocationEnabled={isLocationEnabled} location={location} />
+      <LocationStatus isLocationEnabled={locationEnabled} location={currentLocation} />
 
       {/* Enhanced Position Display */}
       {currentPosition && (
@@ -126,7 +116,7 @@ const ShotTracker: React.FC<ShotTrackerProps> = ({
       <div className="grid grid-cols-2 gap-4 mb-6">
         <Button
           onClick={isTracking ? stopTracking : startTracking}
-          disabled={!isLocationEnabled}
+          disabled={!locationEnabled}
           className={`${isTracking ? 'bg-red-600 hover:bg-red-700' : 'bg-emerald-600 hover:bg-emerald-700'}`}
         >
           <Navigation className="h-4 w-4 mr-2" />
@@ -135,7 +125,7 @@ const ShotTracker: React.FC<ShotTrackerProps> = ({
 
         <Button
           onClick={onRecordShot}
-          disabled={!isLocationEnabled}
+          disabled={!locationEnabled}
           variant="outline"
         >
           <Target className="h-4 w-4 mr-2" />
@@ -147,16 +137,16 @@ const ShotTracker: React.FC<ShotTrackerProps> = ({
       <div className="space-y-2">
         <Button
           onClick={onRecordShotWithPhoto}
-          disabled={!isLocationEnabled}
+          disabled={!locationEnabled}
           className="w-full bg-blue-600 hover:bg-blue-700"
         >
           <Camera className="h-4 w-4 mr-2" />
           Record Shot with Photo
         </Button>
 
-        {location && currentPosition && (
+        {currentLocation && currentPosition && (
           <div className="text-xs text-gray-500 text-center">
-            GPS Accuracy: ±{location.accuracy.toFixed(0)}m
+            GPS Accuracy: ±{currentLocation.accuracy.toFixed(0)}m
             {currentPosition.area === 'tee' && ' • Perfect for drive bets'}
             {currentPosition.area === 'green' && ' • Great for putting challenges'}
           </div>

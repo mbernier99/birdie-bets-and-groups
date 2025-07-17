@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { MapPin, Calculator, Target } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useOptimizedGPS } from '../hooks/useOptimizedGPS';
 import { useMobileFeatures } from '../hooks/useMobileFeatures';
 import { useShots } from '../hooks/useShots';
 import { determineCurrentHole, getCoursePosition } from '../utils/gpsCalculations';
@@ -15,15 +16,11 @@ import ShotHistory from './ShotHistory';
 import { Press } from '../types/press';
 
 const OnCourseTracker = () => {
-  const {
-    location,
-    isLocationEnabled,
-    isMobile,
-    saveToStorage,
-    getFromStorage,
-    watchLocation
-  } = useMobileFeatures();
-
+  const { location, isLocationEnabled, getCurrentLocation } = useOptimizedGPS({ 
+    accuracy: 'medium', 
+    mode: 'tracking' 
+  });
+  const { takePhoto, saveToStorage, getFromStorage, isMobile } = useMobileFeatures();
   const { shots, recordShot, recordShotWithPhoto, calculateDistance } = useShots();
 
   const [currentHole, setCurrentHole] = useState(1);
@@ -85,21 +82,8 @@ const OnCourseTracker = () => {
   }, [location, courseHoles]);
 
   const startGPSTracking = () => {
-    if (!isLocationEnabled) return;
-
-    const id = watchLocation((newLocation) => {
-      console.log('GPS tracking update:', newLocation);
-      
-      // Auto-detect hole changes
-      const detectedHole = determineCurrentHole(newLocation, courseHoles);
-      if (detectedHole && detectedHole !== currentHole) {
-        setCurrentHole(detectedHole);
-      }
-    });
-    
-    if (id && typeof id === 'number') {
-      setWatchId(id);
-    }
+    // GPS tracking is now handled automatically by the optimized hook
+    setWatchId(1); // Just set a dummy ID to indicate tracking is active
   };
 
   const stopGPSTracking = () => {
