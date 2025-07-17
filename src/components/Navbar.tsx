@@ -1,15 +1,17 @@
 
-import React, { memo } from 'react';
+import React, { memo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Trophy, Target, User, BookOpen, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import MobileHeader from './MobileHeader';
 import MobileNavigation from './MobileNavigation';
+import { ProfileSheet } from './ProfileSheet';
 
 const Navbar = memo(() => {
   const location = useLocation();
   const { user, signOut } = useAuth();
+  const [profileOpen, setProfileOpen] = useState(false);
   
   const isActive = (path: string) => location.pathname === path;
   
@@ -71,13 +73,13 @@ const Navbar = memo(() => {
             <div className="flex items-center space-x-4">
               {user ? (
                 <>
-                  <Link 
-                    to="/profile"
+                  <button 
+                    onClick={() => setProfileOpen(true)}
                     className="flex items-center space-x-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
                   >
                     <User className="h-4 w-4" />
                     <span>Profile</span>
-                  </Link>
+                  </button>
                   <Button
                     onClick={() => signOut()}
                     variant="outline"
@@ -104,6 +106,9 @@ const Navbar = memo(() => {
 
       {/* Mobile Bottom Navigation */}
       <MobileNavigation />
+      
+      {/* Profile Sheet */}
+      <ProfileSheet open={profileOpen} onOpenChange={setProfileOpen} />
     </>
   );
 });
