@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Capacitor } from '@capacitor/core';
+import { useAppLifecycle } from './useAppLifecycle';
+import { useNetworkStatus } from './useNetworkStatus';
 
 export interface LocationData {
   latitude: number;
@@ -31,6 +33,7 @@ class GPSManager {
   private lastLocation: LocationData | null = null;
   private lastUpdateTime: number = 0;
   private isWatching = false;
+  private isPaused = false;
   private debounceTimer: NodeJS.Timeout | null = null;
 
   private getAccuracySettings(accuracy: GPSAccuracy) {
@@ -83,7 +86,9 @@ class GPSManager {
         return 'geolocation' in navigator;
       }
     } catch (error) {
-      console.error('Error requesting location permission:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error requesting location permission:', error);
+      }
       return false;
     }
   }
@@ -107,7 +112,9 @@ class GPSManager {
           options,
           (position, error) => {
             if (error) {
-              console.error('GPS watch error:', error);
+              if (process.env.NODE_ENV === 'development') {
+                console.error('GPS watch error:', error);
+              }
               return;
             }
 
@@ -132,7 +139,11 @@ class GPSManager {
               timestamp: position.timestamp
             });
           },
-          (error) => console.error('GPS watch error:', error),
+          (error) => {
+            if (process.env.NODE_ENV === 'development') {
+              console.error('GPS watch error:', error);
+            }
+          },
           this.getAccuracySettings('medium')
         );
       }
@@ -263,6 +274,18 @@ class GPSManager {
   isLocationEnabled(): boolean {
     return this.isWatching || this.lastLocation !== null;
   }
+
+  pauseTracking(): void {
+    this.isPaused = true;
+    this.stopWatching();
+  }
+
+  resumeTracking(): void {
+    this.isPaused = false;
+    if (this.subscribers.size > 0) {
+      this.startWatching();
+    }
+  }
 }
 
 // Global instance
@@ -273,12 +296,26 @@ export const useOptimizedGPS = (options: Partial<GPSOptions> = {}) => {
   const [location, setLocation] = useState<LocationData | null>(null);
   const [isEnabled, setIsEnabled] = useState(false);
   const subscriberIdRef = useRef<string>(`gps-${Math.random().toString(36).substr(2, 9)}`);
+  
+  const networkStatus = useNetworkStatus();
 
   const defaultOptions: GPSOptions = {
-    accuracy: 'medium',
+    accuracy: networkStatus.isSlowConnection ? 'low' : 'medium',
     mode: 'tracking',
     ...options
   };
+
+  // App lifecycle integration for battery optimization
+  useAppLifecycle({
+    onPause: () => gpsManager.pauseTracking(),
+    onResume: () => gpsManager.resumeTracking(),
+    onLowMemory: () => {
+      // Clear old location data on low memory
+      if (location && Date.now() - location.timestamp > 300000) { // 5 minutes
+        setLocation(null);
+      }
+    }
+  });
 
   useEffect(() => {
     const unsubscribe = gpsManager.subscribe(
