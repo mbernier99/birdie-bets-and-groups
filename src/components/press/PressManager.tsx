@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Users } from 'lucide-react';
+import { MapPin, Users, Wifi, WifiOff } from 'lucide-react';
 import { Press, PressRequest, PressCounter, CourseHole } from '../../types/press';
 import PressInitiationModal from './PressInitiationModal';
 import PressNotificationModal from './PressNotificationModal';
 import { useToast } from '@/hooks/use-toast';
 import { validatePress } from '../../utils/pressValidation';
+import { useEnhancedPress } from '../../hooks/useEnhancedPress';
+import LiveBetNotification from './LiveBetNotification';
 
 interface PressManagerProps {
   tournamentId: string;
@@ -22,13 +24,22 @@ const PressManager: React.FC<PressManagerProps> = ({
   currentHole,
   players
 }) => {
-  const [presses, setPresses] = useState<Press[]>([]);
   const [showInitiationModal, setShowInitiationModal] = useState(false);
-  const [showNotificationModal, setShowNotificationModal] = useState(false);
   const [selectedPlayer, setSelectedPlayer] = useState<{ id: string; name: string; currentHole: number } | null>(null);
-  const [pendingPress, setPendingPress] = useState<Press | null>(null);
-  const [timeRemaining, setTimeRemaining] = useState(60);
   const { toast } = useToast();
+  
+  // Use enhanced press hook with real-time capabilities
+  const { 
+    pressBets, 
+    loading, 
+    error, 
+    notifications,
+    isOnline,
+    createPressBet, 
+    acceptPressBet, 
+    declinePressBet,
+    clearNotification 
+  } = useEnhancedPress(tournamentId);
 
   // Mock course data - in real app this would come from props/context
   const courseHoles: CourseHole[] = Array.from({ length: 18 }, (_, i) => ({
@@ -38,163 +49,50 @@ const PressManager: React.FC<PressManagerProps> = ({
     handicapIndex: i + 1
   }));
 
-  // Mock data - replace with actual data fetching
-  useEffect(() => {
-    // Load presses from storage/API
-    const loadPresses = () => {
-      // This would be replaced with actual API calls
-      console.log('Loading presses for tournament:', tournamentId);
-    };
-    loadPresses();
-  }, [tournamentId]);
-
-  // Timer for pending press responses
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    
-    if (pendingPress && showNotificationModal) {
-      interval = setInterval(() => {
-        const remaining = Math.max(0, Math.floor((pendingPress.expiresAt - Date.now()) / 1000));
-        setTimeRemaining(remaining);
-        
-        if (remaining === 0) {
-          handlePressExpired();
-        }
-      }, 1000);
-    }
-
-    return () => {
-      if (interval) {
-        clearInterval(interval);
-      }
-    };
-  }, [pendingPress, showNotificationModal]);
+  // Convert Supabase press bets to local Press format for compatibility
+  const presses: Press[] = pressBets.map(bet => ({
+    id: bet.id,
+    tournamentId: bet.tournament_id,
+    initiatorId: bet.initiator_id,
+    targetId: bet.target_id,
+    amount: Number(bet.amount),
+    currency: 'USD',
+    startHole: bet.hole_number || currentHole,
+    gameType: bet.bet_type as any,
+    winCondition: bet.description || bet.bet_type,
+    status: bet.status as any,
+    initiatedAt: new Date(bet.created_at).getTime(),
+    isCounter: false,
+    expiresAt: bet.expires_at ? new Date(bet.expires_at).getTime() : Date.now() + 60000,
+    respondedAt: bet.completed_at ? new Date(bet.completed_at).getTime() : undefined
+  }));
 
   const handleInitiatePress = (player: { id: string; name: string; currentHole: number }) => {
     setSelectedPlayer(player);
     setShowInitiationModal(true);
   };
 
-  const handleSubmitPress = (request: PressRequest) => {
-    const newPress: Press = {
-      id: Date.now().toString(),
-      tournamentId,
-      initiatorId: currentUserId,
-      targetId: request.targetId,
-      amount: request.amount,
-      currency: 'USD',
-      startHole: request.startHole,
-      gameType: request.gameType,
-      winCondition: request.winCondition,
-      status: 'pending',
-      initiatedAt: Date.now(),
-      isCounter: false,
-      expiresAt: Date.now() + 60000 // 60 seconds
-    };
+  const handleSubmitPress = async (request: PressRequest) => {
+    try {
+      await createPressBet({
+        target_id: request.targetId,
+        amount: request.amount,
+        bet_type: request.gameType,
+        description: request.winCondition,
+        hole_number: request.startHole,
+        expires_at: new Date(Date.now() + 60000).toISOString() // 60 seconds
+      });
 
-    setPresses(prev => [...prev, newPress]);
-    
-    // If the press is for the current user (demo purposes), show notification
-    if (request.targetId === currentUserId) {
-      setPendingPress(newPress);
-      setShowNotificationModal(true);
-      setTimeRemaining(60);
+      toast({
+        title: "Press Sent!",
+        description: `Press sent to ${selectedPlayer?.name}. They have 60 seconds to respond.`,
+      });
+    } catch (error) {
+      console.error('Error creating press bet:', error);
     }
-
-    toast({
-      title: "Press Sent!",
-      description: `Press sent to ${selectedPlayer?.name}. They have 60 seconds to respond.`,
-    });
   };
 
-  const handleAcceptPress = () => {
-    if (!pendingPress) return;
-
-    setPresses(prev => prev.map(p => 
-      p.id === pendingPress.id 
-        ? { ...p, status: 'accepted' as const, respondedAt: Date.now() }
-        : p
-    ));
-
-    setShowNotificationModal(false);
-    setPendingPress(null);
-
-    toast({
-      title: "Press Accepted!",
-      description: "The press is now active. Good luck!",
-    });
-  };
-
-  const handleDeclinePress = () => {
-    if (!pendingPress) return;
-
-    setPresses(prev => prev.map(p => 
-      p.id === pendingPress.id 
-        ? { ...p, status: 'declined' as const, respondedAt: Date.now() }
-        : p
-    ));
-
-    setShowNotificationModal(false);
-    setPendingPress(null);
-
-    toast({
-      title: "Press Declined",
-      description: "You declined the press.",
-    });
-  };
-
-  const handleCounterPress = (counter: PressCounter) => {
-    if (!pendingPress) return;
-
-    const counterPress: Press = {
-      ...pendingPress,
-      id: Date.now().toString(),
-      initiatorId: pendingPress.targetId,
-      targetId: pendingPress.initiatorId,
-      amount: counter.amount || pendingPress.amount,
-      gameType: counter.gameType || pendingPress.gameType,
-      winCondition: counter.winCondition || pendingPress.winCondition,
-      isCounter: true,
-      originalPressId: pendingPress.id,
-      initiatedAt: Date.now(),
-      expiresAt: Date.now() + 60000
-    };
-
-    setPresses(prev => [
-      ...prev.map(p => 
-        p.id === pendingPress.id 
-          ? { ...p, status: 'declined' as const, respondedAt: Date.now() }
-          : p
-      ),
-      counterPress
-    ]);
-
-    setShowNotificationModal(false);
-    setPendingPress(null);
-
-    toast({
-      title: "Counter Press Sent!",
-      description: "Your counter press has been sent.",
-    });
-  };
-
-  const handlePressExpired = () => {
-    if (!pendingPress) return;
-
-    setPresses(prev => prev.map(p => 
-      p.id === pendingPress.id 
-        ? { ...p, status: 'expired' as const }
-        : p
-    ));
-
-    setShowNotificationModal(false);
-    setPendingPress(null);
-
-    toast({
-      title: "Press Expired",
-      description: "The press expired due to no response.",
-    });
-  };
+  // These methods are now handled by the enhanced press hook
 
   const getEligiblePlayers = () => {
     return players
@@ -231,9 +129,24 @@ const PressManager: React.FC<PressManagerProps> = ({
 
   return (
     <div className="space-y-4">
+      {/* Live bet notifications */}
+      <LiveBetNotification tournamentId={tournamentId} />
+      
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Press Wagering</CardTitle>
+          <CardTitle className="text-lg flex items-center justify-between">
+            <span>Press Wagering</span>
+            <div className="flex items-center space-x-2">
+              {isOnline ? (
+                <Wifi className="h-4 w-4 text-green-500" />
+              ) : (
+                <WifiOff className="h-4 w-4 text-red-500" />
+              )}
+              <span className="text-xs text-gray-500">
+                {isOnline ? 'Online' : 'Offline'}
+              </span>
+            </div>
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -317,16 +230,15 @@ const PressManager: React.FC<PressManagerProps> = ({
         courseHoles={courseHoles}
         onSubmit={handleSubmitPress}
       />
-
-      <PressNotificationModal
-        isOpen={showNotificationModal}
-        onClose={() => setShowNotificationModal(false)}
-        press={pendingPress}
-        onAccept={handleAcceptPress}
-        onDecline={handleDeclinePress}
-        onCounter={handleCounterPress}
-        timeRemaining={timeRemaining}
-      />
+      
+      {/* Show notifications count */}
+      {notifications.length > 0 && (
+        <div className="fixed bottom-20 right-4 z-40">
+          <Badge variant="destructive" className="animate-pulse">
+            {notifications.length} new
+          </Badge>
+        </div>
+      )}
     </div>
   );
 };

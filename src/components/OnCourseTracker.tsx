@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useOptimizedGPS } from '../hooks/useOptimizedGPS';
 import { useMobileFeatures } from '../hooks/useMobileFeatures';
 import { useShots } from '../hooks/useShots';
+import { useOfflineStorage } from '../hooks/useOfflineStorage';
 import { determineCurrentHole, getCoursePosition } from '../utils/gpsCalculations';
 import PressManager from './press/PressManager';
 import PressLedger from './press/PressLedger';
@@ -13,6 +14,7 @@ import BetResolutionPanel from './press/BetResolutionPanel';
 import ScoreEntry from './ScoreEntry';
 import ShotTracker from './ShotTracker';
 import ShotHistory from './ShotHistory';
+import OfflineIndicator from './OfflineIndicator';
 import { Press } from '../types/press';
 
 const OnCourseTracker = () => {
@@ -21,7 +23,9 @@ const OnCourseTracker = () => {
     mode: 'tracking' 
   });
   const { takePhoto, saveToStorage, getFromStorage, isMobile } = useMobileFeatures();
-  const { shots, recordShot, recordShotWithPhoto, calculateDistance } = useShots();
+  const [currentRoundId] = useState(() => crypto.randomUUID()); // Generate round ID for this session
+  const { shots, recordShot, recordShotWithPhoto, calculateDistance } = useShots(currentRoundId);
+  const { preloadCourseData, isOnline } = useOfflineStorage();
 
   const [currentHole, setCurrentHole] = useState(1);
   const [presses, setPresses] = useState<Press[]>([]);
@@ -106,11 +110,11 @@ const OnCourseTracker = () => {
   };
 
   const handleRecordShot = () => {
-    recordShot(currentHole);
+    recordShot(currentHole, { shotNumber: shots.filter(s => s.hole === currentHole).length + 1 });
   };
 
   const handleRecordShotWithPhoto = () => {
-    recordShotWithPhoto(currentHole);
+    recordShotWithPhoto(currentHole, { shotNumber: shots.filter(s => s.hole === currentHole).length + 1 });
   };
 
   const handleLocationBasedPress = (player: { id: string; name: string; currentHole: number }) => {
@@ -183,6 +187,9 @@ const OnCourseTracker = () => {
 
   return (
     <div className="bg-white rounded-lg shadow-lg">
+      {/* Offline indicator */}
+      <OfflineIndicator />
+      
       <Tabs defaultValue="score" className="w-full">
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="score">Score</TabsTrigger>
