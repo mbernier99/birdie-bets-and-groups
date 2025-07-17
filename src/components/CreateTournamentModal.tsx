@@ -157,12 +157,21 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
     }));
   };
 
-  const { createTournament } = useTournaments();
+  const { createTournamentWithInvitations } = useTournaments();
 
   const handleSaveTournament = async () => {
     
     try {
-      await createTournament({
+      // Extract players with valid emails for invitations
+      const playersToInvite = tournamentData.players
+        .filter(p => p.name.trim() && p.email.trim())
+        .map(p => ({
+          name: p.name,
+          email: p.email,
+          handicapIndex: p.handicapIndex
+        }));
+
+      await createTournamentWithInvitations({
         name: tournamentData.basicInfo.name,
         description: `${tournamentData.gameType.type} tournament`,
         status: 'draft',
@@ -177,7 +186,7 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
           pairings: tournamentData.pairings,
           wagering: tournamentData.wagering
         }
-      });
+      }, playersToInvite);
       
       onClose();
     } catch (error) {

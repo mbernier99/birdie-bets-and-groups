@@ -132,7 +132,10 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ data, onDataChange }) => 
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label htmlFor={`player-email-${index}`} className="text-xs">Email</Label>
+                    <Label htmlFor={`player-email-${index}`} className="text-xs flex items-center space-x-1">
+                      <span>Email</span>
+                      <span className="text-blue-600 text-[10px]">(for invitation)</span>
+                    </Label>
                     <Input
                       id={`player-email-${index}`}
                       type="email"
@@ -180,8 +183,13 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ data, onDataChange }) => 
           </div>
         )}
 
-        <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
+        <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg space-y-2">
           <p><strong>Players:</strong> {players.length} / {data.basicInfo.maxPlayers}</p>
+          {players.some(p => p.email.trim()) && (
+            <p className="text-blue-700">
+              📧 Email invitations will be sent automatically to players with email addresses when you create the tournament.
+            </p>
+          )}
         </div>
       </div>
 

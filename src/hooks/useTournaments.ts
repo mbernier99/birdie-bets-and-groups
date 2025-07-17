@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { useTournamentInvitations } from './useTournamentInvitations';
 import type { Database } from '@/integrations/supabase/types';
 
 type Tournament = Database['public']['Tables']['tournaments']['Row'];
@@ -19,6 +20,7 @@ export const useTournaments = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
+  const { sendInvitations } = useTournamentInvitations();
 
   const fetchTournaments = async () => {
     if (!user) {
@@ -135,6 +137,45 @@ export const useTournaments = () => {
       });
       throw err;
     }
+  };
+
+  const createTournamentWithInvitations = async (
+    tournamentData: Omit<TournamentInsert, 'created_by' | 'id' | 'created_at' | 'updated_at'> & { name: string },
+    players: Array<{ name: string; email: string; handicapIndex: number; }> = []
+  ) => {
+    // Create the tournament first
+    const tournament = await createTournament(tournamentData);
+
+    // Send invitations if players are provided
+    if (players.length > 0) {
+      const playersWithEmails = players.filter(p => p.email && p.email.trim());
+      
+      if (playersWithEmails.length > 0) {
+        try {
+          await sendInvitations({
+            tournamentName: tournament.name,
+            tournamentId: tournament.id,
+            players: playersWithEmails,
+            tournamentDetails: {
+              gameType: tournament.game_type,
+              courseName: (tournamentData.settings as any)?.course?.name || 'TBD',
+              maxPlayers: tournament.max_players || undefined,
+              entryFee: tournament.entry_fee || undefined
+            }
+          });
+        } catch (invitationError) {
+          console.error('Error sending invitations:', invitationError);
+          // Don't throw - tournament was created successfully
+          toast({
+            title: "Tournament created",
+            description: "Tournament created but some invitations failed to send. You can resend them later.",
+            variant: "default"
+          });
+        }
+      }
+    }
+
+    return tournament;
   };
 
   const updateTournament = async (tournamentId: string, updates: Partial<Tournament>) => {
@@ -281,6 +322,7 @@ export const useTournaments = () => {
     loading,
     error,
     createTournament,
+    createTournamentWithInvitations,
     updateTournament,
     joinTournament,
     leaveTournament,
