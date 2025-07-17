@@ -9,6 +9,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { loginFormSchema, signupFormSchema, validateAndSanitizeForm } from '@/utils/validators';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 const Auth = () => {
   const [loading, setLoading] = useState(false);
@@ -20,9 +23,46 @@ const Auth = () => {
     firstName: '', 
     lastName: '' 
   });
+  const [loginErrors, setLoginErrors] = useState<Record<string, string>>({});
+  const [signupErrors, setSignupErrors] = useState<Record<string, string>>({});
+  const [loginAttempts, setLoginAttempts] = useState(0);
+  const [isLocked, setIsLocked] = useState(false);
+  const [lockTime, setLockTime] = useState(0);
   
   const { signIn, signUp, signInWithGoogle, user } = useAuth();
   const navigate = useNavigate();
+
+  // Handle account lockout
+  useEffect(() => {
+    if (isLocked) {
+      const timer = setInterval(() => {
+        setLockTime(prev => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            setIsLocked(false);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [isLocked]);
+
+  // Check for account lock from localStorage
+  useEffect(() => {
+    const lockData = localStorage.getItem('accountLock');
+    if (lockData) {
+      const { until } = JSON.parse(lockData);
+      const now = new Date().getTime();
+      if (until > now) {
+        setIsLocked(true);
+        setLockTime(Math.floor((until - now) / 1000));
+      } else {
+        localStorage.removeItem('accountLock');
+      }
+    }
+  }, []);
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -33,68 +73,208 @@ const Auth = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-
-    const { error } = await signIn(loginForm.email, loginForm.password);
-
-    if (error) {
+    
+    // Check if account is locked
+    if (isLocked) {
       toast({
-        title: 'Login Failed',
-        description: error.message,
+        title: 'Account Temporarily Locked',
+        description: `Too many failed attempts. Please try again in ${lockTime} seconds.`,
         variant: 'destructive',
       });
-    } else {
-      toast({
-        title: 'Welcome back!',
-        description: 'You have successfully logged in.',
-      });
-      navigate('/');
+      return;
     }
 
-    setLoading(false);
+    // Clear previous errors
+    setLoginErrors({});
+    
+    // Validate form
+    const validation = validateAndSanitizeForm(loginFormSchema, loginForm);
+    
+    if (!validation.isValid) {
+      setLoginErrors(validation.errors || {});
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { error } = await signIn(validation.data!.email, validation.data!.password);
+
+      if (error) {
+        // Increment login attempts
+        const attempts = loginAttempts + 1;
+        setLoginAttempts(attempts);
+
+        // Check if should lock account (5 failed attempts)
+        if (attempts >= 5) {
+          const lockDuration = 60; // 60 seconds
+          const lockUntil = new Date().getTime() + (lockDuration * 1000);
+          
+          localStorage.setItem('accountLock', JSON.stringify({ until: lockUntil }));
+          
+          setIsLocked(true);
+          setLockTime(lockDuration);
+          setLoginAttempts(0);
+          
+          toast({
+            title: 'Account Temporarily Locked',
+            description: `Too many failed attempts. Please try again in ${lockDuration} seconds.`,
+            variant: 'destructive',
+          });
+        } else {
+          toast({
+            title: 'Login Failed',
+            description: error.message,
+            variant: 'destructive',
+          });
+        }
+      } else {
+        toast({
+          title: 'Welcome back!',
+          description: 'You have successfully logged in.',
+        });
+        setLoginAttempts(0);
+        navigate('/');
+      }
+    } catch (err: any) {
+      toast({
+        title: 'Login Error',
+        description: 'An unexpected error occurred. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-
-    const { error } = await signUp(
-      signupForm.email, 
-      signupForm.password, 
-      signupForm.firstName, 
-      signupForm.lastName
-    );
-
-    if (error) {
-      toast({
-        title: 'Signup Failed',
-        description: error.message,
-        variant: 'destructive',
-      });
-    } else {
-      toast({
-        title: 'Account Created!',
-        description: 'Please check your email to verify your account.',
-      });
+    
+    // Clear previous errors
+    setSignupErrors({});
+    
+    // Validate form
+    const validation = validateAndSanitizeForm(signupFormSchema, signupForm);
+    
+    if (!validation.isValid) {
+      setSignupErrors(validation.errors || {});
+      return;
     }
 
-    setLoading(false);
+    setLoading(true);
+
+    try {
+      const { error } = await signUp(
+        validation.data!.email, 
+        validation.data!.password, 
+        validation.data!.firstName, 
+        validation.data!.lastName
+      );
+
+      if (error) {
+        toast({
+          title: 'Signup Failed',
+          description: error.message,
+          variant: 'destructive',
+        });
+        setSignupErrors({ form: error.message });
+      } else {
+        toast({
+          title: 'Account Created!',
+          description: 'Please check your email to verify your account.',
+        });
+        // Reset form after successful signup
+        setSignupForm({ email: '', password: '', firstName: '', lastName: '' });
+      }
+    } catch (err: any) {
+      toast({
+        title: 'Signup Error',
+        description: 'An unexpected error occurred. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
     
-    const { error } = await signInWithGoogle();
-    
-    if (error) {
+    try {
+      const { error } = await signInWithGoogle();
+      
+      if (error) {
+        toast({
+          title: 'Google Sign In Failed',
+          description: error.message,
+          variant: 'destructive',
+        });
+      }
+    } catch (err: any) {
       toast({
-        title: 'Google Sign In Failed',
-        description: error.message,
+        title: 'Google Sign In Error',
+        description: 'An unexpected error occurred. Please try again.',
         variant: 'destructive',
       });
+    } finally {
+      setGoogleLoading(false);
     }
+  };
+
+  // Helper to render field error message
+  const FieldError = ({ error }: { error?: string }) => {
+    if (!error) return null;
+    return <p className="text-destructive text-sm mt-1">{error}</p>;
+  };
+
+  // Password strength indicator
+  const PasswordStrengthIndicator = ({ password }: { password: string }) => {
+    // If password is empty, don't show indicator
+    if (!password) return null;
     
-    setGoogleLoading(false);
+    let strength = 0;
+    if (password.length >= 8) strength++;
+    if (/[A-Z]/.test(password)) strength++;
+    if (/[a-z]/.test(password)) strength++;
+    if (/[0-9]/.test(password)) strength++;
+    if (/[^A-Za-z0-9]/.test(password)) strength++;
+    
+    const getStrengthText = () => {
+      if (strength <= 2) return 'Weak';
+      if (strength <= 4) return 'Medium';
+      return 'Strong';
+    };
+    
+    const getStrengthColor = () => {
+      if (strength <= 2) return 'bg-red-500';
+      if (strength <= 4) return 'bg-yellow-500';
+      return 'bg-green-500';
+    };
+    
+    return (
+      <div className="mt-1">
+        <div className="flex justify-between items-center">
+          <div className="h-1 w-full bg-gray-200 rounded-full">
+            <div 
+              className={`h-1 rounded-full ${getStrengthColor()}`} 
+              style={{ width: `${(strength / 5) * 100}%` }}
+            />
+          </div>
+          <span className="text-xs ml-2">{getStrengthText()}</span>
+        </div>
+      </div>
+    );
+  };
+
+  // Form-level error alert
+  const FormError = ({ error }: { error?: string }) => {
+    if (!error) return null;
+    return (
+      <Alert variant="destructive" className="mt-4">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
+    );
   };
 
   return (
@@ -119,7 +299,7 @@ const Auth = () => {
                   onClick={handleGoogleSignIn} 
                   variant="outline" 
                   className="w-full" 
-                  disabled={googleLoading || loading}
+                  disabled={googleLoading || loading || isLocked}
                 >
                   {googleLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Continue with Google
@@ -136,8 +316,17 @@ const Auth = () => {
                   </div>
                 </div>
 
+                {isLocked && (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      Account temporarily locked. Please try again in {lockTime} seconds.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
                 <form onSubmit={handleLogin} className="space-y-4">
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <Label htmlFor="login-email">Email</Label>
                     <Input
                       id="login-email"
@@ -146,9 +335,12 @@ const Auth = () => {
                       value={loginForm.email}
                       onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
                       required
+                      aria-invalid={!!loginErrors.email}
+                      disabled={isLocked}
                     />
+                    <FieldError error={loginErrors.email} />
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <Label htmlFor="login-password">Password</Label>
                     <Input
                       id="login-password"
@@ -157,9 +349,17 @@ const Auth = () => {
                       value={loginForm.password}
                       onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
                       required
+                      aria-invalid={!!loginErrors.password}
+                      disabled={isLocked}
                     />
+                    <FieldError error={loginErrors.password} />
                   </div>
-                  <Button type="submit" className="w-full" disabled={loading || googleLoading}>
+                  <FormError error={loginErrors.form} />
+                  <Button 
+                    type="submit" 
+                    className="w-full" 
+                    disabled={loading || googleLoading || isLocked}
+                  >
                     {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Sign In
                   </Button>
@@ -192,26 +392,32 @@ const Auth = () => {
 
                 <form onSubmit={handleSignup} className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
+                    <div className="space-y-1">
                       <Label htmlFor="signup-firstname">First Name</Label>
                       <Input
                         id="signup-firstname"
                         placeholder="John"
                         value={signupForm.firstName}
                         onChange={(e) => setSignupForm({ ...signupForm, firstName: e.target.value })}
+                        required
+                        aria-invalid={!!signupErrors.firstName}
                       />
+                      <FieldError error={signupErrors.firstName} />
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-1">
                       <Label htmlFor="signup-lastname">Last Name</Label>
                       <Input
                         id="signup-lastname"
                         placeholder="Doe"
                         value={signupForm.lastName}
                         onChange={(e) => setSignupForm({ ...signupForm, lastName: e.target.value })}
+                        required
+                        aria-invalid={!!signupErrors.lastName}
                       />
+                      <FieldError error={signupErrors.lastName} />
                     </div>
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <Label htmlFor="signup-email">Email</Label>
                     <Input
                       id="signup-email"
@@ -220,9 +426,11 @@ const Auth = () => {
                       value={signupForm.email}
                       onChange={(e) => setSignupForm({ ...signupForm, email: e.target.value })}
                       required
+                      aria-invalid={!!signupErrors.email}
                     />
+                    <FieldError error={signupErrors.email} />
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <Label htmlFor="signup-password">Password</Label>
                     <Input
                       id="signup-password"
@@ -231,8 +439,12 @@ const Auth = () => {
                       value={signupForm.password}
                       onChange={(e) => setSignupForm({ ...signupForm, password: e.target.value })}
                       required
+                      aria-invalid={!!signupErrors.password}
                     />
+                    <PasswordStrengthIndicator password={signupForm.password} />
+                    <FieldError error={signupErrors.password} />
                   </div>
+                  <FormError error={signupErrors.form} />
                   <Button type="submit" className="w-full" disabled={loading || googleLoading}>
                     {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Create Account
