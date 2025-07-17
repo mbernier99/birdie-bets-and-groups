@@ -109,7 +109,7 @@ const Index = memo(() => {
                     </button>
                   </> : <Button onClick={() => navigate('/auth')} className="bg-white text-emerald-600 hover:bg-emerald-50 px-8 py-4 text-lg h-auto">
                     <LogIn className="h-5 w-5 mr-2" />
-                    Sign In to Get Started
+                    Get Started
                   </Button>}
               </div>
             </div>
