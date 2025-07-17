@@ -4,15 +4,21 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   Camera, 
   MapPin, 
   Target, 
   Activity,
-  Ruler
+  Ruler,
+  Navigation,
+  CheckCircle,
+  Clock,
+  AlertCircle
 } from 'lucide-react';
-import { useMobileFeatures } from '@/hooks/useMobileFeatures';
+import { useMobileFeatures, LocationData } from '@/hooks/useMobileFeatures';
 import { Shot } from '@/hooks/useGolfRound';
+import { calculateDistance } from '@/utils/gpsCalculations';
 
 interface EnhancedShotTrackerProps {
   currentHole: number;
@@ -55,6 +61,8 @@ const ACCURACY_OPTIONS: Array<{ value: Shot['accuracy']; label: string }> = [
   { value: 'pin', label: 'Pin' }
 ];
 
+type ShotTrackingState = 'setup' | 'capturing-start' | 'ready-to-hit' | 'capturing-end' | 'complete';
+
 const EnhancedShotTracker: React.FC<EnhancedShotTrackerProps> = ({
   currentHole,
   onRecordShot,
@@ -64,9 +72,14 @@ const EnhancedShotTracker: React.FC<EnhancedShotTrackerProps> = ({
   const [shotType, setShotType] = useState<Shot['shot_type']>('drive');
   const [club, setClub] = useState<string>('');
   const [accuracy, setAccuracy] = useState<Shot['accuracy']>();
-  const [distance, setDistance] = useState<number>();
   const [notes, setNotes] = useState<string>('');
   const [isRecording, setIsRecording] = useState(false);
+  
+  // Enhanced tracking states
+  const [trackingState, setTrackingState] = useState<ShotTrackingState>('setup');
+  const [startLocation, setStartLocation] = useState<LocationData | null>(null);
+  const [endLocation, setEndLocation] = useState<LocationData | null>(null);
+  const [calculatedDistance, setCalculatedDistance] = useState<number | null>(null);
   
   const { getCurrentLocation, takePhoto, isLocationEnabled } = useMobileFeatures();
   
@@ -90,24 +103,67 @@ const EnhancedShotTracker: React.FC<EnhancedShotTrackerProps> = ({
     }
   }, [nextShotNumber, currentHoleShots]);
 
-  const handleRecordShot = async (withPhoto: boolean = false) => {
+  // Calculate distance when both locations are available
+  useEffect(() => {
+    if (startLocation && endLocation) {
+      const distanceMeters = calculateDistance(startLocation, endLocation);
+      const distanceYards = Math.round(distanceMeters * 1.09361); // Convert to yards
+      setCalculatedDistance(distanceYards);
+    }
+  }, [startLocation, endLocation]);
+
+  const handleCaptureStartLocation = async () => {
     if (!isLocationEnabled) {
       alert('Location services are required to record shots');
       return;
     }
     
-    setIsRecording(true);
+    setTrackingState('capturing-start');
     try {
       const location = await getCurrentLocation();
       if (!location) {
         alert('Could not get current location');
+        setTrackingState('setup');
         return;
       }
+      
+      setStartLocation(location);
+      setTrackingState('ready-to-hit');
+    } catch (error) {
+      console.error('Error capturing start location:', error);
+      alert('Failed to capture start location');
+      setTrackingState('setup');
+    }
+  };
+
+  const handleCaptureEndLocation = async (withPhoto: boolean = false) => {
+    if (!startLocation) {
+      alert('Please capture start location first');
+      return;
+    }
+    
+    setTrackingState('capturing-end');
+    setIsRecording(true);
+    
+    try {
+      const location = await getCurrentLocation();
+      if (!location) {
+        alert('Could not get current location');
+        setTrackingState('ready-to-hit');
+        setIsRecording(false);
+        return;
+      }
+      
+      setEndLocation(location);
       
       let photoUrl;
       if (withPhoto) {
         photoUrl = await takePhoto();
       }
+      
+      // Calculate distance for recording
+      const distanceMeters = calculateDistance(startLocation, location);
+      const distanceYards = Math.round(distanceMeters * 1.09361);
       
       await onRecordShot(
         currentHole,
@@ -117,21 +173,73 @@ const EnhancedShotTracker: React.FC<EnhancedShotTrackerProps> = ({
         shotType,
         club || undefined,
         accuracy,
-        distance,
+        distanceYards,
         photoUrl || undefined,
         notes || undefined
       );
       
-      // Reset form for next shot
-      setNotes('');
-      setDistance(undefined);
-      setAccuracy(undefined);
+      setTrackingState('complete');
+      
+      // Reset for next shot after a delay
+      setTimeout(() => {
+        resetForNextShot();
+      }, 2000);
       
     } catch (error) {
       console.error('Error recording shot:', error);
       alert('Failed to record shot');
+      setTrackingState('ready-to-hit');
     } finally {
       setIsRecording(false);
+    }
+  };
+
+  const resetForNextShot = () => {
+    setTrackingState('setup');
+    setStartLocation(null);
+    setEndLocation(null);
+    setCalculatedDistance(null);
+    setNotes('');
+    setAccuracy(undefined);
+  };
+
+  const getTrackingStatePrompt = () => {
+    switch (trackingState) {
+      case 'setup':
+        return {
+          icon: <Target className="h-5 w-5" />,
+          title: "Setup Your Shot",
+          description: "Select your club and shot type, then capture your starting position",
+          variant: "default" as const
+        };
+      case 'capturing-start':
+        return {
+          icon: <Navigation className="h-5 w-5 animate-pulse" />,
+          title: "Capturing Start Position...",
+          description: "Getting your current GPS location",
+          variant: "default" as const
+        };
+      case 'ready-to-hit':
+        return {
+          icon: <CheckCircle className="h-5 w-5 text-green-600" />,
+          title: "Ready to Hit!",
+          description: "Take your shot, then capture the ball's final position",
+          variant: "default" as const
+        };
+      case 'capturing-end':
+        return {
+          icon: <MapPin className="h-5 w-5 animate-pulse" />,
+          title: "Recording Shot...",
+          description: "Capturing ball position and calculating distance",
+          variant: "default" as const
+        };
+      case 'complete':
+        return {
+          icon: <CheckCircle className="h-5 w-5 text-green-600" />,
+          title: "Shot Recorded!",
+          description: `Distance: ${calculatedDistance} yards`,
+          variant: "default" as const
+        };
     }
   };
 
@@ -146,21 +254,45 @@ const EnhancedShotTracker: React.FC<EnhancedShotTrackerProps> = ({
     }
   };
 
+  const prompt = getTrackingStatePrompt();
+
   return (
     <div className="space-y-4">
+      {/* Tracking Status */}
+      <Alert className={trackingState === 'complete' ? 'border-green-200 bg-green-50' : ''}>
+        <div className="flex items-center">
+          {prompt.icon}
+          <AlertDescription className="ml-2">
+            <div className="font-medium">{prompt.title}</div>
+            <div className="text-sm text-muted-foreground">{prompt.description}</div>
+          </AlertDescription>
+        </div>
+      </Alert>
+
       {/* Shot Setup */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center">
-            <Target className="h-5 w-5 mr-2" />
-            Shot #{nextShotNumber} - Hole {currentHole}
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center">
+              <Target className="h-5 w-5 mr-2" />
+              Shot #{nextShotNumber} - Hole {currentHole}
+            </div>
+            {startLocation && (
+              <Badge variant="outline" className="text-green-600 border-green-200">
+                Start Position Set
+              </Badge>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Shot Type */}
           <div>
             <label className="text-sm font-medium mb-2 block">Shot Type</label>
-            <Select value={shotType} onValueChange={(value) => setShotType(value as Shot['shot_type'])}>
+            <Select 
+              value={shotType} 
+              onValueChange={(value) => setShotType(value as Shot['shot_type'])}
+              disabled={trackingState !== 'setup'}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -177,7 +309,11 @@ const EnhancedShotTracker: React.FC<EnhancedShotTrackerProps> = ({
           {/* Club Selection */}
           <div>
             <label className="text-sm font-medium mb-2 block">Club</label>
-            <Select value={club} onValueChange={setClub}>
+            <Select 
+              value={club} 
+              onValueChange={setClub}
+              disabled={trackingState !== 'setup'}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select club" />
               </SelectTrigger>
@@ -191,67 +327,91 @@ const EnhancedShotTracker: React.FC<EnhancedShotTrackerProps> = ({
             </Select>
           </div>
 
-          {/* Accuracy */}
-          <div>
-            <label className="text-sm font-medium mb-2 block">Result</label>
-            <Select value={accuracy || ''} onValueChange={(value) => setAccuracy(value as Shot['accuracy'] || undefined)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select result" />
-              </SelectTrigger>
-              <SelectContent>
-                {ACCURACY_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Distance */}
-          <div>
-            <label className="text-sm font-medium mb-2 block">Distance (yards)</label>
-            <input
-              type="number"
-              value={distance || ''}
-              onChange={(e) => setDistance(e.target.value ? parseInt(e.target.value) : undefined)}
-              className="w-full p-2 border border-input rounded-md"
-              placeholder="Enter distance"
-            />
-          </div>
-
-          {/* Notes */}
-          <div>
-            <label className="text-sm font-medium mb-2 block">Notes</label>
-            <Textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Add notes about this shot..."
-              rows={2}
-            />
-          </div>
-
-          {/* Record Buttons */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Start Location Capture */}
+          {trackingState === 'setup' && (
             <Button
-              onClick={() => handleRecordShot(false)}
-              disabled={isRecording || !isLocationEnabled}
-              className="flex items-center"
+              onClick={handleCaptureStartLocation}
+              disabled={!isLocationEnabled}
+              className="w-full flex items-center justify-center"
             >
-              <MapPin className="h-4 w-4 mr-2" />
-              {isRecording ? 'Recording...' : 'Record Shot'}
+              <Navigation className="h-4 w-4 mr-2" />
+              Capture Start Position
             </Button>
-            
+          )}
+
+          {/* Distance Display */}
+          {calculatedDistance && (
+            <div className="p-3 bg-muted rounded-lg">
+              <div className="flex items-center justify-center">
+                <Ruler className="h-4 w-4 mr-2" />
+                <span className="text-lg font-semibold">{calculatedDistance} yards</span>
+              </div>
+            </div>
+          )}
+
+          {/* Result and Notes (shown after ready to hit) */}
+          {trackingState === 'ready-to-hit' && (
+            <>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Expected Result</label>
+                <Select value={accuracy || ''} onValueChange={(value) => setAccuracy(value as Shot['accuracy'] || undefined)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select expected result" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ACCURACY_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-2 block">Notes</label>
+                <Textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Add notes about this shot..."
+                  rows={2}
+                />
+              </div>
+
+              {/* End Location Capture Buttons */}
+              <div className="grid grid-cols-2 gap-3">
+                <Button
+                  onClick={() => handleCaptureEndLocation(false)}
+                  disabled={isRecording || !isLocationEnabled}
+                  className="flex items-center"
+                >
+                  <MapPin className="h-4 w-4 mr-2" />
+                  {isRecording ? 'Recording...' : 'Record Final Position'}
+                </Button>
+                
+                <Button
+                  onClick={() => handleCaptureEndLocation(true)}
+                  disabled={isRecording || !isLocationEnabled}
+                  variant="outline"
+                  className="flex items-center"
+                >
+                  <Camera className="h-4 w-4 mr-2" />
+                  With Photo
+                </Button>
+              </div>
+            </>
+          )}
+
+          {/* Reset Button */}
+          {(trackingState === 'ready-to-hit' || trackingState === 'complete') && (
             <Button
-              onClick={() => handleRecordShot(true)}
-              disabled={isRecording || !isLocationEnabled}
+              onClick={resetForNextShot}
               variant="outline"
-              className="flex items-center"
+              className="w-full"
             >
-              <Camera className="h-4 w-4 mr-2" />
-              With Photo
+              Reset for Next Shot
             </Button>
-          </div>
+          )}
         </CardContent>
       </Card>
 
@@ -301,14 +461,12 @@ const EnhancedShotTracker: React.FC<EnhancedShotTrackerProps> = ({
       )}
       
       {!isLocationEnabled && (
-        <Card className="border-orange-200 bg-orange-50">
-          <CardContent className="pt-6">
-            <div className="flex items-center text-orange-700">
-              <MapPin className="h-5 w-5 mr-2" />
-              <span className="text-sm">Location services are required for shot tracking</span>
-            </div>
-          </CardContent>
-        </Card>
+        <Alert className="border-orange-200 bg-orange-50">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Location services are required for shot tracking. Please enable location access.
+          </AlertDescription>
+        </Alert>
       )}
     </div>
   );
