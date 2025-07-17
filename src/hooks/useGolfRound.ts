@@ -120,7 +120,7 @@ export const useGolfRound = () => {
   };
 
   // Start a new round
-  const startRound = async (courseId: string, weather?: string) => {
+  const startRound = async (courseId: string, teeId?: string, weather?: string) => {
     setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();

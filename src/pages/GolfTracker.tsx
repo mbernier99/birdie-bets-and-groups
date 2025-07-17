@@ -35,8 +35,8 @@ const GolfTracker = () => {
     recordShot
   } = useGolfRound();
 
-  const handleStartRound = async (courseId: string) => {
-    await startRound(courseId);
+  const handleStartRound = async (courseId: string, teeId?: string) => {
+    await startRound(courseId, teeId);
     setCurrentHole(1);
     setActiveTab('scorecard');
   };
@@ -74,7 +74,6 @@ const GolfTracker = () => {
         <MobileHeader />
         <div className="max-w-md mx-auto px-4 sm:px-6 py-6">
           <CourseSelector 
-            courses={courses}
             onSelectCourse={handleStartRound}
             loading={loading}
           />

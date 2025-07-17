@@ -14,6 +14,88 @@ export type Database = {
   }
   public: {
     Tables: {
+      course_imports: {
+        Row: {
+          course_id: string
+          id: string
+          import_source: string
+          imported_at: string
+          imported_by: string | null
+          metadata: Json | null
+          source_id: string | null
+        }
+        Insert: {
+          course_id: string
+          id?: string
+          import_source: string
+          imported_at?: string
+          imported_by?: string | null
+          metadata?: Json | null
+          source_id?: string | null
+        }
+        Update: {
+          course_id?: string
+          id?: string
+          import_source?: string
+          imported_at?: string
+          imported_by?: string | null
+          metadata?: Json | null
+          source_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_imports_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      course_tees: {
+        Row: {
+          course_id: string
+          created_at: string
+          id: string
+          rating: number | null
+          slope: number | null
+          tee_color: string | null
+          tee_name: string
+          total_yardage: number | null
+          updated_at: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          id?: string
+          rating?: number | null
+          slope?: number | null
+          tee_color?: string | null
+          tee_name: string
+          total_yardage?: number | null
+          updated_at?: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          id?: string
+          rating?: number | null
+          slope?: number | null
+          tee_color?: string | null
+          tee_name?: string
+          total_yardage?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_tees_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       courses: {
         Row: {
           created_at: string
@@ -103,6 +185,45 @@ export type Database = {
           },
         ]
       }
+      hole_tees: {
+        Row: {
+          created_at: string
+          hole_id: string
+          id: string
+          tee_id: string
+          yardage: number
+        }
+        Insert: {
+          created_at?: string
+          hole_id: string
+          id?: string
+          tee_id: string
+          yardage: number
+        }
+        Update: {
+          created_at?: string
+          hole_id?: string
+          id?: string
+          tee_id?: string
+          yardage?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hole_tees_hole_id_fkey"
+            columns: ["hole_id"]
+            isOneToOne: false
+            referencedRelation: "holes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hole_tees_tee_id_fkey"
+            columns: ["tee_id"]
+            isOneToOne: false
+            referencedRelation: "course_tees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       holes: {
         Row: {
           course_id: string
@@ -113,6 +234,7 @@ export type Database = {
           hole_number: number
           id: string
           par: number
+          tee_id: string | null
           tee_latitude: number | null
           tee_longitude: number | null
           yardage: number | null
@@ -126,6 +248,7 @@ export type Database = {
           hole_number: number
           id?: string
           par: number
+          tee_id?: string | null
           tee_latitude?: number | null
           tee_longitude?: number | null
           yardage?: number | null
@@ -139,6 +262,7 @@ export type Database = {
           hole_number?: number
           id?: string
           par?: number
+          tee_id?: string | null
           tee_latitude?: number | null
           tee_longitude?: number | null
           yardage?: number | null
@@ -149,6 +273,13 @@ export type Database = {
             columns: ["course_id"]
             isOneToOne: false
             referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "holes_tee_id_fkey"
+            columns: ["tee_id"]
+            isOneToOne: false
+            referencedRelation: "course_tees"
             referencedColumns: ["id"]
           },
         ]
@@ -584,6 +715,35 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "tournaments_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_course_favorites: {
+        Row: {
+          course_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_course_favorites_course_id_fkey"
             columns: ["course_id"]
             isOneToOne: false
             referencedRelation: "courses"

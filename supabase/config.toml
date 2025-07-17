@@ -1,1 +1,4 @@
 project_id = "oxwauckpccujkwfagogf"
+
+[functions.golf-course-search]
+verify_jwt = false
