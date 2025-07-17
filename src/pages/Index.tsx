@@ -12,17 +12,26 @@ import PlayNowModal from '../components/PlayNowModal';
 import WelcomeTutorialSection from '../components/welcome/WelcomeTutorialSection';
 import EnhancedStatsSection from '../components/stats/EnhancedStatsSection';
 import { isFirstTimeUser, detectUserActivity } from '../utils/userDetection';
-
 const Index = memo(() => {
   const [activeTab] = useState('tournaments'); // Simplified - removed tab switching
   const [isCreateTournamentModalOpen, setIsCreateTournamentModalOpen] = useState(false);
   const [isPlayNowModalOpen, setIsPlayNowModalOpen] = useState(false);
   const [isNewUser, setIsNewUser] = useState(true);
-  const [userActivity, setUserActivity] = useState({ hasPlayedTournaments: false, totalTournaments: 0, totalWinnings: 0, lastActivity: null });
-  const { user, signOut } = useAuth();
-  const { tournaments, loading } = useTournaments();
+  const [userActivity, setUserActivity] = useState({
+    hasPlayedTournaments: false,
+    totalTournaments: 0,
+    totalWinnings: 0,
+    lastActivity: null
+  });
+  const {
+    user,
+    signOut
+  } = useAuth();
+  const {
+    tournaments,
+    loading
+  } = useTournaments();
   const navigate = useNavigate();
-
   useEffect(() => {
     // Check if user is new
     const newUser = isFirstTimeUser();
@@ -30,61 +39,47 @@ const Index = memo(() => {
     setIsNewUser(newUser);
     setUserActivity(activity);
   }, []);
-
   const handleCreateTournament = useCallback(() => {
     setIsCreateTournamentModalOpen(true);
   }, []);
-
   const handlePlayNow = useCallback(() => {
     setIsPlayNowModalOpen(true);
   }, []);
-
   const handleCloseCreateTournamentModal = () => {
     setIsCreateTournamentModalOpen(false);
   };
-
   const handleClosePlayNowModal = () => {
     setIsPlayNowModalOpen(false);
   };
-
   const handleStartTournament = useCallback((tournamentId: string) => {
     navigate(`/tournament/${tournamentId}/lobby`);
   }, [navigate]);
-
   const handleViewRules = useCallback(() => {
     navigate('/rules');
   }, [navigate]);
-
-  const upcomingTournaments = [
-    {
-      id: 'demo-1',
-      title: 'Sunday Singles Championship',
-      players: 12,
-      maxPlayers: 16,
-      gameType: 'Match Play',
-      prize: '$240 Pool',
-      date: 'Today 8:00 AM',
-      status: 'live' as const
-    },
-    {
-      id: 'demo-2',
-      title: 'Weekend Warriors Best Ball',
-      players: 8,
-      maxPlayers: 12,
-      gameType: '2-Man Best Ball',
-      prize: '$180 Pool',
-      date: 'Tomorrow 9:30 AM',
-      status: 'upcoming' as const
-    }
-  ];
+  const upcomingTournaments = [{
+    id: 'demo-1',
+    title: 'Sunday Singles Championship',
+    players: 12,
+    maxPlayers: 16,
+    gameType: 'Match Play',
+    prize: '$240 Pool',
+    date: 'Today 8:00 AM',
+    status: 'live' as const
+  }, {
+    id: 'demo-2',
+    title: 'Weekend Warriors Best Ball',
+    players: 8,
+    maxPlayers: 12,
+    gameType: '2-Man Best Ball',
+    prize: '$180 Pool',
+    date: 'Tomorrow 9:30 AM',
+    status: 'upcoming' as const
+  }];
 
   // Filter active tournaments
-  const activeTournaments = tournaments.filter(t => 
-    t.status === 'draft' || t.status === 'lobby' || t.status === 'live'
-  );
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 pb-20 md:pb-0">
+  const activeTournaments = tournaments.filter(t => t.status === 'draft' || t.status === 'lobby' || t.status === 'live');
+  return <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 pb-20 md:pb-0">
       <Navbar />
       
       {/* Hero Section */}
@@ -94,47 +89,28 @@ const Index = memo(() => {
             <div className="text-center">
               {/* Large background logo - constrained within container */}
               <div className="absolute inset-4 flex items-center justify-center opacity-30 pointer-events-none">
-                <img 
-                  src="/lovable-uploads/fc297cde-a9d2-4fb0-acf6-d28aacc56592.png" 
-                  alt="Suntory Cup Background" 
-                  className="max-h-72 max-w-72 object-contain"
-                />
+                <img src="/lovable-uploads/fc297cde-a9d2-4fb0-acf6-d28aacc56592.png" alt="Suntory Cup Background" className="max-h-72 max-w-72 object-contain" />
               </div>
               
               <h1 className="text-6xl md:text-8xl font-black font-orbitron mb-6 relative z-20 tracking-wider">
                 BetLoopr
               </h1>
               
-              <p className="text-xl md:text-2xl text-emerald-100 mb-8 max-w-3xl mx-auto relative z-20">
-                create tournaments, manage games, bets and side wagers -- clever, competitive, live and a bit cheeky :)
-              </p>
+              <p className="text-xl md:text-2xl text-emerald-100 mb-8 max-w-3xl mx-auto relative z-20">Manage Golf tournaments, wagers, side bets and more</p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-20">
-                {user ? (
-                  <>
-                    <button 
-                      onClick={handleCreateTournament}
-                      className="bg-white text-emerald-600 px-8 py-4 rounded-lg font-semibold hover:bg-emerald-50 transition-colors flex items-center justify-center space-x-2"
-                    >
+                {user ? <>
+                    <button onClick={handleCreateTournament} className="bg-white text-emerald-600 px-8 py-4 rounded-lg font-semibold hover:bg-emerald-50 transition-colors flex items-center justify-center space-x-2">
                       <Plus className="h-5 w-5" />
                       <span>Create Tournament</span>
                     </button>
-                    <button 
-                      onClick={handlePlayNow}
-                      className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-emerald-600 transition-colors flex items-center justify-center space-x-2"
-                    >
+                    <button onClick={handlePlayNow} className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-emerald-600 transition-colors flex items-center justify-center space-x-2">
                       <Play className="h-5 w-5" />
                       <span>Play Now</span>
                     </button>
-                  </>
-                ) : (
-                  <Button 
-                    onClick={() => navigate('/auth')}
-                    className="bg-white text-emerald-600 hover:bg-emerald-50 px-8 py-4 text-lg h-auto"
-                  >
+                  </> : <Button onClick={() => navigate('/auth')} className="bg-white text-emerald-600 hover:bg-emerald-50 px-8 py-4 text-lg h-auto">
                     <LogIn className="h-5 w-5 mr-2" />
                     Sign In to Get Started
-                  </Button>
-                )}
+                  </Button>}
               </div>
             </div>
           </div>
@@ -143,108 +119,50 @@ const Index = memo(() => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Active Tournaments Prompt */}
-        {user && activeTournaments.filter(t => t.status === 'draft').length > 0 && (
-          <div className="mb-8 bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-xl p-6 text-white">
+        {user && activeTournaments.filter(t => t.status === 'draft').length > 0 && <div className="mb-8 bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-xl p-6 text-white">
             <h3 className="text-xl font-semibold mb-4">Ready to Start Your Tournaments?</h3>
             <div className="space-y-3">
-              {activeTournaments
-                .filter(t => t.status === 'draft')
-                .map((tournament) => (
-                  <div key={tournament.id} className="bg-white/10 rounded-lg p-4 flex justify-between items-center">
+              {activeTournaments.filter(t => t.status === 'draft').map(tournament => <div key={tournament.id} className="bg-white/10 rounded-lg p-4 flex justify-between items-center">
                     <div>
                       <h4 className="font-medium">{tournament.name}</h4>
                       <p className="text-emerald-100 text-sm">
                         Max {tournament.max_players} players • {tournament.game_type}
                       </p>
                     </div>
-                    <button
-                      onClick={() => handleStartTournament(tournament.id)}
-                      className="bg-white text-emerald-600 px-4 py-2 rounded-lg hover:bg-emerald-50 transition-colors flex items-center space-x-2 font-medium"
-                    >
+                    <button onClick={() => handleStartTournament(tournament.id)} className="bg-white text-emerald-600 px-4 py-2 rounded-lg hover:bg-emerald-50 transition-colors flex items-center space-x-2 font-medium">
                       <Play className="h-4 w-4" />
                       <span>Enter Lobby</span>
                     </button>
-                  </div>
-              ))}
+                  </div>)}
             </div>
-          </div>
-        )}
+          </div>}
 
         {/* Simplified Main Content */}
         <div className="mb-8">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-gray-900">Active Tournaments</h2>
-            <Button 
-              onClick={() => navigate('/tournaments')}
-              variant="outline"
-              className="flex items-center space-x-2"
-            >
+            <Button onClick={() => navigate('/tournaments')} variant="outline" className="flex items-center space-x-2">
               <Calendar className="h-4 w-4" />
               <span>View All</span>
             </Button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {user && !loading ? (
-              <>
+            {user && !loading ? <>
                 {/* Display user tournaments first */}
-                {activeTournaments.slice(0, 2).map((tournament) => (
-                  <TournamentCard 
-                    key={tournament.id}
-                    id={tournament.id}
-                    title={tournament.name}
-                    players={0} // TODO: Get participant count
-                    maxPlayers={tournament.max_players || 16}
-                    gameType={tournament.game_type}
-                    prize={tournament.entry_fee > 0 ? 
-                      `$${tournament.prize_pool} Pool` : 
-                      'No Entry Fee'}
-                    date={new Date(tournament.created_at).toLocaleDateString()}
-                    status={tournament.status === 'draft' ? 'upcoming' : tournament.status as any}
-                    onAction={() => handleStartTournament(tournament.id)}
-                  />
-                ))}
+                {activeTournaments.slice(0, 2).map(tournament => <TournamentCard key={tournament.id} id={tournament.id} title={tournament.name} players={0} // TODO: Get participant count
+            maxPlayers={tournament.max_players || 16} gameType={tournament.game_type} prize={tournament.entry_fee > 0 ? `$${tournament.prize_pool} Pool` : 'No Entry Fee'} date={new Date(tournament.created_at).toLocaleDateString()} status={tournament.status === 'draft' ? 'upcoming' : tournament.status as any} onAction={() => handleStartTournament(tournament.id)} />)}
                 
                 {/* Fill with demo tournaments if not enough user ones */}
-                {activeTournaments.length < 2 && 
-                  upcomingTournaments.slice(0, 2 - activeTournaments.length).map((tournament) => (
-                    <TournamentCard 
-                      key={tournament.id}
-                      id={tournament.id}
-                      title={tournament.title}
-                      players={tournament.players}
-                      maxPlayers={tournament.maxPlayers}
-                      gameType={tournament.gameType}
-                      prize={tournament.prize}
-                      date={tournament.date}
-                      status={tournament.status}
-                      onAction={() => {
-                        if (tournament.status === 'live') {
-                          navigate(`/tournament/${tournament.id}/live`);
-                        } else {
-                          navigate(`/tournament/${tournament.id}/lobby`);
-                        }
-                      }}
-                    />
-                  ))
-                }
-              </>
-            ) : (
-              // Show demo tournaments for non-authenticated users
-              upcomingTournaments.slice(0, 2).map((tournament) => (
-                <TournamentCard 
-                  key={tournament.id}
-                  id={tournament.id}
-                  title={tournament.title}
-                  players={tournament.players}
-                  maxPlayers={tournament.maxPlayers}
-                  gameType={tournament.gameType}
-                  prize={tournament.prize}
-                  date={tournament.date}
-                  status={tournament.status}
-                  onAction={() => navigate('/auth')}
-                />
-              ))
-            )}
+                {activeTournaments.length < 2 && upcomingTournaments.slice(0, 2 - activeTournaments.length).map(tournament => <TournamentCard key={tournament.id} id={tournament.id} title={tournament.title} players={tournament.players} maxPlayers={tournament.maxPlayers} gameType={tournament.gameType} prize={tournament.prize} date={tournament.date} status={tournament.status} onAction={() => {
+              if (tournament.status === 'live') {
+                navigate(`/tournament/${tournament.id}/live`);
+              } else {
+                navigate(`/tournament/${tournament.id}/lobby`);
+              }
+            }} />)}
+              </> :
+          // Show demo tournaments for non-authenticated users
+          upcomingTournaments.slice(0, 2).map(tournament => <TournamentCard key={tournament.id} id={tournament.id} title={tournament.title} players={tournament.players} maxPlayers={tournament.maxPlayers} gameType={tournament.gameType} prize={tournament.prize} date={tournament.date} status={tournament.status} onAction={() => navigate('/auth')} />)}
           </div>
         </div>
 
@@ -255,15 +173,7 @@ const Index = memo(() => {
         </div>
 
         {/* Conditional Content Based on User Type */}
-        {isNewUser ? (
-          <WelcomeTutorialSection 
-            onCreateTournament={handleCreateTournament}
-            onPlayNow={handlePlayNow}
-            onViewRules={handleViewRules}
-          />
-        ) : (
-          <EnhancedStatsSection userActivity={userActivity} />
-        )}
+        {isNewUser ? <WelcomeTutorialSection onCreateTournament={handleCreateTournament} onPlayNow={handlePlayNow} onViewRules={handleViewRules} /> : <EnhancedStatsSection userActivity={userActivity} />}
 
         {/* Simplified Quick Actions - Single CTA */}
         <div className="mt-12 bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-2xl p-8 text-white text-center">
@@ -271,41 +181,21 @@ const Index = memo(() => {
           <p className="text-emerald-100 mb-6 max-w-2xl mx-auto">
             Create your first tournament or join a live game with our comprehensive golf management tools.
           </p>
-          {user ? (
-            <Button 
-              onClick={handleCreateTournament}
-              size="lg"
-              className="bg-white text-emerald-600 hover:bg-emerald-50 px-8 py-4 text-lg h-auto"
-            >
+          {user ? <Button onClick={handleCreateTournament} size="lg" className="bg-white text-emerald-600 hover:bg-emerald-50 px-8 py-4 text-lg h-auto">
               <Plus className="h-5 w-5 mr-2" />
               Create Tournament
-            </Button>
-          ) : (
-            <Button 
-              onClick={() => navigate('/auth')}
-              size="lg"
-              className="bg-white text-emerald-600 hover:bg-emerald-50 px-8 py-4 text-lg h-auto"
-            >
+            </Button> : <Button onClick={() => navigate('/auth')} size="lg" className="bg-white text-emerald-600 hover:bg-emerald-50 px-8 py-4 text-lg h-auto">
               <LogIn className="h-5 w-5 mr-2" />
               Get Started
-            </Button>
-          )}
+            </Button>}
         </div>
       </div>
 
       {/* Create Tournament Modal */}
-      <CreateTournamentModal 
-        isOpen={isCreateTournamentModalOpen} 
-        onClose={handleCloseCreateTournamentModal} 
-      />
+      <CreateTournamentModal isOpen={isCreateTournamentModalOpen} onClose={handleCloseCreateTournamentModal} />
 
       {/* Play Now Modal */}
-      <PlayNowModal 
-        isOpen={isPlayNowModalOpen} 
-        onClose={handleClosePlayNowModal} 
-      />
-    </div>
-  );
+      <PlayNowModal isOpen={isPlayNowModalOpen} onClose={handleClosePlayNowModal} />
+    </div>;
 });
-
 export default Index;
