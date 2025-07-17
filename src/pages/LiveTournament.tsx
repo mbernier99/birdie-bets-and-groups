@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Trophy, Users, Target, Clock, ArrowLeft, Settings } from 'lucide-react';
@@ -12,111 +13,6 @@ const LiveTournament = () => {
   const navigate = useNavigate();
   const [tournament, setTournament] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('leaderboard');
-
-  // Mock data for MatchPlayView and TeamLeaderboard
-  const mockMatches = [
-    {
-      id: 'match-1',
-      team1Id: 'team-1',
-      team2Id: 'team-2',
-      status: {
-        matchId: 'match-1',
-        team1Id: 'team-1',
-        team2Id: 'team-2',
-        team1Players: ['player-1', 'player-2'],
-        team2Players: ['player-3', 'player-4'],
-        team1Score: {
-          teamId: 'team-1',
-          holesWon: 2,
-          holesLost: 1,
-          holesHalved: 0,
-          matchStatus: 'active' as const
-        },
-        team2Score: {
-          teamId: 'team-2',
-          holesWon: 1,
-          holesLost: 2,
-          holesHalved: 0,
-          matchStatus: 'active' as const
-        },
-        currentHole: 4,
-        status: 'active' as const
-      }
-    }
-  ];
-
-  const mockTeams = [
-    {
-      id: 'team-1',
-      name: 'Team Alpha',
-      players: ['player-1', 'player-2']
-    },
-    {
-      id: 'team-2',
-      name: 'Team Beta',
-      players: ['player-3', 'player-4']
-    }
-  ];
-
-  const mockPlayers = [
-    {
-      id: 'player-1',
-      name: 'John Doe',
-      scores: [
-        { playerId: 'player-1', hole: 1, gross: 4, net: 3, strokes: 1 }
-      ]
-    },
-    {
-      id: 'player-2',
-      name: 'Jane Smith',
-      scores: [
-        { playerId: 'player-2', hole: 1, gross: 5, net: 4, strokes: 1 }
-      ]
-    },
-    {
-      id: 'player-3',
-      name: 'Mike Johnson',
-      scores: [
-        { playerId: 'player-3', hole: 1, gross: 3, net: 3, strokes: 0 }
-      ]
-    },
-    {
-      id: 'player-4',
-      name: 'Sarah Wilson',
-      scores: [
-        { playerId: 'player-4', hole: 1, gross: 4, net: 3, strokes: 1 }
-      ]
-    }
-  ];
-
-  const mockTeamLeaderboard = [
-    {
-      teamId: 'team-1',
-      teamName: 'Team Alpha',
-      player1LastName: 'Doe',
-      player2LastName: 'Smith',
-      teamScore: -2,
-      matchStatus: 'won' as const,
-      currentHole: 7,
-      holesWon: 3,
-      holesLost: 1,
-      holesHalved: 0,
-      marginOfVictory: 2
-    },
-    {
-      teamId: 'team-2',
-      teamName: 'Team Beta',
-      player1LastName: 'Johnson',
-      player2LastName: 'Wilson',
-      teamScore: 1,
-      matchStatus: 'lost' as const,
-      currentHole: 7,
-      holesWon: 1,
-      holesLost: 3,
-      holesHalved: 0,
-      marginOfVictory: 2
-    }
-  ];
 
   useEffect(() => {
     // Load tournament data
@@ -237,7 +133,7 @@ const LiveTournament = () => {
               )}
               {tournament.gameType.type?.includes('Team') && (
                 <button
-                  onClick={()={() => setActiveTab('teams')}
+                  onClick={() => setActiveTab('teams')}
                   className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                     activeTab === 'teams'
                       ? 'border-emerald-500 text-emerald-600'
@@ -255,13 +151,15 @@ const LiveTournament = () => {
         <div className="bg-white rounded-lg shadow-sm border border-emerald-100">
           {activeTab === 'leaderboard' && <Leaderboard />}
           {activeTab === 'matches' && (
-            <MatchPlayView 
-              matches={mockMatches}
-              teams={mockTeams}
-              players={mockPlayers}
-            />
+            <div className="p-6 text-center text-gray-500">
+              <p>Match data will be loaded when Supabase is connected</p>
+            </div>
           )}
-          {activeTab === 'teams' && <TeamLeaderboard teams={mockTeamLeaderboard} />}
+          {activeTab === 'teams' && (
+            <div className="p-6 text-center text-gray-500">
+              <p>Team data will be loaded when Supabase is connected</p>
+            </div>
+          )}
         </div>
       </div>
 
