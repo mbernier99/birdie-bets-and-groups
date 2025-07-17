@@ -9,6 +9,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Index from "./pages/Index";
 import Tournaments from "./pages/Tournaments";
 import Tracker from "./pages/Tracker";
+import GolfTracker from "./pages/GolfTracker";
 import GolfRules from "./pages/GolfRules";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
@@ -36,6 +37,11 @@ const App = () => (
             <Route path="/tracker" element={
               <ProtectedRoute>
                 <Tracker />
+              </ProtectedRoute>
+            } />
+            <Route path="/golf" element={
+              <ProtectedRoute>
+                <GolfTracker />
               </ProtectedRoute>
             } />
             <Route path="/rules" element={<GolfRules />} />

@@ -302,6 +302,12 @@ const Index = () => {
                 Create Tournament
               </button>
               <button 
+                onClick={() => navigate('/golf')}
+                className="bg-emerald-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-emerald-400 transition-colors"
+              >
+                Track Golf Round
+              </button>
+              <button 
                 onClick={handlePlayNow}
                 className="border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-emerald-600 transition-colors"
               >
