@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { handleSecureError, logSecurityEvent, secureStorage } from '@/utils/securityHelpers';
+import { useAuthRateLimit } from '@/hooks/useRateLimiter';
 import { toast } from '@/hooks/use-toast';
 
 interface AuthContextType {
@@ -36,6 +38,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const { withRateLimit } = useAuthRateLimit();
 
   // Function to refresh the session
   const refreshSession = async () => {
@@ -127,7 +130,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, firstName?: string, lastName?: string) => {
+  const signUp = withRateLimit(async (email: string, password: string, firstName?: string, lastName?: string) => {
     const redirectUrl = `${window.location.origin}/`;
     
     try {
@@ -142,25 +145,45 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           }
         }
       });
+
+      if (error) {
+        logSecurityEvent('sign_up_failed', { email, error: error.message });
+        return { error: new Error(handleSecureError(error, 'authentication')) };
+      }
+
+      logSecurityEvent('sign_up_success', { email });
       return { error };
     } catch (error: any) {
-      console.error('Signup error:', error);
-      return { error };
+      logSecurityEvent('sign_up_error', { email, error: error.message });
+      return { error: new Error(handleSecureError(error, 'authentication')) };
     }
-  };
+  }, () => {
+    logSecurityEvent('sign_up_rate_limited', {});
+    return { error: new Error('Too many signup attempts. Please try again later.') };
+  });
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = withRateLimit(async (email: string, password: string) => {
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-      return { error };
+
+      if (error) {
+        logSecurityEvent('sign_in_failed', { email, error: error.message });
+        return { error: new Error(handleSecureError(error, 'authentication')) };
+      }
+
+      logSecurityEvent('sign_in_success', { email });
+      return { error: null };
     } catch (error: any) {
-      console.error('Sign in error:', error);
-      return { error };
+      logSecurityEvent('sign_in_error', { email, error: error.message });
+      return { error: new Error(handleSecureError(error, 'authentication')) };
     }
-  };
+  }, () => {
+    logSecurityEvent('sign_in_rate_limited', {});
+    return { error: new Error('Too many login attempts. Please try again later.') };
+  });
 
   const signInWithGoogle = async () => {
     try {
@@ -180,9 +203,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut();
-      // Clear any auth-related state or caches here
-    } catch (error) {
+      // Clear secure storage on logout
+      secureStorage.clearExpired();
+      
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        logSecurityEvent('sign_out_failed', { error: error.message });
+        throw new Error(handleSecureError(error, 'authentication'));
+      }
+
+      logSecurityEvent('sign_out_success', {});
+    } catch (error: any) {
+      logSecurityEvent('sign_out_error', { error: error.message });
       console.error('Sign out error:', error);
     }
   };

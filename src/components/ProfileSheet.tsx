@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { profileSchema, validateAndSanitizeForm } from '@/utils/validators';
+import { handleSecureError, logSecurityEvent } from '@/utils/securityHelpers';
 import {
   Sheet,
   SheetContent,
@@ -88,23 +90,47 @@ export const ProfileSheet = ({ open, onOpenChange }: ProfileSheetProps) => {
     
     setSaving(true);
     try {
+      // Validate and sanitize form data
+      const formData = {
+        firstName: profile.first_name || '',
+        lastName: profile.last_name || '',
+        phone: profile.phone || '',
+        handicap: (profile.handicap || 0).toString(),
+        homeCourse: profile.home_course || '',
+      };
+
+      const validation = validateAndSanitizeForm(profileSchema, formData);
+
+      if (!validation.isValid) {
+        const errorMessage = Object.values(validation.errors || {}).join(', ');
+        toast({
+          title: "Validation Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
+        logSecurityEvent('profile_validation_failed', { errors: validation.errors });
+        return;
+      }
+
       const { error } = await supabase
         .from('profiles')
         .update({
-          first_name: profile.first_name,
-          last_name: profile.last_name,
-          phone: profile.phone,
-          home_course: profile.home_course,
-          handicap: profile.handicap,
+          first_name: validation.data!.firstName,
+          last_name: validation.data!.lastName,
+          phone: validation.data!.phone || null,
+          handicap: validation.data!.handicap ? Math.round(validation.data!.handicap) : null,
+          home_course: validation.data!.homeCourse || null,
         })
         .eq('id', user.id);
 
       if (error) {
+        const errorMessage = handleSecureError(error, 'profile_update');
         toast({
           title: 'Error',
-          description: 'Failed to save profile',
+          description: errorMessage,
           variant: 'destructive',
         });
+        logSecurityEvent('profile_update_failed', { userId: user.id, error: error.message });
         return;
       }
 
@@ -114,8 +140,15 @@ export const ProfileSheet = ({ open, onOpenChange }: ProfileSheetProps) => {
       });
       
       setEditing(false);
+      logSecurityEvent('profile_updated', { userId: user.id });
     } catch (error) {
-      console.error('Error saving profile:', error);
+      const errorMessage = handleSecureError(error, 'profile_update');
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+      logSecurityEvent('profile_update_error', { userId: user.id, error: error.message });
     } finally {
       setSaving(false);
     }

@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { emailSchema, sanitizeInput } from '@/utils/validators';
+import { useToast } from '@/hooks/use-toast';
 
 interface Player {
   id: string;
@@ -17,14 +19,45 @@ interface BulkPlayerImportProps {
 
 export const BulkPlayerImport: React.FC<BulkPlayerImportProps> = ({ onAddPlayers }) => {
   const [bulkEmails, setBulkEmails] = useState('');
+  const { toast } = useToast();
 
   const processBulkEmails = () => {
     const emails = bulkEmails
       .split(/[,\n]/)
-      .map(email => email.trim())
+      .map(email => sanitizeInput(email.trim()))
       .filter(email => email && email.includes('@'));
 
-    const newPlayers = emails.map(email => ({
+    // Validate each email
+    const validEmails: string[] = [];
+    const invalidEmails: string[] = [];
+
+    emails.forEach(email => {
+      const validation = emailSchema.safeParse(email);
+      if (validation.success) {
+        validEmails.push(validation.data);
+      } else {
+        invalidEmails.push(email);
+      }
+    });
+
+    if (invalidEmails.length > 0) {
+      toast({
+        title: "Invalid Emails",
+        description: `Found ${invalidEmails.length} invalid email addresses. Only valid emails will be imported.`,
+        variant: "destructive",
+      });
+    }
+
+    if (validEmails.length === 0) {
+      toast({
+        title: "No Valid Emails",
+        description: "No valid email addresses found to import.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const newPlayers = validEmails.map(email => ({
       id: Date.now().toString() + Math.random(),
       name: email.split('@')[0],
       email: email,
@@ -34,6 +67,11 @@ export const BulkPlayerImport: React.FC<BulkPlayerImportProps> = ({ onAddPlayers
 
     onAddPlayers(newPlayers);
     setBulkEmails('');
+
+    toast({
+      title: "Players Imported",
+      description: `Successfully imported ${validEmails.length} players.`,
+    });
   };
 
   return (

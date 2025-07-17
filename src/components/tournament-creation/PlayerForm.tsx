@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { playerSchema, validateAndSanitizeForm } from '@/utils/validators';
+import { useToast } from '@/hooks/use-toast';
 
 interface Player {
   id: string;
@@ -19,22 +21,53 @@ export const PlayerForm: React.FC<PlayerFormProps> = ({ onAddPlayer }) => {
   const [newPlayerName, setNewPlayerName] = useState('');
   const [newPlayerEmail, setNewPlayerEmail] = useState('');
   const [newPlayerHandicap, setNewPlayerHandicap] = useState('');
+  const { toast } = useToast();
 
   const addPlayer = () => {
-    if (newPlayerName && newPlayerEmail && newPlayerHandicap) {
-      const newPlayer = {
-        id: Date.now().toString(),
-        name: newPlayerName,
-        email: newPlayerEmail,
-        handicapIndex: parseFloat(newPlayerHandicap),
-        status: 'invited' as const
-      };
-
-      onAddPlayer(newPlayer);
-      setNewPlayerName('');
-      setNewPlayerEmail('');
-      setNewPlayerHandicap('');
+    if (!newPlayerName || !newPlayerEmail || !newPlayerHandicap) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all fields",
+        variant: "destructive",
+      });
+      return;
     }
+
+    const formData = {
+      name: newPlayerName,
+      email: newPlayerEmail,
+      handicapIndex: newPlayerHandicap,
+    };
+
+    // Validate each field separately since playerSchema expects different types
+    const playerValidation = playerSchema.safeParse({
+      name: formData.name,
+      email: formData.email,
+      handicapIndex: parseFloat(formData.handicapIndex),
+    });
+
+    if (!playerValidation.success) {
+      const errorMessage = playerValidation.error.issues.map(issue => issue.message).join(', ');
+      toast({
+        title: "Validation Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const newPlayer = {
+      id: Date.now().toString(),
+      name: playerValidation.data.name,
+      email: playerValidation.data.email,
+      handicapIndex: playerValidation.data.handicapIndex,
+      status: 'invited' as const
+    };
+
+    onAddPlayer(newPlayer);
+    setNewPlayerName('');
+    setNewPlayerEmail('');
+    setNewPlayerHandicap('');
   };
 
   return (
