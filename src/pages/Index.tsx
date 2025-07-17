@@ -3,6 +3,7 @@ import { Trophy, Target, TrendingUp, Plus, Calendar, DollarSign, Play, LogIn } f
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
+import { useTournaments } from '@/hooks/useTournaments';
 import Navbar from '../components/Navbar';
 import TournamentCard from '../components/TournamentCard';
 import Leaderboard from '../components/Leaderboard';
@@ -16,23 +17,19 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState('tournaments');
   const [isCreateTournamentModalOpen, setIsCreateTournamentModalOpen] = useState(false);
   const [isPlayNowModalOpen, setIsPlayNowModalOpen] = useState(false);
-  const [savedTournaments, setSavedTournaments] = useState([]);
   const [isNewUser, setIsNewUser] = useState(true);
   const [userActivity, setUserActivity] = useState({ hasPlayedTournaments: false, totalTournaments: 0, totalWinnings: 0, lastActivity: null });
   const { user, signOut } = useAuth();
+  const { tournaments, loading } = useTournaments();
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Load saved tournaments from localStorage
-    const tournaments = JSON.parse(localStorage.getItem('savedTournaments') || '[]');
-    setSavedTournaments(tournaments);
-    
     // Check if user is new
     const newUser = isFirstTimeUser();
     const activity = detectUserActivity();
     setIsNewUser(newUser);
     setUserActivity(activity);
-  }, [isCreateTournamentModalOpen]); // Refresh when modal closes
+  }, []);
 
   const handleCreateTournament = () => {
     console.log('Create Tournament button clicked on homepage');
@@ -85,9 +82,9 @@ const Index = () => {
     }
   ];
 
-  // Filter active tournaments from saved tournaments
-  const activeSavedTournaments = savedTournaments.filter((t: any) => 
-    t.status === 'created' || t.status === 'live'
+  // Filter active tournaments
+  const activeTournaments = tournaments.filter(t => 
+    t.status === 'draft' || t.status === 'lobby' || t.status === 'live'
   );
 
   return (
@@ -149,19 +146,19 @@ const Index = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Saved Tournaments Prompt */}
-        {savedTournaments.filter((t: any) => t.status === 'created').length > 0 && (
+        {/* Active Tournaments Prompt */}
+        {user && activeTournaments.filter(t => t.status === 'draft').length > 0 && (
           <div className="mb-8 bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-xl p-6 text-white">
             <h3 className="text-xl font-semibold mb-4">Ready to Start Your Tournaments?</h3>
             <div className="space-y-3">
-              {savedTournaments
-                .filter((t: any) => t.status === 'created')
-                .map((tournament: any) => (
+              {activeTournaments
+                .filter(t => t.status === 'draft')
+                .map((tournament) => (
                   <div key={tournament.id} className="bg-white/10 rounded-lg p-4 flex justify-between items-center">
                     <div>
-                      <h4 className="font-medium">{tournament.basicInfo.name}</h4>
+                      <h4 className="font-medium">{tournament.name}</h4>
                       <p className="text-emerald-100 text-sm">
-                        Max {tournament.basicInfo.maxPlayers} players • {tournament.gameType.type || 'Game type not set'}
+                        Max {tournament.max_players} players • {tournament.game_type}
                       </p>
                     </div>
                     <button
@@ -225,27 +222,53 @@ const Index = () => {
               </button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Display saved tournaments first */}
-              {activeSavedTournaments.slice(0, 2).map((tournament: any) => (
-                <TournamentCard 
-                  key={tournament.id}
-                  id={tournament.id}
-                  title={tournament.basicInfo.name}
-                  players={tournament.players.length}
-                  maxPlayers={tournament.basicInfo.maxPlayers}
-                  gameType={tournament.gameType.type || 'Custom Game'}
-                  prize={tournament.wagering.entryFee > 0 ? 
-                    `${tournament.wagering.currency}${tournament.wagering.entryFee * tournament.basicInfo.maxPlayers} Pool` : 
-                    'No Entry Fee'}
-                  date={tournament.createdAt ? new Date(tournament.createdAt).toLocaleDateString() : 'Today'}
-                  status={tournament.status}
-                  onAction={() => handleStartTournament(tournament.id)}
-                />
-              ))}
-              
-              {/* Fill with demo tournaments if not enough saved ones */}
-              {activeSavedTournaments.length < 2 && 
-                upcomingTournaments.slice(0, 2 - activeSavedTournaments.length).map((tournament) => (
+              {user && !loading ? (
+                <>
+                  {/* Display user tournaments first */}
+                  {activeTournaments.slice(0, 2).map((tournament) => (
+                    <TournamentCard 
+                      key={tournament.id}
+                      id={tournament.id}
+                      title={tournament.name}
+                      players={0} // TODO: Get participant count
+                      maxPlayers={tournament.max_players || 16}
+                      gameType={tournament.game_type}
+                      prize={tournament.entry_fee > 0 ? 
+                        `$${tournament.prize_pool} Pool` : 
+                        'No Entry Fee'}
+                      date={new Date(tournament.created_at).toLocaleDateString()}
+                      status={tournament.status === 'draft' ? 'upcoming' : tournament.status as any}
+                      onAction={() => handleStartTournament(tournament.id)}
+                    />
+                  ))}
+                  
+                  {/* Fill with demo tournaments if not enough user ones */}
+                  {activeTournaments.length < 2 && 
+                    upcomingTournaments.slice(0, 2 - activeTournaments.length).map((tournament) => (
+                      <TournamentCard 
+                        key={tournament.id}
+                        id={tournament.id}
+                        title={tournament.title}
+                        players={tournament.players}
+                        maxPlayers={tournament.maxPlayers}
+                        gameType={tournament.gameType}
+                        prize={tournament.prize}
+                        date={tournament.date}
+                        status={tournament.status}
+                        onAction={() => {
+                          if (tournament.status === 'live') {
+                            navigate(`/tournament/${tournament.id}/live`);
+                          } else {
+                            navigate(`/tournament/${tournament.id}/lobby`);
+                          }
+                        }}
+                      />
+                    ))
+                  }
+                </>
+              ) : (
+                // Show demo tournaments for non-authenticated users
+                upcomingTournaments.slice(0, 2).map((tournament) => (
                   <TournamentCard 
                     key={tournament.id}
                     id={tournament.id}
@@ -256,16 +279,10 @@ const Index = () => {
                     prize={tournament.prize}
                     date={tournament.date}
                     status={tournament.status}
-                    onAction={() => {
-                      if (tournament.status === 'live') {
-                        navigate(`/tournament/${tournament.id}/live`);
-                      } else {
-                        navigate(`/tournament/${tournament.id}/lobby`);
-                      }
-                    }}
+                    onAction={() => navigate('/auth')}
                   />
                 ))
-              }
+              )}
             </div>
           </div>
         )}

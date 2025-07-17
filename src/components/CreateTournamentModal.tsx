@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useTournaments } from '@/hooks/useTournaments';
 import { validateStep } from '../utils/tournamentValidation';
 import BasicInfoStep from './tournament-creation/BasicInfoStep';
 import CourseSetupStep from './tournament-creation/CourseSetupStep';
@@ -164,26 +165,54 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
     }));
   };
 
-  const handleSaveTournament = () => {
+  const { createTournament } = useTournaments();
+
+  const handleSaveTournament = async () => {
     console.log('Saving tournament with data:', tournamentData);
     
-    const savedTournaments = JSON.parse(localStorage.getItem('savedTournaments') || '[]');
-    const newTournament = {
-      id: Date.now().toString(),
-      ...tournamentData,
-      status: 'created',
-      createdAt: new Date().toISOString()
-    };
-    
-    savedTournaments.push(newTournament);
-    localStorage.setItem('savedTournaments', JSON.stringify(savedTournaments));
-    
-    toast({
-      title: "Tournament Saved!",
-      description: "Your tournament has been saved successfully.",
-    });
-    
-    onClose();
+    try {
+      await createTournament({
+        name: tournamentData.basicInfo.name,
+        description: `${tournamentData.gameType.type} tournament`,
+        status: 'draft',
+        game_type: mapGameTypeToDatabase(tournamentData.gameType.type),
+        entry_fee: tournamentData.wagering.entryFee,
+        prize_pool: tournamentData.wagering.entryFee * tournamentData.basicInfo.maxPlayers,
+        max_players: tournamentData.basicInfo.maxPlayers,
+        rules: tournamentData.gameType.rules,
+        settings: {
+          course: tournamentData.course,
+          teams: tournamentData.teams,
+          pairings: tournamentData.pairings,
+          sideBets: tournamentData.sideBets,
+          wagering: tournamentData.wagering
+        }
+      });
+      
+      onClose();
+    } catch (error) {
+      console.error('Error creating tournament:', error);
+    }
+  };
+
+  const mapGameTypeToDatabase = (gameType: string): 'stroke' | 'match' | 'team_match' | 'skins' | 'stableford' => {
+    switch (gameType.toLowerCase()) {
+      case 'stroke play':
+      case 'stroke':
+        return 'stroke';
+      case 'match play':
+      case 'match':
+        return 'match';
+      case 'team match play':
+      case 'team_match':
+        return 'team_match';
+      case 'skins':
+        return 'skins';
+      case 'stableford':
+        return 'stableford';
+      default:
+        return 'stroke';
+    }
   };
 
   const CurrentStepComponent = steps[currentStep].component;

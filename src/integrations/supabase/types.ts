@@ -153,6 +153,68 @@ export type Database = {
           },
         ]
       }
+      press_bets: {
+        Row: {
+          amount: number
+          bet_type: string
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          expires_at: string | null
+          hole_number: number | null
+          id: string
+          initiator_id: string
+          location_lat: number | null
+          location_lng: number | null
+          status: string
+          target_id: string
+          tournament_id: string
+          winner_id: string | null
+        }
+        Insert: {
+          amount?: number
+          bet_type: string
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          hole_number?: number | null
+          id?: string
+          initiator_id: string
+          location_lat?: number | null
+          location_lng?: number | null
+          status?: string
+          target_id: string
+          tournament_id: string
+          winner_id?: string | null
+        }
+        Update: {
+          amount?: number
+          bet_type?: string
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          hole_number?: number | null
+          id?: string
+          initiator_id?: string
+          location_lat?: number | null
+          location_lng?: number | null
+          status?: string
+          target_id?: string
+          tournament_id?: string
+          winner_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "press_bets_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -303,6 +365,228 @@ export type Database = {
             columns: ["round_id"]
             isOneToOne: false
             referencedRelation: "rounds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_messages: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          message_type: string
+          metadata: Json | null
+          tournament_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          message_type?: string
+          metadata?: Json | null
+          tournament_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          message_type?: string
+          metadata?: Json | null
+          tournament_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_messages_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_participants: {
+        Row: {
+          entry_paid: boolean | null
+          handicap: number | null
+          id: string
+          joined_at: string
+          status: string
+          team_id: string | null
+          tournament_id: string
+          user_id: string
+        }
+        Insert: {
+          entry_paid?: boolean | null
+          handicap?: number | null
+          id?: string
+          joined_at?: string
+          status?: string
+          team_id?: string | null
+          tournament_id: string
+          user_id: string
+        }
+        Update: {
+          entry_paid?: boolean | null
+          handicap?: number | null
+          id?: string
+          joined_at?: string
+          status?: string
+          team_id?: string | null
+          tournament_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_participants_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_rounds: {
+        Row: {
+          created_at: string
+          id: string
+          round_id: string
+          team_id: string | null
+          tournament_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          round_id: string
+          team_id?: string | null
+          tournament_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          round_id?: string
+          team_id?: string | null
+          tournament_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_rounds_round_id_fkey"
+            columns: ["round_id"]
+            isOneToOne: false
+            referencedRelation: "rounds"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournament_rounds_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournament_rounds_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_teams: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          tournament_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          tournament_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_teams_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournaments: {
+        Row: {
+          course_id: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          end_time: string | null
+          entry_fee: number | null
+          game_type: string
+          id: string
+          max_players: number | null
+          name: string
+          prize_pool: number | null
+          rules: Json | null
+          settings: Json | null
+          start_time: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          course_id?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          end_time?: string | null
+          entry_fee?: number | null
+          game_type?: string
+          id?: string
+          max_players?: number | null
+          name: string
+          prize_pool?: number | null
+          rules?: Json | null
+          settings?: Json | null
+          start_time?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          course_id?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          end_time?: string | null
+          entry_fee?: number | null
+          game_type?: string
+          id?: string
+          max_players?: number | null
+          name?: string
+          prize_pool?: number | null
+          rules?: Json | null
+          settings?: Json | null
+          start_time?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournaments_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
             referencedColumns: ["id"]
           },
         ]
