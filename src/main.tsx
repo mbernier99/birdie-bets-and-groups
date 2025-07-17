@@ -10,4 +10,8 @@ if (Capacitor.isNativePlatform()) {
   console.log('Running on native platform:', Capacitor.getPlatform())
 }
 
-createRoot(document.getElementById("root")!).render(<App />);
+createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
