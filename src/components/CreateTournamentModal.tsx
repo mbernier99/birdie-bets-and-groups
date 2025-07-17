@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
@@ -12,8 +12,6 @@ import BasicInfoStep from './tournament-creation/BasicInfoStep';
 import CourseSetupStep from './tournament-creation/CourseSetupStep';
 import GameTypeStep from './tournament-creation/GameTypeStep';
 import TeamOrganizationStep from './tournament-creation/TeamOrganizationStep';
-import WageringStep from './tournament-creation/WageringStep';
-import SideBetsStep from './tournament-creation/SideBetsStep';
 import ReviewStep from './tournament-creation/ReviewStep';
 
 interface CreateTournamentModalProps {
@@ -71,9 +69,7 @@ export interface TournamentData {
   };
 }
 
-const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, onClose }) => {
-  console.log('CreateTournamentModal rendered with props:', { isOpen, onClose });
-
+const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOpen, onClose }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const { toast } = useToast();
@@ -116,18 +112,16 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
     }
   });
 
+  // Simplified to 5 essential steps
   const steps = [
     { title: 'Basic Info', component: BasicInfoStep },
     { title: 'Course Setup', component: CourseSetupStep },
     { title: 'Game Type', component: GameTypeStep },
     { title: 'Players & Teams', component: TeamOrganizationStep },
-    { title: 'Wagering', component: WageringStep },
-    { title: 'Side Bets', component: SideBetsStep },
     { title: 'Review', component: ReviewStep }
   ];
 
   const handleNext = () => {
-    console.log('Next button clicked, current step:', currentStep);
     
     // Validate current step
     const validation = validateStep(currentStep, tournamentData);
@@ -150,7 +144,6 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
   };
 
   const handlePrevious = () => {
-    console.log('Previous button clicked, current step:', currentStep);
     setValidationErrors([]);
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
@@ -158,7 +151,6 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
   };
 
   const handleStepData = (stepKey: keyof TournamentData, data: any) => {
-    console.log('Step data updated:', stepKey, data);
     setTournamentData(prev => ({
       ...prev,
       [stepKey]: data
@@ -168,7 +160,6 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
   const { createTournament } = useTournaments();
 
   const handleSaveTournament = async () => {
-    console.log('Saving tournament with data:', tournamentData);
     
     try {
       await createTournament({
@@ -184,7 +175,6 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
           course: tournamentData.course,
           teams: tournamentData.teams,
           pairings: tournamentData.pairings,
-          sideBets: tournamentData.sideBets,
           wagering: tournamentData.wagering
         }
       });
@@ -370,6 +360,6 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = ({ isOpen, o
       </DialogContent>
     </Dialog>
   );
-};
+});
 
 export default CreateTournamentModal;

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Trophy, Target, User, BookOpen, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import MobileHeader from './MobileHeader';
 import MobileNavigation from './MobileNavigation';
 
-const Navbar = () => {
+const Navbar = memo(() => {
   const location = useLocation();
   const { user, signOut } = useAuth();
   
@@ -106,6 +106,6 @@ const Navbar = () => {
       <MobileNavigation />
     </>
   );
-};
+});
 
 export default Navbar;

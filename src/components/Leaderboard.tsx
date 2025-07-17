@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { Trophy, Award } from 'lucide-react';
 
 interface LeaderboardEntry {
@@ -18,7 +18,7 @@ const mockLeaderboard: LeaderboardEntry[] = [
   { rank: 5, name: 'Tom Wilson', score: '+3', earnings: '-$25', holes: '16' }
 ];
 
-const Leaderboard = () => {
+const Leaderboard = memo(() => {
   const getRankIcon = (rank: number) => {
     if (rank === 1) return <Trophy className="h-5 w-5 text-yellow-500" />;
     if (rank === 2) return <Award className="h-5 w-5 text-gray-400" />;
@@ -86,6 +86,6 @@ const Leaderboard = () => {
       </div>
     </div>
   );
-};
+});
 
 export default Leaderboard;

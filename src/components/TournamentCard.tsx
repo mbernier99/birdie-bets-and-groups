@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { Trophy, Users, Calendar, DollarSign } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -15,7 +15,7 @@ interface TournamentCardProps {
   onAction?: () => void;
 }
 
-const TournamentCard: React.FC<TournamentCardProps> = ({
+const TournamentCard: React.FC<TournamentCardProps> = memo(({
   id,
   title,
   players,
@@ -126,6 +126,6 @@ const TournamentCard: React.FC<TournamentCardProps> = ({
       </div>
     </div>
   );
-};
+});
 
 export default TournamentCard;
