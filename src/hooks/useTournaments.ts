@@ -8,6 +8,12 @@ type Tournament = Database['public']['Tables']['tournaments']['Row'];
 type TournamentInsert = Database['public']['Tables']['tournaments']['Insert'];
 type TournamentParticipant = Database['public']['Tables']['tournament_participants']['Row'];
 
+// Input validation helper
+const isValidUUID = (id: string): boolean => {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(id);
+};
+
 export const useTournaments = () => {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
@@ -21,20 +27,49 @@ export const useTournaments = () => {
       return;
     }
 
+    if (!isValidUUID(user.id)) {
+      setError('Invalid user ID');
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
 
-      // Fetch tournaments the user created or is participating in
-      const { data: userTournaments, error: tournamentsError } = await supabase
+      // Use secure parameterized queries instead of template literals
+      const { data: createdTournaments, error: createdError } = await supabase
         .from('tournaments')
         .select('*')
-        .or(`created_by.eq.${user.id},id.in.(select tournament_id from tournament_participants where user_id = ${user.id})`)
-        .order('created_at', { ascending: false });
+        .eq('created_by', user.id);
 
-      if (tournamentsError) throw tournamentsError;
+      if (createdError) throw createdError;
 
-      setTournaments(userTournaments || []);
+      const { data: participatedTournaments, error: participatedError } = await supabase
+        .from('tournaments')
+        .select(`
+          *,
+          tournament_participants!inner(user_id)
+        `)
+        .eq('tournament_participants.user_id', user.id);
+
+      if (participatedError) throw participatedError;
+
+      // Combine and deduplicate tournaments
+      const allTournaments = [
+        ...(createdTournaments || []),
+        ...(participatedTournaments || [])
+      ];
+
+      // Remove duplicates based on tournament ID
+      const uniqueTournaments = allTournaments.filter((tournament, index, self) =>
+        index === self.findIndex(t => t.id === tournament.id)
+      );
+
+      // Sort by created_at descending
+      uniqueTournaments.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+      setTournaments(uniqueTournaments);
     } catch (err: any) {
       setError(err.message);
       toast({
@@ -52,11 +87,21 @@ export const useTournaments = () => {
       throw new Error('Must be authenticated to create tournament');
     }
 
+    if (!isValidUUID(user.id)) {
+      throw new Error('Invalid user ID');
+    }
+
+    // Validate tournament name
+    if (!tournamentData.name || tournamentData.name.trim().length === 0) {
+      throw new Error('Tournament name is required');
+    }
+
     try {
       const { data, error } = await supabase
         .from('tournaments')
         .insert({
           ...tournamentData,
+          name: tournamentData.name.trim(),
           created_by: user.id
         })
         .select()
@@ -93,6 +138,10 @@ export const useTournaments = () => {
   };
 
   const updateTournament = async (tournamentId: string, updates: Partial<Tournament>) => {
+    if (!isValidUUID(tournamentId)) {
+      throw new Error('Invalid tournament ID');
+    }
+
     try {
       const { data, error } = await supabase
         .from('tournaments')
@@ -119,6 +168,15 @@ export const useTournaments = () => {
   const joinTournament = async (tournamentId: string, handicap?: number) => {
     if (!user) {
       throw new Error('Must be authenticated to join tournament');
+    }
+
+    if (!isValidUUID(tournamentId) || !isValidUUID(user.id)) {
+      throw new Error('Invalid tournament or user ID');
+    }
+
+    // Validate handicap if provided
+    if (handicap !== undefined && (handicap < -54 || handicap > 54)) {
+      throw new Error('Handicap must be between -54 and 54');
     }
 
     try {
@@ -152,6 +210,10 @@ export const useTournaments = () => {
 
   const leaveTournament = async (tournamentId: string) => {
     if (!user) return;
+
+    if (!isValidUUID(tournamentId) || !isValidUUID(user.id)) {
+      throw new Error('Invalid tournament or user ID');
+    }
 
     try {
       const { error } = await supabase

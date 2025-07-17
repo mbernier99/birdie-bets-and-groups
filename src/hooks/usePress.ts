@@ -7,6 +7,12 @@ import type { Database } from '@/integrations/supabase/types';
 type PressBet = Database['public']['Tables']['press_bets']['Row'];
 type PressBetInsert = Database['public']['Tables']['press_bets']['Insert'];
 
+// Input validation helper
+const isValidUUID = (id: string): boolean => {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(id);
+};
+
 export const usePress = (tournamentId?: string) => {
   const [pressBets, setPressBets] = useState<PressBet[]>([]);
   const [loading, setLoading] = useState(true);
@@ -16,6 +22,13 @@ export const usePress = (tournamentId?: string) => {
   const fetchPressBets = async () => {
     if (!user || !tournamentId) {
       setPressBets([]);
+      setLoading(false);
+      return;
+    }
+
+    // Validate tournamentId
+    if (!isValidUUID(tournamentId)) {
+      setError('Invalid tournament ID');
       setLoading(false);
       return;
     }
@@ -48,6 +61,10 @@ export const usePress = (tournamentId?: string) => {
   const createPressBet = async (betData: Omit<PressBetInsert, 'id' | 'created_at' | 'initiator_id' | 'tournament_id'>) => {
     if (!user || !tournamentId) {
       throw new Error('Must be authenticated and in a tournament to create press bet');
+    }
+
+    if (!isValidUUID(tournamentId) || !isValidUUID(user.id)) {
+      throw new Error('Invalid user or tournament ID');
     }
 
     try {
@@ -87,6 +104,10 @@ export const usePress = (tournamentId?: string) => {
       throw new Error('Must be authenticated to accept press bet');
     }
 
+    if (!isValidUUID(betId) || !isValidUUID(user.id)) {
+      throw new Error('Invalid bet or user ID');
+    }
+
     try {
       const { data, error } = await supabase
         .from('press_bets')
@@ -120,6 +141,10 @@ export const usePress = (tournamentId?: string) => {
   const declinePressBet = async (betId: string) => {
     if (!user) {
       throw new Error('Must be authenticated to decline press bet');
+    }
+
+    if (!isValidUUID(betId) || !isValidUUID(user.id)) {
+      throw new Error('Invalid bet or user ID');
     }
 
     try {
@@ -157,7 +182,12 @@ export const usePress = (tournamentId?: string) => {
       throw new Error('Must be authenticated to resolve press bet');
     }
 
+    if (!isValidUUID(betId) || !isValidUUID(user.id) || !isValidUUID(winnerId)) {
+      throw new Error('Invalid bet, user, or winner ID');
+    }
+
     try {
+      // Use secure query method - check if user is either initiator OR target
       const { data, error } = await supabase
         .from('press_bets')
         .update({ 
@@ -196,6 +226,10 @@ export const usePress = (tournamentId?: string) => {
       throw new Error('Must be authenticated to cancel press bet');
     }
 
+    if (!isValidUUID(betId) || !isValidUUID(user.id)) {
+      throw new Error('Invalid bet or user ID');
+    }
+
     try {
       const { data, error } = await supabase
         .from('press_bets')
@@ -229,8 +263,8 @@ export const usePress = (tournamentId?: string) => {
   useEffect(() => {
     fetchPressBets();
 
-    if (tournamentId) {
-      // Set up real-time subscription for press bets
+    if (tournamentId && isValidUUID(tournamentId)) {
+      // Set up real-time subscription for press bets with safe filter
       const channel = supabase
         .channel(`press-bets-${tournamentId}`)
         .on(
