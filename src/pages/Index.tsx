@@ -92,7 +92,7 @@ const Index = memo(() => {
                 <img src="/lovable-uploads/fc297cde-a9d2-4fb0-acf6-d28aacc56592.png" alt="Suntory Cup Background" className="max-h-72 max-w-72 object-contain" />
               </div>
               
-              <h1 className="text-6xl md:text-8xl font-black font-orbitron mb-6 relative z-20 tracking-wider">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black font-orbitron mb-6 relative z-20 tracking-wider w-full break-words">
                 BetLoopr
               </h1>
               
