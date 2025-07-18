@@ -1,21 +1,19 @@
 import React, { useState, useEffect, memo, useCallback } from 'react';
-import { Trophy, Plus, Calendar, Play, LogIn } from 'lucide-react';
+import { Trophy, Plus, Target, Play, LogIn, DollarSign, Users, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { useTournaments } from '@/hooks/useTournaments';
 import Navbar from '../components/Navbar';
-import TournamentCard from '../components/TournamentCard';
-import Leaderboard from '../components/Leaderboard';
 import CreateTournamentModal from '../components/CreateTournamentModal';
-import PlayNowModal from '../components/PlayNowModal';
-import WelcomeTutorialSection from '../components/welcome/WelcomeTutorialSection';
-import EnhancedStatsSection from '../components/stats/EnhancedStatsSection';
+import QuickMatchModal from '../components/QuickMatchModal';
 import { isFirstTimeUser, detectUserActivity } from '../utils/userDetection';
+
 const Index = memo(() => {
-  const [activeTab] = useState('tournaments'); // Simplified - removed tab switching
   const [isCreateTournamentModalOpen, setIsCreateTournamentModalOpen] = useState(false);
-  const [isPlayNowModalOpen, setIsPlayNowModalOpen] = useState(false);
+  const [isQuickMatchModalOpen, setIsQuickMatchModalOpen] = useState(false);
   const [isNewUser, setIsNewUser] = useState(true);
   const [userActivity, setUserActivity] = useState({
     hasPlayedTournaments: false,
@@ -23,66 +21,104 @@ const Index = memo(() => {
     totalWinnings: 0,
     lastActivity: null
   });
-  const {
-    user,
-    signOut
-  } = useAuth();
-  const {
-    tournaments,
-    loading
-  } = useTournaments();
+
+  const { user } = useAuth();
+  const { tournaments, loading } = useTournaments();
   const navigate = useNavigate();
+
   useEffect(() => {
-    // Check if user is new
     const newUser = isFirstTimeUser();
     const activity = detectUserActivity();
     setIsNewUser(newUser);
     setUserActivity(activity);
   }, []);
-  const handleCreateTournament = useCallback(() => {
-    setIsCreateTournamentModalOpen(true);
-  }, []);
-  const handlePlayNow = useCallback(() => {
-    setIsPlayNowModalOpen(true);
-  }, []);
-  const handleCloseCreateTournamentModal = () => {
-    setIsCreateTournamentModalOpen(false);
-  };
-  const handleClosePlayNowModal = () => {
-    setIsPlayNowModalOpen(false);
-  };
-  const handleStartTournament = useCallback((tournamentId: string) => {
-    navigate(`/tournament/${tournamentId}/lobby`);
-  }, [navigate]);
-  const handleViewRules = useCallback(() => {
-    navigate('/rules');
-  }, [navigate]);
-  const upcomingTournaments = [{
-    id: 'demo-1',
-    title: 'Sunday Singles Championship',
-    players: 12,
-    maxPlayers: 16,
-    gameType: 'Match Play',
-    prize: '$240 Pool',
-    date: 'Today 8:00 AM',
-    status: 'live' as const
-  }, {
-    id: 'demo-2',
-    title: 'Weekend Warriors Best Ball',
-    players: 8,
-    maxPlayers: 12,
-    gameType: '2-Man Best Ball',
-    prize: '$180 Pool',
-    date: 'Tomorrow 9:30 AM',
-    status: 'upcoming' as const
-  }];
 
-  // Filter active tournaments
-  const activeTournaments = tournaments.filter(t => t.status === 'draft' || t.status === 'lobby' || t.status === 'live');
-  return <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 pb-20 md:pb-0">
+  const handleQuickMatch = useCallback(() => {
+    setIsQuickMatchModalOpen(true);
+  }, []);
+
+  const handleInvitePlayer = useCallback(() => {
+    // For now, open the quick match modal
+    setIsQuickMatchModalOpen(true);
+  }, []);
+
+  const handleCloseQuickMatchModal = () => {
+    setIsQuickMatchModalOpen(false);
+  };
+
+  const quickStats = {
+    activeBets: 3,
+    todayWinnings: 45,
+    playersOnline: 12
+  };
+
+  const quickMatchTypes = [
+    {
+      id: 'long-drive',
+      title: 'Long Drive Challenge',
+      description: 'Compete for the longest drive',
+      icon: <Target className="h-8 w-8" />,
+      color: 'bg-blue-500',
+      stakes: ['$5', '$10', '$20']
+    },
+    {
+      id: 'closest-pin',
+      title: 'Closest to Pin',
+      description: 'Most accurate shot wins',
+      icon: <Trophy className="h-8 w-8" />,
+      color: 'bg-green-500',
+      stakes: ['$5', '$10', '$20']
+    },
+    {
+      id: 'head-to-head',
+      title: 'Head-to-Head Match',
+      description: 'Complete hole comparison',
+      icon: <Users className="h-8 w-8" />,
+      color: 'bg-purple-500',
+      stakes: ['$10', '$25', '$50']
+    },
+    {
+      id: 'custom-bet',
+      title: 'Custom Side Bet',
+      description: 'Create your own challenge',
+      icon: <DollarSign className="h-8 w-8" />,
+      color: 'bg-orange-500',
+      stakes: ['Custom']
+    }
+  ];
+
+  const activeBets = [
+    {
+      id: '1',
+      opponent: 'Mike Johnson',
+      type: 'Long Drive',
+      stake: '$10',
+      status: 'active',
+      hole: 7
+    },
+    {
+      id: '2',
+      opponent: 'Sarah Chen',
+      type: 'Closest to Pin',
+      stake: '$15',
+      status: 'pending',
+      hole: 3
+    },
+    {
+      id: '3',
+      opponent: 'Alex Rivera',
+      type: 'Head-to-Head',
+      stake: '$25',
+      status: 'active',
+      hole: 12
+    }
+  ];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 pb-20 md:pb-0">
       <Navbar />
       
-      {/* Hero Section */}
+      {/* Hero Section - Redesigned for Play Now Focus */}
       <div className="mx-4 sm:mx-6 lg:mx-8 mt-8">
         <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white relative overflow-hidden rounded-2xl">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative z-10">
@@ -96,21 +132,46 @@ const Index = memo(() => {
                 BetLoopr
               </h1>
               
-              <p className="text-xl md:text-2xl text-emerald-100 mb-8 max-w-3xl mx-auto relative z-20">Manage Golf tournaments, wagers, side bets and more</p>
+              <p className="text-xl md:text-2xl text-emerald-100 mb-8 max-w-3xl mx-auto relative z-20">
+                Challenge players, track shots, win money
+              </p>
+
+              {/* Quick Stats */}
+              {user && (
+                <div className="flex justify-center space-x-6 mb-8 text-sm relative z-20">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold">{quickStats.activeBets}</div>
+                    <div className="text-emerald-200">Active Bets</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold">${quickStats.todayWinnings}</div>
+                    <div className="text-emerald-200">Today's Winnings</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold">{quickStats.playersOnline}</div>
+                    <div className="text-emerald-200">Players Online</div>
+                  </div>
+                </div>
+              )}
+              
               <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-20">
-                {user ? <>
-                    <button onClick={handleCreateTournament} className="bg-white text-emerald-600 px-8 py-4 rounded-lg font-semibold hover:bg-emerald-50 transition-colors flex items-center justify-center space-x-2">
-                      <Plus className="h-5 w-5" />
-                      <span>Create Tournament</span>
-                    </button>
-                    <button onClick={handlePlayNow} className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-emerald-600 transition-colors flex items-center justify-center space-x-2">
-                      <Play className="h-5 w-5" />
+                {user ? (
+                  <>
+                    <button onClick={handleQuickMatch} className="bg-white text-emerald-600 px-8 py-4 rounded-lg font-semibold hover:bg-emerald-50 transition-colors flex items-center justify-center space-x-2 text-lg">
+                      <Play className="h-6 w-6" />
                       <span>Play Now</span>
                     </button>
-                  </> : <Button onClick={() => navigate('/auth')} className="bg-white text-emerald-600 hover:bg-emerald-50 px-8 py-4 text-lg h-auto">
+                    <button onClick={handleInvitePlayer} className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-emerald-600 transition-colors flex items-center justify-center space-x-2 text-lg">
+                      <Users className="h-6 w-6" />
+                      <span>Invite Player</span>
+                    </button>
+                  </>
+                ) : (
+                  <Button onClick={() => navigate('/auth')} className="bg-white text-emerald-600 hover:bg-emerald-50 px-8 py-4 text-lg h-auto">
                     <LogIn className="h-5 w-5 mr-2" />
                     Get Started
-                  </Button>}
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -118,84 +179,139 @@ const Index = memo(() => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Active Tournaments Prompt */}
-        {user && activeTournaments.filter(t => t.status === 'draft').length > 0 && <div className="mb-8 bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-xl p-6 text-white">
-            <h3 className="text-xl font-semibold mb-4">Ready to Start Your Tournaments?</h3>
-            <div className="space-y-3">
-              {activeTournaments.filter(t => t.status === 'draft').map(tournament => <div key={tournament.id} className="bg-white/10 rounded-lg p-4 flex justify-between items-center">
-                    <div>
-                      <h4 className="font-medium">{tournament.name}</h4>
-                      <p className="text-emerald-100 text-sm">
-                        Max {tournament.max_players} players • {tournament.game_type}
-                      </p>
-                    </div>
-                    <button onClick={() => handleStartTournament(tournament.id)} className="bg-white text-emerald-600 px-4 py-2 rounded-lg hover:bg-emerald-50 transition-colors flex items-center space-x-2 font-medium">
-                      <Play className="h-4 w-4" />
-                      <span>Enter Lobby</span>
-                    </button>
-                  </div>)}
+        {user ? (
+          <>
+            {/* Quick Match Cards */}
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Quick Match</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {quickMatchTypes.map((match) => (
+                  <Card key={match.id} className="cursor-pointer hover:shadow-lg transition-shadow" onClick={handleQuickMatch}>
+                    <CardHeader className="pb-3">
+                      <div className={`${match.color} w-12 h-12 rounded-lg flex items-center justify-center text-white mb-3`}>
+                        {match.icon}
+                      </div>
+                      <CardTitle className="text-lg">{match.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-gray-600 text-sm mb-3">{match.description}</p>
+                      <div className="flex flex-wrap gap-1">
+                        {match.stakes.map((stake) => (
+                          <Badge key={stake} variant="outline" className="text-xs">
+                            {stake}
+                          </Badge>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
-          </div>}
 
-        {/* Simplified Main Content */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Active Tournaments</h2>
-            <Button onClick={() => navigate('/tournaments')} variant="outline" className="flex items-center space-x-2">
-              <Calendar className="h-4 w-4" />
-              <span>View All</span>
+            {/* Active Bets */}
+            <div className="mb-8">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">Active Bets</h2>
+                <Button onClick={() => navigate('/tracker')} variant="outline" className="flex items-center space-x-2">
+                  <Target className="h-4 w-4" />
+                  <span>Shot Tracker</span>
+                </Button>
+              </div>
+              {activeBets.length > 0 ? (
+                <div className="space-y-3">
+                  {activeBets.map((bet) => (
+                    <Card key={bet.id} className="hover:shadow-md transition-shadow">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-4">
+                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                            <div>
+                              <h4 className="font-medium">vs {bet.opponent}</h4>
+                              <p className="text-sm text-gray-600">{bet.type} • Hole {bet.hole}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="font-semibold text-lg">{bet.stake}</div>
+                            <Badge variant={bet.status === 'active' ? 'default' : 'secondary'}>
+                              {bet.status}
+                            </Badge>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <Card>
+                  <CardContent className="p-8 text-center">
+                    <Target className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No Active Bets</h3>
+                    <p className="text-gray-600 mb-4">Challenge a player to get started</p>
+                    <Button onClick={handleQuickMatch} className="bg-emerald-600 hover:bg-emerald-700">
+                      Start First Bet
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+
+            {/* Daily Leaderboard */}
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Today's Winners</h2>
+              <Card>
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    {[
+                      { name: 'Alex Rivera', winnings: 125, bets: 8 },
+                      { name: 'Sarah Chen', winnings: 85, bets: 5 },
+                      { name: 'Mike Johnson', winnings: 65, bets: 4 }
+                    ].map((player, index) => (
+                      <div key={player.name} className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold ${
+                            index === 0 ? 'bg-yellow-500' : index === 1 ? 'bg-gray-400' : 'bg-orange-600'
+                          }`}>
+                            {index + 1}
+                          </div>
+                          <div>
+                            <div className="font-medium">{player.name}</div>
+                            <div className="text-sm text-gray-600">{player.bets} bets won</div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-semibold text-green-600">+${player.winnings}</div>
+                          <div className="text-sm text-gray-500">today</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </>
+        ) : (
+          /* Guest Content */
+          <div className="text-center py-12">
+            <Target className="h-16 w-16 text-gray-400 mx-auto mb-6" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Ready to Start Winning?</h2>
+            <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
+              Challenge friends to golf side bets, track your shots with GPS, and win money on every hole.
+            </p>
+            <Button onClick={() => navigate('/auth')} size="lg" className="bg-emerald-600 hover:bg-emerald-700 px-8 py-4 text-lg h-auto">
+              <LogIn className="h-5 w-5 mr-2" />
+              Join Now - It's Free
             </Button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {user && !loading ? <>
-                {/* Display user tournaments first */}
-                {activeTournaments.slice(0, 2).map(tournament => <TournamentCard key={tournament.id} id={tournament.id} title={tournament.name} players={0} // TODO: Get participant count
-            maxPlayers={tournament.max_players || 16} gameType={tournament.game_type} prize={tournament.entry_fee > 0 ? `$${tournament.prize_pool} Pool` : 'No Entry Fee'} date={new Date(tournament.created_at).toLocaleDateString()} status={tournament.status === 'draft' ? 'upcoming' : tournament.status as any} onAction={() => handleStartTournament(tournament.id)} />)}
-                
-                {/* Fill with demo tournaments if not enough user ones */}
-                {activeTournaments.length < 2 && upcomingTournaments.slice(0, 2 - activeTournaments.length).map(tournament => <TournamentCard key={tournament.id} id={tournament.id} title={tournament.title} players={tournament.players} maxPlayers={tournament.maxPlayers} gameType={tournament.gameType} prize={tournament.prize} date={tournament.date} status={tournament.status} onAction={() => {
-              if (tournament.status === 'live') {
-                navigate(`/tournament/${tournament.id}/live`);
-              } else {
-                navigate(`/tournament/${tournament.id}/lobby`);
-              }
-            }} />)}
-              </> :
-          // Show demo tournaments for non-authenticated users
-          upcomingTournaments.slice(0, 2).map(tournament => <TournamentCard key={tournament.id} id={tournament.id} title={tournament.title} players={tournament.players} maxPlayers={tournament.maxPlayers} gameType={tournament.gameType} prize={tournament.prize} date={tournament.date} status={tournament.status} onAction={() => navigate('/auth')} />)}
-          </div>
-        </div>
-
-        {/* Live Leaderboard Section */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Live Leaderboard</h2>
-          <Leaderboard />
-        </div>
-
-        {/* Conditional Content Based on User Type */}
-        {isNewUser ? <WelcomeTutorialSection onCreateTournament={handleCreateTournament} onPlayNow={handlePlayNow} onViewRules={handleViewRules} /> : <EnhancedStatsSection userActivity={userActivity} />}
-
-        {/* Simplified Quick Actions - Single CTA */}
-        <div className="mt-12 bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-2xl p-8 text-white text-center">
-          <h3 className="text-2xl font-bold mb-4">Ready to Get Started?</h3>
-          <p className="text-emerald-100 mb-6 max-w-2xl mx-auto">
-            Create your first tournament or join a live game with our comprehensive golf management tools.
-          </p>
-          {user ? <Button onClick={handleCreateTournament} size="lg" className="bg-white text-emerald-600 hover:bg-emerald-50 px-8 py-4 text-lg h-auto">
-              <Plus className="h-5 w-5 mr-2" />
-              Create Tournament
-            </Button> : <Button onClick={() => navigate('/auth')} size="lg" className="bg-white text-emerald-600 hover:bg-emerald-50 px-8 py-4 text-lg h-auto">
-              <LogIn className="h-5 w-5 mr-2" />
-              Get Started
-            </Button>}
-        </div>
+        )}
       </div>
 
-      {/* Create Tournament Modal */}
-      <CreateTournamentModal isOpen={isCreateTournamentModalOpen} onClose={handleCloseCreateTournamentModal} />
+      {/* Create Tournament Modal - Keep for advanced users */}
+      <CreateTournamentModal isOpen={isCreateTournamentModalOpen} onClose={() => setIsCreateTournamentModalOpen(false)} />
 
-      {/* Play Now Modal */}
-      <PlayNowModal isOpen={isPlayNowModalOpen} onClose={handleClosePlayNowModal} />
-    </div>;
+      {/* Quick Match Modal - New simplified flow */}
+      <QuickMatchModal isOpen={isQuickMatchModalOpen} onClose={handleCloseQuickMatchModal} />
+    </div>
+  );
 });
+
 export default Index;
