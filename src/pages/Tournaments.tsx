@@ -1,85 +1,75 @@
 
 import React, { useState, useEffect } from 'react';
-import { TrendingUp, Target, Trophy, DollarSign, Play, Calendar } from 'lucide-react';
+import { Plus, Calendar, Users, DollarSign, Play, Trophy } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import MobileNavigation from '../components/MobileNavigation';
 import MobileHeader from '../components/MobileHeader';
-import QuickMatchModal from '../components/QuickMatchModal';
+import TournamentCard from '../components/TournamentCard';
+import CreateTournamentModal from '../components/CreateTournamentModal';
 
 const Tournaments = () => {
-  const [isQuickMatchModalOpen, setIsQuickMatchModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [savedTournaments, setSavedTournaments] = useState([]);
   const navigate = useNavigate();
 
-  const activeBets = [
+  useEffect(() => {
+    // Load saved tournaments from localStorage
+    const tournaments = JSON.parse(localStorage.getItem('savedTournaments') || '[]');
+    setSavedTournaments(tournaments);
+    console.log('Tournaments component rendered, modal state:', isCreateModalOpen);
+  }, [isCreateModalOpen]); // Refresh when modal closes
+
+  const handleCreateTournament = () => {
+    console.log('Create Tournament button clicked');
+    setIsCreateModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    console.log('Closing modal');
+    setIsCreateModalOpen(false);
+  };
+
+  const handleStartTournament = (tournamentId: string) => {
+    console.log('Starting tournament:', tournamentId);
+    navigate(`/tournament/${tournamentId}/lobby`);
+  };
+
+  // Demo tournaments
+  const demoTournaments = [
     {
-      id: '1',
-      opponent: 'Mike Johnson',
-      type: 'Long Drive',
-      stake: 10,
-      status: 'active',
-      hole: 7,
-      course: 'Pebble Beach',
-      startTime: '2 hours ago'
+      id: 'demo-1',
+      title: 'Sunday Singles Championship',
+      players: 12,
+      maxPlayers: 16,
+      gameType: 'Match Play',
+      prize: '$240 Pool',
+      date: 'Today 8:00 AM',
+      status: 'live' as const
     },
     {
-      id: '2',
-      opponent: 'Sarah Chen',
-      type: 'Closest to Pin',
-      stake: 15,
-      status: 'pending',
-      hole: 3,
-      course: 'Augusta National',
-      startTime: '30 minutes ago'
+      id: 'demo-2',
+      title: 'Weekend Warriors Best Ball',
+      players: 8,
+      maxPlayers: 12,
+      gameType: '2-Man Best Ball',
+      prize: '$180 Pool',
+      date: 'Tomorrow 9:30 AM',
+      status: 'upcoming' as const
     },
     {
-      id: '3',
-      opponent: 'Alex Rivera',
-      type: 'Head-to-Head',
-      stake: 25,
-      status: 'won',
-      hole: 18,
-      course: 'St. Andrews',
-      startTime: 'Yesterday'
+      id: 'demo-3',
+      title: 'Monthly Stroke Play',
+      players: 6,
+      maxPlayers: 8,
+      gameType: 'Stroke Play',
+      prize: '$120 Pool',
+      date: 'Next Week',
+      status: 'upcoming' as const
     }
   ];
 
-  const weeklyStats = {
-    totalBets: 12,
-    won: 8,
-    lost: 3,
-    pending: 1,
-    winnings: 145,
-    winRate: 67
-  };
-
-  const recentWinnings = [
-    { date: 'Today', amount: 45, bets: 3 },
-    { date: 'Yesterday', amount: 75, bets: 5 },
-    { date: 'Dec 16', amount: 25, bets: 2 },
-    { date: 'Dec 15', amount: 0, bets: 2 },
-  ];
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'bg-blue-100 text-blue-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'won': return 'bg-green-100 text-green-800';
-      case 'lost': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getBetTypeIcon = (type: string) => {
-    switch (type) {
-      case 'Long Drive': return <Target className="h-4 w-4" />;
-      case 'Closest to Pin': return <Trophy className="h-4 w-4" />;
-      case 'Head-to-Head': return <DollarSign className="h-4 w-4" />;
-      default: return <Target className="h-4 w-4" />;
-    }
-  };
+  // Combine saved and demo tournaments
+  const allTournaments = [...savedTournaments, ...demoTournaments];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 pb-20 md:pb-0">
@@ -89,135 +79,91 @@ const Tournaments = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">My Bets</h1>
-            <p className="text-gray-600">Track your side bets and winnings</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Tournaments</h1>
+            <p className="text-gray-600">Create and manage your golf tournaments</p>
           </div>
-          <Button
-            onClick={() => setIsQuickMatchModalOpen(true)}
-            className="mt-4 sm:mt-0 bg-emerald-600 text-white hover:bg-emerald-700"
+          <button
+            onClick={handleCreateTournament}
+            className="mt-4 sm:mt-0 bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 transition-colors flex items-center space-x-2"
           >
-            <Play className="h-5 w-5 mr-2" />
-            New Challenge
-          </Button>
+            <Plus className="h-5 w-5" />
+            <span>Create Tournament</span>
+          </button>
         </div>
 
-        {/* Weekly Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-emerald-600">${weeklyStats.winnings}</div>
-              <div className="text-sm text-gray-600">This Week</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-blue-600">{weeklyStats.winRate}%</div>
-              <div className="text-sm text-gray-600">Win Rate</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-green-600">{weeklyStats.won}</div>
-              <div className="text-sm text-gray-600">Bets Won</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-gray-600">{weeklyStats.totalBets}</div>
-              <div className="text-sm text-gray-600">Total Bets</div>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Saved Tournaments Section */}
+        {savedTournaments.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Your Tournaments</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {savedTournaments.map((tournament: any) => (
+                <TournamentCard 
+                  key={tournament.id}
+                  id={tournament.id}
+                  title={tournament.basicInfo.name}
+                  players={tournament.players.length}
+                  maxPlayers={tournament.basicInfo.maxPlayers}
+                  gameType={tournament.gameType.type || 'Custom Game'}
+                  prize={tournament.wagering.entryFee > 0 ? 
+                    `${tournament.wagering.currency}${tournament.wagering.entryFee * tournament.basicInfo.maxPlayers} Pool` : 
+                    'No Entry Fee'}
+                  date={tournament.createdAt ? new Date(tournament.createdAt).toLocaleDateString() : 'Today'}
+                  status={tournament.status}
+                  onAction={() => handleStartTournament(tournament.id)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
 
-        {/* Active Bets */}
+        {/* Demo Tournaments Section */}
         <div className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Active Bets</h2>
-          <div className="space-y-4">
-            {activeBets.map((bet) => (
-              <Card key={bet.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="flex items-center space-x-2">
-                        {getBetTypeIcon(bet.type)}
-                        <div>
-                          <h4 className="font-medium">vs {bet.opponent}</h4>
-                          <p className="text-sm text-gray-600">
-                            {bet.type} • {bet.course} • Hole {bet.hole}
-                          </p>
-                          <p className="text-xs text-gray-500">{bet.startTime}</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-semibold text-lg">${bet.stake}</div>
-                      <Badge className={getStatusColor(bet.status)}>
-                        {bet.status}
-                      </Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            {savedTournaments.length > 0 ? 'Public Tournaments' : 'Available Tournaments'}
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {demoTournaments.map((tournament) => (
+              <TournamentCard 
+                key={tournament.id}
+                id={tournament.id}
+                title={tournament.title}
+                players={tournament.players}
+                maxPlayers={tournament.maxPlayers}
+                gameType={tournament.gameType}
+                prize={tournament.prize}
+                date={tournament.date}
+                status={tournament.status}
+                onAction={() => {
+                  if (tournament.status === 'live') {
+                    navigate(`/tournament/${tournament.id}/live`);
+                  } else {
+                    navigate(`/tournament/${tournament.id}/lobby`);
+                  }
+                }}
+              />
             ))}
           </div>
         </div>
 
-        {/* Recent Winnings */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Recent Performance</h2>
-          <Card>
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                {recentWinnings.map((day, index) => (
-                  <div key={index} className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <Calendar className="h-4 w-4 text-gray-400" />
-                      <div>
-                        <div className="font-medium">{day.date}</div>
-                        <div className="text-sm text-gray-600">{day.bets} bets</div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className={`font-semibold ${day.amount > 0 ? 'text-green-600' : 'text-gray-400'}`}>
-                        {day.amount > 0 ? `+$${day.amount}` : '$0'}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-2xl p-6 text-white text-center">
-          <h3 className="text-xl font-bold mb-3">Ready for Another Challenge?</h3>
-          <p className="text-emerald-100 mb-4">
-            Challenge a friend and start tracking your shots
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button 
-              onClick={() => setIsQuickMatchModalOpen(true)}
-              className="bg-white text-emerald-600 hover:bg-emerald-50"
+        {/* Empty State */}
+        {allTournaments.length === 0 && (
+          <div className="text-center py-12">
+            <Trophy className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">No Tournaments Yet</h3>
+            <p className="text-gray-600 mb-6">Create your first tournament to get started</p>
+            <button
+              onClick={handleCreateTournament}
+              className="bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 transition-colors"
             >
-              <Play className="h-4 w-4 mr-2" />
-              Quick Challenge
-            </Button>
-            <Button 
-              onClick={() => navigate('/tracker')}
-              variant="outline" 
-              className="border-white text-white hover:bg-white hover:text-emerald-600"
-            >
-              <Target className="h-4 w-4 mr-2" />
-              Shot Tracker
-            </Button>
+              Create Your First Tournament
+            </button>
           </div>
-        </div>
+        )}
       </div>
 
-      <QuickMatchModal 
-        isOpen={isQuickMatchModalOpen} 
-        onClose={() => setIsQuickMatchModalOpen(false)} 
+      <CreateTournamentModal 
+        isOpen={isCreateModalOpen} 
+        onClose={handleCloseModal} 
       />
       
       <MobileNavigation />

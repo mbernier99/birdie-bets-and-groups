@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Target, User, Home, TrendingUp } from 'lucide-react';
+import { Trophy, Target, User, Home, CircleDot } from 'lucide-react';
 import { ProfileSheet } from './ProfileSheet';
 
 const MobileNavigation = () => {
@@ -12,8 +12,9 @@ const MobileNavigation = () => {
   
   const navItems = [
     { path: '/', icon: Home, label: 'Home' },
-    { path: '/tracker', icon: Target, label: 'Track' },
-    { path: '/tournaments', icon: TrendingUp, label: 'Bets' },
+    { path: '/golf', icon: Target, label: 'Golf' },
+    { path: '/tournaments', icon: Trophy, label: 'Tournaments' },
+    { path: '/tracker', icon: CircleDot, label: 'Tracker' },
   ];
   
   return (
