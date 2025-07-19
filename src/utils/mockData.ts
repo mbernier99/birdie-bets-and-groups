@@ -287,7 +287,7 @@ export const mockCourses = [
     latitude: 30.1975,
     longitude: -81.3927,
     created_at: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString(),
-    updated_at: newDate().toISOString()
+    updated_at: new Date().toISOString()
   }
 ];
 
@@ -318,10 +318,22 @@ export const getMockSession = () => {
       user_metadata: {
         first_name: user.first_name,
         last_name: user.last_name
-      }
+      },
+      app_metadata: {},
+      aud: 'authenticated',
+      created_at: new Date().toISOString(),
+      phone: null,
+      confirmed_at: new Date().toISOString(),
+      email_confirmed_at: new Date().toISOString(),
+      last_sign_in_at: new Date().toISOString(),
+      role: 'authenticated',
+      updated_at: new Date().toISOString()
     },
     access_token: 'mock_token',
-    expires_at: Date.now() + 24 * 60 * 60 * 1000 // 24 hours from now
+    refresh_token: 'mock_refresh_token',
+    expires_in: 3600,
+    expires_at: Math.floor(Date.now() / 1000) + 3600,
+    token_type: 'bearer'
   };
 };
 

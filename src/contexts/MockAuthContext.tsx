@@ -39,15 +39,15 @@ export const MockAuthProvider: React.FC<MockAuthProviderProps> = ({ children }) 
     if (MOCK_MODE) {
       // Initialize mock session
       const session = getMockSession();
-      setMockSession(session as Session);
-      setMockUser(session?.user as User);
+      setMockSession(session);
+      setMockUser(session?.user || null);
       setLoading(false);
 
       // Listen for user changes in localStorage
       const handleStorageChange = () => {
         const newSession = getMockSession();
-        setMockSession(newSession as Session);
-        setMockUser(newSession?.user as User);
+        setMockSession(newSession);
+        setMockUser(newSession?.user || null);
       };
 
       window.addEventListener('storage', handleStorageChange);
