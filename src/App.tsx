@@ -6,9 +6,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import { MockAuthProvider } from "./contexts/MockAuthContext";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { PageSkeleton } from "./components/ui/loading-skeleton";
 import ProtectedRoute from "./components/ProtectedRoute";
+import MockUserSwitcher from "./components/MockUserSwitcher";
 
 // Lazy load pages for code splitting
 const Index = React.lazy(() => import("./pages/Index"));
@@ -43,46 +45,49 @@ const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Suspense fallback={<PageSkeleton />}>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/tournaments" element={
-                  <ProtectedRoute>
-                    <Tournaments />
-                  </ProtectedRoute>
-                } />
-                <Route path="/tracker" element={
-                  <ProtectedRoute>
-                    <Tracker />
-                  </ProtectedRoute>
-                } />
-                <Route path="/golf" element={
-                  <ProtectedRoute>
-                    <GolfTracker />
-                  </ProtectedRoute>
-                } />
-                <Route path="/rules" element={<GolfRules />} />
-                <Route path="/tournament/:id/lobby" element={
-                  <ProtectedRoute>
-                    <TournamentLobby />
-                  </ProtectedRoute>
-                } />
-                <Route path="/tournament/:id/live" element={
-                  <ProtectedRoute>
-                    <LiveTournament />
-                  </ProtectedRoute>
-                } />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-          </BrowserRouter>
-        </TooltipProvider>
+        <MockAuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <MockUserSwitcher />
+            <BrowserRouter>
+              <Suspense fallback={<PageSkeleton />}>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/tournaments" element={
+                    <ProtectedRoute>
+                      <Tournaments />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/tracker" element={
+                    <ProtectedRoute>
+                      <Tracker />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/golf" element={
+                    <ProtectedRoute>
+                      <GolfTracker />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/rules" element={<GolfRules />} />
+                  <Route path="/tournament/:id/lobby" element={
+                    <ProtectedRoute>
+                      <TournamentLobby />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/tournament/:id/live" element={
+                    <ProtectedRoute>
+                      <LiveTournament />
+                    </ProtectedRoute>
+                  } />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
+            </BrowserRouter>
+          </TooltipProvider>
+        </MockAuthProvider>
       </AuthProvider>
     </QueryClientProvider>
   </ErrorBoundary>
