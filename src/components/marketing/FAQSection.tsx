@@ -68,6 +68,60 @@ const FAQSection = () => {
             </div>
           ))}
         </div>
+
+        {/* Tournament Types Section */}
+        <div className="mt-16">
+          <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">Tournament Types</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h4 className="font-semibold text-gray-900 mb-2">2-Man Best Ball</h4>
+              <p className="text-gray-600 text-sm mb-3">Teams of 2, lowest score on each hole counts</p>
+              <a href="/rules#bestball" className="text-emerald-600 hover:text-emerald-700 text-sm font-medium">View Rules →</a>
+            </div>
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h4 className="font-semibold text-gray-900 mb-2">Match Play</h4>
+              <p className="text-gray-600 text-sm mb-3">Head-to-head competition, win holes not strokes</p>
+              <a href="/rules#matchplay" className="text-emerald-600 hover:text-emerald-700 text-sm font-medium">View Rules →</a>
+            </div>
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h4 className="font-semibold text-gray-900 mb-2">Wolf</h4>
+              <p className="text-gray-600 text-sm mb-3">Rotating partnerships with betting strategy</p>
+              <a href="/rules#wolf" className="text-emerald-600 hover:text-emerald-700 text-sm font-medium">View Rules →</a>
+            </div>
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h4 className="font-semibold text-gray-900 mb-2">Nassau</h4>
+              <p className="text-gray-600 text-sm mb-3">Three separate bets: front 9, back 9, and overall</p>
+              <a href="/rules#nassau" className="text-emerald-600 hover:text-emerald-700 text-sm font-medium">View Rules →</a>
+            </div>
+          </div>
+        </div>
+
+        {/* Betting Types Section */}
+        <div className="mt-16">
+          <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">Betting Types</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h4 className="font-semibold text-gray-900 mb-2">This Hole Only</h4>
+              <p className="text-gray-600 text-sm mb-3">Single hole competition with immediate settlement</p>
+              <a href="/rules#this-hole" className="text-emerald-600 hover:text-emerald-700 text-sm font-medium">View Rules →</a>
+            </div>
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h4 className="font-semibold text-gray-900 mb-2">Head-to-Head Match</h4>
+              <p className="text-gray-600 text-sm mb-3">Direct comparison between players with relative scoring</p>
+              <a href="/rules#head-to-head" className="text-emerald-600 hover:text-emerald-700 text-sm font-medium">View Rules →</a>
+            </div>
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h4 className="font-semibold text-gray-900 mb-2">Total Strokes</h4>
+              <p className="text-gray-600 text-sm mb-3">Lowest cumulative score over multiple holes</p>
+              <a href="/rules#total-strokes" className="text-emerald-600 hover:text-emerald-700 text-sm font-medium">View Rules →</a>
+            </div>
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h4 className="font-semibold text-gray-900 mb-2">Remaining Holes</h4>
+              <p className="text-gray-600 text-sm mb-3">Competition for all holes from current position to finish</p>
+              <a href="/rules#remaining-holes" className="text-emerald-600 hover:text-emerald-700 text-sm font-medium">View Rules →</a>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
