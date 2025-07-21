@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, Users, Target, Trophy, Award } from 'lucide-react';
+import { ChevronDown, ChevronUp, Users, Target, Trophy, Award, Zap, Crosshair, TrendingUp } from 'lucide-react';
 
 const faqs = [
   {
@@ -173,6 +173,42 @@ const FAQSection = () => {
               </div>
               <p className="text-gray-700 text-sm mb-4">Competition for all holes from current position to finish</p>
               <a href="/rules#remaining-holes" className="inline-flex items-center text-emerald-700 hover:text-emerald-800 text-sm font-medium story-link">
+                View Rules <ChevronDown className="h-4 w-4 ml-1 rotate-[-90deg]" />
+              </a>
+            </div>
+            <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-lg border-2 border-emerald-200 p-6 hover:shadow-lg transition-all duration-300 hover:scale-105">
+              <div className="flex items-center mb-3">
+                <div className="p-2 bg-emerald-500 rounded-lg mr-3">
+                  <Zap className="h-6 w-6 text-white" />
+                </div>
+                <h4 className="font-semibold text-gray-900">Long Drive</h4>
+              </div>
+              <p className="text-gray-700 text-sm mb-4">Compete for the longest drive on designated holes</p>
+              <a href="/rules#long-drive" className="inline-flex items-center text-emerald-700 hover:text-emerald-800 text-sm font-medium story-link">
+                View Rules <ChevronDown className="h-4 w-4 ml-1 rotate-[-90deg]" />
+              </a>
+            </div>
+            <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-lg border-2 border-emerald-200 p-6 hover:shadow-lg transition-all duration-300 hover:scale-105">
+              <div className="flex items-center mb-3">
+                <div className="p-2 bg-emerald-500 rounded-lg mr-3">
+                  <Crosshair className="h-6 w-6 text-white" />
+                </div>
+                <h4 className="font-semibold text-gray-900">Closest to the Pin</h4>
+              </div>
+              <p className="text-gray-700 text-sm mb-4">Precision challenge on par 3s and approach shots</p>
+              <a href="/rules#closest-to-pin" className="inline-flex items-center text-emerald-700 hover:text-emerald-800 text-sm font-medium story-link">
+                View Rules <ChevronDown className="h-4 w-4 ml-1 rotate-[-90deg]" />
+              </a>
+            </div>
+            <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-lg border-2 border-emerald-200 p-6 hover:shadow-lg transition-all duration-300 hover:scale-105">
+              <div className="flex items-center mb-3">
+                <div className="p-2 bg-emerald-500 rounded-lg mr-3">
+                  <TrendingUp className="h-6 w-6 text-white" />
+                </div>
+                <h4 className="font-semibold text-gray-900">Dynamic Prop Bets</h4>
+              </div>
+              <p className="text-gray-700 text-sm mb-4">Real-time betting opportunities based on round progress</p>
+              <a href="/rules#dynamic-props" className="inline-flex items-center text-emerald-700 hover:text-emerald-800 text-sm font-medium story-link">
                 View Rules <ChevronDown className="h-4 w-4 ml-1 rotate-[-90deg]" />
               </a>
             </div>
