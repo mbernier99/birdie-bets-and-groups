@@ -216,8 +216,8 @@ const Index = memo(() => {
         /* Marketing Content for Non-Authenticated Users */
         <>
           <FeatureShowcase />
-          <TestimonialSection />
           <HowItWorksSection />
+          <TestimonialSection />
           <FAQSection />
         </>
       )}
