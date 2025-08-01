@@ -18,9 +18,9 @@ import OfflineIndicator from './OfflineIndicator';
 import { Press } from '../types/press';
 
 const OnCourseTracker = () => {
-  const { location, isLocationEnabled, getCurrentLocation } = useOptimizedGPS({ 
-    accuracy: 'medium', 
-    mode: 'tracking' 
+  const { location, isLocationEnabled, getCurrentLocation, requestPermission } = useOptimizedGPS({ 
+    accuracy: 'high', 
+    mode: 'betting' 
   });
   const { takePhoto, saveToStorage, getFromStorage, isMobile } = useMobileFeatures();
   const [currentRoundId] = useState(() => crypto.randomUUID()); // Generate round ID for this session
@@ -62,17 +62,27 @@ const OnCourseTracker = () => {
   useEffect(() => {
     loadSavedPresses();
     
-    // Start GPS tracking if location is available
-    if (isLocationEnabled && isMobile) {
-      startGPSTracking();
-    }
+    // Auto-enable GPS when entering tracker mode
+    const initializeGPS = async () => {
+      if (isMobile && !isLocationEnabled) {
+        const granted = await requestPermission();
+        if (granted) {
+          await getCurrentLocation();
+          startGPSTracking();
+        }
+      } else if (isLocationEnabled && isMobile) {
+        startGPSTracking();
+      }
+    };
+
+    initializeGPS();
 
     return () => {
       if (watchId) {
         stopGPSTracking();
       }
     };
-  }, []);
+  }, [isMobile, isLocationEnabled, requestPermission, getCurrentLocation]);
 
   // Auto-detect current hole based on GPS location
   useEffect(() => {
@@ -195,7 +205,12 @@ const OnCourseTracker = () => {
           <TabsTrigger value="score">Score</TabsTrigger>
           <TabsTrigger value="tracker">Tracker</TabsTrigger>
           <TabsTrigger value="press">Press</TabsTrigger>
-          <TabsTrigger value="location">GPS Bets</TabsTrigger>
+          <TabsTrigger value="location" className="relative">
+            GPS Bets
+            {location && isLocationEnabled && (
+              <span className="absolute -top-1 -right-1 h-2 w-2 bg-green-500 rounded-full"></span>
+            )}
+          </TabsTrigger>
           <TabsTrigger value="ledger">Ledger</TabsTrigger>
         </TabsList>
 
@@ -238,6 +253,56 @@ const OnCourseTracker = () => {
         </TabsContent>
 
         <TabsContent value="tracker" className="p-6">
+          {/* GPS Status and Quick Bet Access */}
+          <div className="mb-6 space-y-4">
+            <div className="flex items-center justify-between p-4 bg-emerald-50 rounded-lg">
+              <div className="flex items-center space-x-2">
+                <MapPin className={`h-5 w-5 ${isLocationEnabled ? 'text-emerald-600' : 'text-red-500'}`} />
+                <span className={`font-medium ${isLocationEnabled ? 'text-emerald-800' : 'text-red-800'}`}>
+                  {isLocationEnabled ? 'GPS Active' : 'GPS Disabled'}
+                </span>
+                {location && (
+                  <span className="text-sm text-emerald-600">
+                    Accuracy: {location.accuracy.toFixed(0)}m
+                  </span>
+                )}
+              </div>
+              {!isLocationEnabled && (
+                <button
+                  onClick={requestPermission}
+                  className="px-3 py-1 bg-emerald-600 text-white rounded text-sm hover:bg-emerald-700"
+                >
+                  Enable GPS
+                </button>
+              )}
+            </div>
+
+            {/* Quick Bet Initiation */}
+            {isLocationEnabled && location && (
+              <div className="p-4 border border-amber-200 bg-amber-50 rounded-lg">
+                <h3 className="font-medium text-amber-800 mb-2">Ready to Bet!</h3>
+                <p className="text-sm text-amber-700 mb-3">
+                  Your GPS is active. Challenge players with location-based bets.
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {players
+                    .filter(player => player.id !== currentUserId)
+                    .slice(0, 2)
+                    .map(player => (
+                      <button
+                        key={player.id}
+                        onClick={() => handleLocationBasedPress(player)}
+                        className="px-3 py-2 bg-amber-600 text-white rounded text-sm hover:bg-amber-700 flex items-center justify-center space-x-1"
+                      >
+                        <Target className="h-4 w-4" />
+                        <span>vs {player.name}</span>
+                      </button>
+                    ))}
+                </div>
+              </div>
+            )}
+          </div>
+
           <ShotTracker
             currentHole={currentHole}
             onRecordShot={handleRecordShot}
