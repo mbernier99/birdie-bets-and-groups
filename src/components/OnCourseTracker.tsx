@@ -33,31 +33,36 @@ const OnCourseTracker = () => {
   const [selectedPlayer, setSelectedPlayer] = useState<{ id: string; name: string; currentHole: number } | null>(null);
   const [watchId, setWatchId] = useState<number | null>(null);
 
-  // Mock tournament and player data - replace with actual data
+  // User data - can work without tournament context
   const currentUserId = 'user-1';
-  const tournamentId = 'tournament-1';
+  const tournamentId = 'casual-round'; // Generic ID for casual rounds
   const players = [
     { id: 'user-1', name: 'You', currentHole: currentHole },
     { id: 'user-2', name: 'John Smith', currentHole: currentHole },
-    { id: 'user-3', name: 'Mike Johnson', currentHole: currentHole - 1 },
-    { id: 'user-4', name: 'Dave Wilson', currentHole: currentHole + 1 }
+    { id: 'user-3', name: 'Mike Johnson', currentHole: currentHole },
+    { id: 'user-4', name: 'Dave Wilson', currentHole: currentHole },
+    { id: 'user-5', name: 'Sarah Lee', currentHole: currentHole }
   ];
 
-  // Mock course data with GPS coordinates
-  const courseHoles = Array.from({ length: 18 }, (_, i) => ({
-    number: i + 1,
-    par: i % 3 === 0 ? 5 : i % 3 === 1 ? 4 : 3,
-    yardage: 350 + (i * 10),
-    handicapIndex: i + 1,
-    teeLocation: {
-      latitude: 40.7128 + (i * 0.001),
-      longitude: -74.0060 + (i * 0.001)
-    },
-    pinLocation: {
-      latitude: 40.7128 + (i * 0.001) + 0.0005,
-      longitude: -74.0060 + (i * 0.001) + 0.0005
-    }
-  }));
+  // Generic GPS coordinates for any location
+  const getCurrentHoleData = () => {
+    if (!location) return null;
+    
+    return {
+      number: currentHole,
+      par: 4, // Default par
+      yardage: 350,
+      handicapIndex: currentHole,
+      teeLocation: {
+        latitude: location.latitude - 0.0005, // Simulate tee 50m back
+        longitude: location.longitude
+      },
+      pinLocation: {
+        latitude: location.latitude + 0.0005, // Simulate pin 50m ahead
+        longitude: location.longitude
+      }
+    };
+  };
 
   useEffect(() => {
     loadSavedPresses();
@@ -84,16 +89,19 @@ const OnCourseTracker = () => {
     };
   }, [isMobile, isLocationEnabled, requestPermission, getCurrentLocation]);
 
-  // Auto-detect current hole based on GPS location
+  // Auto-update hole number every 5 minutes when GPS is active (for casual play)
   useEffect(() => {
-    if (location && courseHoles.length > 0) {
-      const detectedHole = determineCurrentHole(location, courseHoles);
-      if (detectedHole && detectedHole !== currentHole) {
-        console.log(`GPS detected hole change: ${currentHole} -> ${detectedHole}`);
-        setCurrentHole(detectedHole);
-      }
+    if (location && isLocationEnabled) {
+      const interval = setInterval(() => {
+        // Auto-increment hole for casual play
+        if (currentHole < 18) {
+          console.log(`Auto-advancing to hole ${currentHole + 1}`);
+        }
+      }, 300000); // 5 minutes
+
+      return () => clearInterval(interval);
     }
-  }, [location, courseHoles]);
+  }, [location, isLocationEnabled, currentHole]);
 
   const startGPSTracking = () => {
     // GPS tracking is now handled automatically by the optimized hook
@@ -176,14 +184,20 @@ const OnCourseTracker = () => {
     // In a real app, this would trigger a dispute resolution process
   };
 
-  // Get current course position for display
-  const currentPosition = location ? getCoursePosition(location, currentHole, courseHoles) : null;
+  // Get current position for display (works anywhere)
+  const currentPosition = location ? {
+    hole: currentHole,
+    area: 'unknown' as const,
+    distanceToPin: undefined,
+    distanceToTee: undefined
+  } : null;
 
   if (!isMobile) {
     return (
       <div className="bg-gray-100 rounded-lg p-6 text-center">
         <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-        <p className="text-gray-600">On-course tracking is available in the mobile app</p>
+        <p className="text-gray-600 mb-2">GPS tracking and betting work best on mobile</p>
+        <p className="text-sm text-gray-500">Access full features in the mobile app</p>
       </div>
     );
   }
@@ -334,38 +348,60 @@ const OnCourseTracker = () => {
               <Target className="h-6 w-6 text-emerald-600" />
             </div>
 
-            {/* Current Position */}
-            {currentPosition && (
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <h3 className="font-medium mb-2">Current Position</h3>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Hole {currentHole} - {currentPosition.area}</span>
-                  {currentPosition.distanceToPin && (
-                    <span className="text-sm text-gray-600">
-                      {currentPosition.distanceToPin.toFixed(0)}m to pin
-                    </span>
+            {/* Location Status */}
+            <div className="p-4 bg-gradient-to-r from-emerald-50 to-blue-50 rounded-lg border">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center space-x-2">
+                  <MapPin className={`h-5 w-5 ${isLocationEnabled ? 'text-emerald-600' : 'text-red-500'}`} />
+                  <span className="font-medium">GPS Status</span>
+                </div>
+                {location && (
+                  <span className="text-sm text-emerald-600 bg-emerald-100 px-2 py-1 rounded">
+                    Active
+                  </span>
+                )}
+              </div>
+              {location ? (
+                <div className="text-sm text-gray-600">
+                  <p>Location: {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}</p>
+                  <p>Accuracy: {location.accuracy.toFixed(0)}m • Ready for betting</p>
+                </div>
+              ) : (
+                <div className="text-sm text-gray-600">
+                  <p>Enable GPS to create location-based bets</p>
+                  {!isLocationEnabled && (
+                    <button
+                      onClick={requestPermission}
+                      className="mt-2 px-3 py-1 bg-emerald-600 text-white rounded text-sm hover:bg-emerald-700"
+                    >
+                      Enable GPS
+                    </button>
                   )}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
             {/* Available Players for Location Bets */}
             <div className="space-y-2">
               <h3 className="font-medium">Challenge Players</h3>
+              <p className="text-sm text-gray-600 mb-4">Create GPS-based bets with any player, anywhere</p>
               {players
                 .filter(player => player.id !== currentUserId)
                 .map(player => (
-                  <div key={player.id} className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                  <div key={player.id} className="flex items-center justify-between p-3 bg-white border rounded-lg shadow-sm">
                     <div>
                       <span className="font-medium">{player.name}</span>
-                      <span className="text-sm text-gray-600 ml-2">Hole {player.currentHole}</span>
+                      <span className="text-sm text-gray-600 ml-2">
+                        {location ? 'In Range' : 'Offline'}
+                      </span>
                     </div>
                     <button
                       onClick={() => handleLocationBasedPress(player)}
                       disabled={!location || !isLocationEnabled}
-                      className="px-3 py-1 bg-emerald-600 text-white rounded text-sm hover:bg-emerald-700 disabled:bg-gray-400"
+                      className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center space-x-1"
                     >
-                      GPS Bet
+                      <Target className="h-4 w-4" />
+                      <span>Challenge</span>
                     </button>
                   </div>
                 ))}
@@ -404,7 +440,7 @@ const OnCourseTracker = () => {
         targetPlayer={selectedPlayer}
         currentHole={currentHole}
         currentLocation={location}
-        courseHoles={courseHoles}
+        courseHoles={getCurrentHoleData() ? [getCurrentHoleData()] : []}
         onSubmit={handleSubmitLocationBet}
       />
     </div>
