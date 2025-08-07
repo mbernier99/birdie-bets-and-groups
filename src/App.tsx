@@ -24,6 +24,10 @@ const TournamentLobby = React.lazy(() => import("./pages/TournamentLobby"));
 const LiveTournament = React.lazy(() => import("./pages/LiveTournament"));
 const NotFound = React.lazy(() => import("./pages/NotFound"));
 
+// Quick Bet pages
+const QuickBetHome = React.lazy(() => import("./pages/QuickBetHome"));
+const QuickBetRoom = React.lazy(() => import("./pages/QuickBetRoom"));
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -81,6 +85,9 @@ const App = () => (
                       <LiveTournament />
                     </ProtectedRoute>
                   } />
+                  {/* Quick Bet (no auth required) */}
+                  <Route path="/quick-bet" element={<QuickBetHome />} />
+                  <Route path="/quick-bet/:roomId" element={<QuickBetRoom />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
