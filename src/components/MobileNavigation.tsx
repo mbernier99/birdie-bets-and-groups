@@ -1,20 +1,18 @@
 
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Trophy, Target, User, Home, CircleDot } from 'lucide-react';
+import { Users, Zap, User } from 'lucide-react';
 import { ProfileSheet } from './ProfileSheet';
 
 const MobileNavigation = () => {
   const location = useLocation();
   const [profileOpen, setProfileOpen] = useState(false);
   
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + '/');
   
   const navItems = [
-    { path: '/', icon: Home, label: 'Home' },
-    { path: '/golf', icon: Target, label: 'Golf' },
-    { path: '/tournaments', icon: Trophy, label: 'Tournaments' },
-    { path: '/tracker', icon: CircleDot, label: 'Tracker' },
+    { path: '/tournaments', icon: Users, label: 'Groups' },
+    { path: '/quick-bet', icon: Zap, label: 'Quick Bet' },
   ];
   
   return (
@@ -25,7 +23,7 @@ const MobileNavigation = () => {
             <Link
               key={path}
               to={path}
-              className={`flex flex-col items-center justify-center min-w-[60px] h-14 rounded-lg transition-colors ${
+              className={`flex flex-col items-center justify-center flex-1 h-14 rounded-lg transition-colors ${
                 isActive(path)
                   ? 'text-emerald-600 bg-emerald-50'
                   : 'text-gray-600 hover:text-emerald-600 hover:bg-emerald-50'
@@ -37,7 +35,7 @@ const MobileNavigation = () => {
           ))}
           <button
             onClick={() => setProfileOpen(true)}
-            className="flex flex-col items-center justify-center min-w-[60px] h-14 rounded-lg transition-colors text-gray-600 hover:text-emerald-600 hover:bg-emerald-50"
+            className="flex flex-col items-center justify-center flex-1 h-14 rounded-lg transition-colors text-gray-600 hover:text-emerald-600 hover:bg-emerald-50"
           >
             <User className="h-6 w-6 mb-1" />
             <span className="text-xs font-medium">Profile</span>

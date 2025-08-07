@@ -110,10 +110,10 @@ const Tournaments = () => {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Tournaments {MOCK_MODE && <span className="text-sm bg-yellow-100 text-yellow-800 px-2 py-1 rounded">TEST MODE</span>}
+              Groups {MOCK_MODE && <span className="text-sm bg-yellow-100 text-yellow-800 px-2 py-1 rounded">TEST MODE</span>}
             </h1>
             <p className="text-gray-600">
-              {MOCK_MODE ? 'Testing with mock data - create and manage tournaments' : 'Create and manage your golf tournaments'}
+              {MOCK_MODE ? 'Testing with mock data - create and manage group tournaments' : 'Create tournaments and manage your golf groups'}
             </p>
           </div>
           <button
@@ -128,7 +128,7 @@ const Tournaments = () => {
         {/* User Tournaments Section */}
         {displayTournaments.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Your Tournaments</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Your Groups</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {displayTournaments.map((tournament: any) => {
                 const cardData = formatTournamentForCard(tournament);
@@ -154,7 +154,7 @@ const Tournaments = () => {
         {/* Demo Tournaments Section (only when not in mock mode) */}
         {!MOCK_MODE && demoTournaments.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Public Tournaments</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Public Groups</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {demoTournaments.map((tournament) => (
                 <TournamentCard 
@@ -185,16 +185,16 @@ const Tournaments = () => {
           <div className="text-center py-12">
             <Trophy className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              {MOCK_MODE ? 'No Mock Tournaments Yet' : 'No Tournaments Yet'}
+              {MOCK_MODE ? 'No Groups Yet' : 'No Groups Yet'}
             </h3>
             <p className="text-gray-600 mb-6">
-              {MOCK_MODE ? 'Create your first mock tournament to test features' : 'Create your first tournament to get started'}
+              {MOCK_MODE ? 'Create your first group to test features' : 'Create your first group tournament to get started'}
             </p>
             <button
               onClick={handleCreateTournament}
               className="bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 transition-colors"
             >
-              Create Your First Tournament
+              Create Your First Group
             </button>
           </div>
         )}
