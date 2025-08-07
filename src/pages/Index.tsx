@@ -13,7 +13,7 @@ import PlayNowModal from '../components/PlayNowModal';
 import WelcomeTutorialSection from '../components/welcome/WelcomeTutorialSection';
 import EnhancedStatsSection from '../components/stats/EnhancedStatsSection';
 import FeatureShowcase from '../components/marketing/FeatureShowcase';
-import TestimonialSection from '../components/marketing/TestimonialSection';
+
 import HowItWorksSection from '../components/marketing/HowItWorksSection';
 import FAQSection from '../components/marketing/FAQSection';
 import { isFirstTimeUser, detectUserActivity } from '../utils/userDetection';
@@ -217,7 +217,6 @@ const Index = memo(() => {
         <>
           <FeatureShowcase />
           <HowItWorksSection />
-          <TestimonialSection />
           <FAQSection />
         </>
       )}
