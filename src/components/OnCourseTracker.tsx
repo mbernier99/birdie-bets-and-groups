@@ -16,13 +16,15 @@ import ShotTracker from './ShotTracker';
 import ShotHistory from './ShotHistory';
 import OfflineIndicator from './OfflineIndicator';
 import { Press } from '../types/press';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const OnCourseTracker = () => {
   const { location, isLocationEnabled, getCurrentLocation, requestPermission } = useOptimizedGPS({ 
     accuracy: 'high', 
     mode: 'betting' 
   });
-  const { takePhoto, saveToStorage, getFromStorage, isMobile } = useMobileFeatures();
+  const { takePhoto, saveToStorage, getFromStorage } = useMobileFeatures();
+  const isMobile = useIsMobile();
   const [currentRoundId] = useState(() => crypto.randomUUID()); // Generate round ID for this session
   const { shots, recordShot, recordShotWithPhoto, calculateDistance } = useShots(currentRoundId);
   const { preloadCourseData, isOnline } = useOfflineStorage();
