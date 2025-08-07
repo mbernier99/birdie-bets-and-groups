@@ -32,12 +32,13 @@ interface RoomState {
 }
 
 export function useQuickBetRoom({ roomId, name, isHost }: UseQuickBetRoomOptions) {
-  const clientKeyRef = useRef<string>(() => {
-    const key = sessionStorage.getItem("qb_client_key") || crypto.randomUUID();
-    sessionStorage.setItem("qb_client_key", key);
-    return key;
-  }) as any;
-  const clientKey: string = clientKeyRef.current as unknown as string;
+  const [clientKey] = useState(() => {
+    const existing = sessionStorage.getItem("qb_client_key");
+    if (existing) return existing;
+    const k = crypto.randomUUID();
+    sessionStorage.setItem("qb_client_key", k);
+    return k;
+  });
 
   const [participants, setParticipants] = useState<Array<{ key: string; name: string }>>([]);
   const [shots, setShots] = useState<Shot[]>([]);
