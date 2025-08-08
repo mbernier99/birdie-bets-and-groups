@@ -171,9 +171,7 @@ const EnhancedQuickBet: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-gray-600 mb-3">Who can get closest to the pin? Winner takes all.</p>
-                  <Button className="w-full">
-                    Create Room (${Number(amount) || 0})
-                  </Button>
+                  <Button className="w-full">Initiate Bet (${Number(amount) || 0})</Button>
                 </CardContent>
               </Card>
 
@@ -186,9 +184,7 @@ const EnhancedQuickBet: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-gray-600 mb-3">Who can drive it the longest? Distance wins.</p>
-                  <Button variant="secondary" className="w-full">
-                    Create Room (${Number(amount) || 0})
-                  </Button>
+                  <Button variant="secondary" className="w-full">Initiate Bet (${Number(amount) || 0})</Button>
                 </CardContent>
               </Card>
             </div>

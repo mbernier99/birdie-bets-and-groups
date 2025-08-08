@@ -8,6 +8,9 @@ import { useToast } from "@/components/ui/use-toast";
 import { useQuickBetRoom, QuickBetMode, LocationRef } from "@/hooks/useQuickBetRoom";
 import { useOptimizedGPS } from "@/hooks/useOptimizedGPS";
 import { calculateDistance } from "@/utils/gpsCalculations";
+import { Plus } from "lucide-react";
+import InviteSheet from "@/components/quickbet/InviteSheet";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 function metersToYards(m: number) {
   return m * 1.09361;
@@ -22,6 +25,8 @@ const QuickBetRoom: React.FC = () => {
   const storedName = (typeof window !== "undefined" && localStorage.getItem("qb_name")) || "";
   const [name, setName] = useState(storedName);
   const [amount, setAmountInput] = useState<string>(sessionStorage.getItem(`qb_amount_${roomId}`) || "5");
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [namePromptOpen, setNamePromptOpen] = useState(!storedName);
 
   const isHost = Boolean(sessionStorage.getItem(`qb_host_${roomId}`));
 
@@ -54,6 +59,14 @@ const QuickBetRoom: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isHost, navState]);
+
+  // Auto-open invite for host on first load
+  useEffect(() => {
+    if (isHost && !sessionStorage.getItem(`qb_invite_shown_${roomId}`)) {
+      setInviteOpen(true);
+      sessionStorage.setItem(`qb_invite_shown_${roomId}`, "1");
+    }
+  }, [isHost, roomId]);
 
   const handleCapture = async (setter: (loc: LocationRef) => void) => {
     try {
@@ -104,7 +117,7 @@ const QuickBetRoom: React.FC = () => {
     })).sort((a, b) => b.distanceMeters - a.distanceMeters);
   }, [shots, state.mode, state.pinLocation, state.teeLocation]);
 
-  const shareText = `${name || 'Golfer'} invited you to a Quick Bet (${state.mode || 'pick a mode'}) — code ${roomId}. Open this link: ${window.location.origin}/quick-bet/${roomId}`;
+  
 
   return (
     <div className="mx-auto max-w-md p-4 space-y-4">
@@ -113,18 +126,23 @@ const QuickBetRoom: React.FC = () => {
           <h1 className="text-xl font-semibold">Room {roomId}</h1>
           <p className="text-muted-foreground text-sm">{state.mode ? (state.mode === 'ctp' ? 'Closest to the Pin' : 'Long Drive') : isHost ? 'Choose a mode to start' : 'Waiting for host...'}</p>
         </div>
-        <Button variant="outline" onClick={() => { navigator.clipboard.writeText(shareText); toast({ title: 'Invite copied' }); }}>Share</Button>
+        <Button variant="outline" onClick={() => setInviteOpen(true)}>Invite</Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">Participants <Badge variant="secondary">{participants.length}</Badge></CardTitle>
+          <CardTitle className="flex items-center justify-between">
+            <span>Participants <Badge variant="secondary">{participants.length}</Badge></span>
+            <Button size="sm" variant="outline" onClick={() => setInviteOpen(true)} aria-label="Invite participants">
+              <Plus className="h-4 w-4" />
+            </Button>
+          </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-2">
           {participants.map((p) => (
             <Badge key={p.key} variant={p.key === (sessionStorage.getItem('qb_client_key') || '') ? 'default' : 'secondary'}>{p.name}</Badge>
           ))}
-          {participants.length === 0 && <span className="text-sm text-muted-foreground">Waiting for others…</span>}
+          {participants.length === 0 && <span className="text-sm text-muted-foreground">No participants yet. Tap + to invite others.</span>}
         </CardContent>
       </Card>
 
@@ -214,6 +232,46 @@ const QuickBetRoom: React.FC = () => {
         <Button variant="outline" onClick={() => nav('/quick-bet')}>Leave</Button>
         <div className="text-xs text-muted-foreground">GPS: {isLocationEnabled ? 'Active' : 'Disabled'}</div>
       </div>
+
+      <InviteSheet
+        open={inviteOpen}
+        onOpenChange={setInviteOpen}
+        roomId={roomId}
+        mode={state.mode}
+        amount={Number(amount) || undefined}
+        name={name}
+      />
+
+      <Dialog open={namePromptOpen} onOpenChange={setNamePromptOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Enter your name</DialogTitle>
+            <DialogDescription>We’ll show this to others in the room and on the leaderboard.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Input
+              placeholder="Display name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              autoFocus
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              onClick={() => {
+                const trimmed = name.trim();
+                if (!trimmed) return;
+                localStorage.setItem("qb_name", trimmed);
+                setName(trimmed);
+                setNamePromptOpen(false);
+              }}
+              disabled={!name.trim()}
+            >
+              Continue
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
