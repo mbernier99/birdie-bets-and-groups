@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useTournaments } from '@/hooks/useTournaments';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Navbar from '../components/Navbar';
+import MobileNavigation from '../components/MobileNavigation';
 import TournamentCard from '../components/TournamentCard';
 import Leaderboard from '../components/Leaderboard';
 import CreateTournamentModal from '../components/CreateTournamentModal';
@@ -228,6 +229,9 @@ const Index = memo(() => {
       {/* Modals */}
       <CreateTournamentModal isOpen={isCreateTournamentModalOpen} onClose={handleCloseCreateTournamentModal} />
       <PlayNowModal isOpen={isPlayNowModalOpen} onClose={handleClosePlayNowModal} />
+      
+      {/* Mobile Navigation */}
+      {isMobile && <MobileNavigation />}
     </div>
   );
 });
