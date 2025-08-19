@@ -242,6 +242,9 @@ const Dashboard = () => {
     );
   }
 
+  // Debug logging
+  console.log('Dashboard page rendered for user:', user?.email || 'not authenticated');
+
   return (
     <div className="min-h-screen bg-background">
       {!isMobile && <Navbar />}

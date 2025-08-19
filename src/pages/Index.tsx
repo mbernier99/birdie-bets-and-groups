@@ -69,6 +69,9 @@ const Index = memo(() => {
   // Filter active tournaments for authenticated users
   const activeTournaments = user ? tournaments.filter(t => t.status === 'draft' || t.status === 'lobby' || t.status === 'live') : [];
 
+  // Debug logging
+  console.log('Index page rendered for user:', user?.email || 'not authenticated');
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 pb-20 md:pb-0">
       <Navbar />

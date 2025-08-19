@@ -60,8 +60,8 @@ const App = () => (
             <BrowserRouter>
               <Suspense fallback={<PageSkeleton />}>
                 <Routes>
-                  <Route path="/" element={<Dashboard />} />
-                  <Route path="/index" element={<Index />} />
+                  <Route path="/" element={<Index />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/groups" element={
                     <ProtectedRoute>
                       <GroupsPage />
