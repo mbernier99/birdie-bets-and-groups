@@ -84,7 +84,7 @@ const Index = memo(() => {
         
         {/* Hero Section */}
         <div className={`mx-4 sm:mx-6 lg:mx-8 ${isMobile ? 'mt-4' : 'mt-8'}`}>
-          <div className={`${isMobile ? 'bg-white/90 backdrop-blur-sm' : 'bg-gradient-to-r from-emerald-600 to-emerald-700'} text-emerald-800 ${isMobile ? '' : 'text-white'} relative overflow-hidden rounded-2xl`}>
+          <div className={`${isMobile ? '' : 'bg-gradient-to-r from-emerald-600 to-emerald-700'} ${isMobile ? 'text-white' : 'text-white'} relative overflow-hidden ${isMobile ? '' : 'rounded-2xl'}`}>
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative z-10">
               <div className="text-center">
                 {/* Prominent Puffin Logo */}
