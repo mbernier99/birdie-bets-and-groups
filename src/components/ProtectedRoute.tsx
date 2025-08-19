@@ -2,6 +2,7 @@
 import React, { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useMockAuth } from '@/contexts/MockAuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 import { MOCK_MODE } from '@/utils/mockData';
 
@@ -14,8 +15,14 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   requireAdmin = false 
 }) => {
-  const { user, loading, session, refreshSession } = useMockAuth();
+  const mockAuth = useMockAuth();
+  const realAuth = useAuth();
   const location = useLocation();
+  
+  // Use mock auth in mock mode, real auth otherwise
+  const { user, loading, session, refreshSession } = MOCK_MODE ? 
+    { ...mockAuth, loading: false, session: null, refreshSession: () => {} } : 
+    realAuth;
 
   // Check session validity and refresh if needed (skip in mock mode)
   useEffect(() => {

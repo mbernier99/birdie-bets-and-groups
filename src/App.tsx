@@ -14,6 +14,7 @@ import MockUserSwitcher from "./components/MockUserSwitcher";
 
 // Lazy load pages for code splitting
 const Index = React.lazy(() => import("./pages/Index"));
+const BandonDashboard = React.lazy(() => import("./pages/BandonDashboard"));
 const Tournaments = React.lazy(() => import("./pages/Tournaments"));
 const Tracker = React.lazy(() => import("./pages/Tracker"));
 const GolfTracker = React.lazy(() => import("./pages/GolfTracker"));
@@ -57,7 +58,8 @@ const App = () => (
             <BrowserRouter>
               <Suspense fallback={<PageSkeleton />}>
                 <Routes>
-                  <Route path="/" element={<Index />} />
+                  <Route path="/" element={<BandonDashboard />} />
+                  <Route path="/index" element={<Index />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/tournaments" element={
                     <ProtectedRoute>
