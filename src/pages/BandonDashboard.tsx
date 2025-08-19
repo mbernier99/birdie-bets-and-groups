@@ -42,7 +42,7 @@ const BandonDashboard: React.FC = () => {
       {/* Hero Section */}
       <div 
         className="relative h-96 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(/lovable-uploads/cdf100e9-eefe-430d-af52-ca910ea2ab6b.png)` }}
+        style={{ backgroundImage: `url(/lovable-uploads/d4bc4fe8-a6dd-4132-a7d8-c6895b4fe331.png)` }}
       >
         <div className="absolute inset-0 bg-black/40" />
         <div className="relative container mx-auto px-4 h-full flex items-center justify-center">
