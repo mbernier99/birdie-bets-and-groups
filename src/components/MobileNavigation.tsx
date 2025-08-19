@@ -19,7 +19,14 @@ const MobileNavigation = () => {
   
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-emerald-100 shadow-lg z-50 md:hidden">
+      <nav 
+        className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-emerald-100 shadow-lg z-50 md:hidden"
+        style={{
+          backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85)), url(/lovable-uploads/125757c3-6d74-4891-ad71-d309d3795a1a.png)`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        }}
+      >
         <div className="flex justify-around items-center h-16 px-2">
           {navItems.map(({ path, icon: Icon, label }) => (
             <Link
