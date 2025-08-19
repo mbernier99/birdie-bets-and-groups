@@ -23,16 +23,18 @@ const Navbar = memo(() => {
       {/* Desktop Navigation */}
       <nav className="bg-white shadow-lg border-b border-emerald-100 hidden md:block">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
+          <div className="flex justify-center items-center h-16 relative">
+            {/* Centered Puffin Logo */}
+            <div className="absolute left-1/2 transform -translate-x-1/2">
               <img 
-                src="/lovable-uploads/fc297cde-a9d2-4fb0-acf6-d28aacc56592.png" 
-                alt="Suntory Cup" 
-                className="h-12 w-12"
+                src="/lovable-uploads/471c923e-8ed4-4255-8e79-e902970029d3.png" 
+                alt="Puffin Logo" 
+                className="h-12 w-12 object-contain"
               />
             </div>
             
-            <div className="flex items-center space-x-8">
+            {/* Left side navigation */}
+            <div className="absolute left-0 flex items-center space-x-8">
               <Link 
                 to="/" 
                 className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
@@ -70,7 +72,8 @@ const Navbar = memo(() => {
               </Link>
             </div>
             
-            <div className="flex items-center space-x-4">
+            {/* Right side user actions */}
+            <div className="absolute right-0 flex items-center space-x-4">
               {user ? (
                 <>
                   <button 

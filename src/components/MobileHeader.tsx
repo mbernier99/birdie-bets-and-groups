@@ -10,16 +10,18 @@ const MobileHeader = () => {
 
   return (
     <header className="bg-white shadow-sm border-b border-emerald-100 md:hidden">
-      <div className="flex items-center justify-between h-16 px-4">
-        <Link to="/" className="flex items-center space-x-3">
+      <div className="flex items-center justify-center h-16 px-4 relative">
+        {/* Centered Puffin Logo */}
+        <Link to="/" className="absolute left-1/2 transform -translate-x-1/2">
           <img 
-            src="/lovable-uploads/fc297cde-a9d2-4fb0-acf6-d28aacc56592.png" 
-            alt="Suntory Cup" 
-            className="h-10 w-10"
+            src="/lovable-uploads/471c923e-8ed4-4255-8e79-e902970029d3.png" 
+            alt="Puffin Logo" 
+            className="h-10 w-10 object-contain"
           />
         </Link>
         
-        <div className="flex items-center space-x-2">
+        {/* Right side user actions */}
+        <div className="absolute right-4 flex items-center space-x-2">
           {user ? (
             <Button
               onClick={() => signOut()}
