@@ -3,8 +3,10 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Plus, X, AlertCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Users, Settings, AlertCircle, UserPlus } from 'lucide-react';
 import { TournamentData } from '../CreateTournamentModal';
+import PlayerManagementModal from './PlayerManagementModal';
 
 interface BasicInfoStepProps {
   data: TournamentData;
@@ -19,30 +21,8 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ data, onDataChange }) => 
     });
   };
 
-  const handlePlayerChange = (index: number, field: string, value: any) => {
-    const updatedPlayers = [...(data.players || [])];
-    updatedPlayers[index] = {
-      ...updatedPlayers[index],
-      [field]: field === 'handicapIndex' ? parseFloat(value) : value
-    };
-    onDataChange('players', updatedPlayers);
-  };
-
-  const addPlayer = () => {
-    const newPlayer = {
-      id: `player-${Date.now()}`,
-      name: '',
-      email: '',
-      handicapIndex: 18.0,
-      status: 'invited' as const
-    };
-    onDataChange('players', [...(data.players || []), newPlayer]);
-  };
-
-  const removePlayer = (index: number) => {
-    const updatedPlayers = [...(data.players || [])];
-    updatedPlayers.splice(index, 1);
-    onDataChange('players', updatedPlayers);
+  const handlePlayersChange = (players: any[]) => {
+    onDataChange('players', players);
   };
 
   const players = data.players || [];
@@ -93,104 +73,104 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ data, onDataChange }) => 
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <h4 className="text-md font-semibold text-gray-900">Add Players</h4>
-            <span className="text-red-500">*</span>
+            <h4 className="text-md font-semibold">Tournament Players</h4>
+            <span className="text-destructive">*</span>
           </div>
-          <Button
-            type="button"
-            onClick={addPlayer}
-            className="flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700"
-            size="sm"
+          
+          <PlayerManagementModal
+            players={players}
+            onPlayersChange={handlePlayersChange}
+            maxPlayers={data.basicInfo.maxPlayers}
           >
-            <Plus className="h-4 w-4" />
-            <span>Add Player</span>
-          </Button>
+            <Button 
+              type="button"
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <Settings className="h-4 w-4" />
+              Manage Players
+            </Button>
+          </PlayerManagementModal>
         </div>
 
         {players.length === 0 ? (
-          <div className="text-center py-6 text-gray-500 bg-gray-50 rounded-lg border border-red-200">
-            <AlertCircle className="h-6 w-6 text-red-400 mx-auto mb-2" />
-            <p className="text-sm">No players added yet. Click "Add Player" to get started.</p>
-            <p className="text-xs text-red-600 mt-1">At least one player with a name is required</p>
+          <div className="text-center py-8 border-2 border-dashed border-muted rounded-lg">
+            <Users className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
+            <p className="text-muted-foreground mb-2">No players added yet</p>
+            <PlayerManagementModal
+              players={players}
+              onPlayersChange={handlePlayersChange}
+              maxPlayers={data.basicInfo.maxPlayers}
+            >
+              <Button variant="outline" size="sm">
+                <UserPlus className="h-4 w-4 mr-2" />
+                Add Your First Player
+              </Button>
+            </PlayerManagementModal>
           </div>
         ) : (
-          <div className="space-y-3 max-h-60 overflow-y-auto">
-            {players.map((player, index) => (
-              <div key={player.id} className="bg-gray-50 rounded-lg p-3">
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 items-end">
-                  <div className="space-y-1">
-                    <Label htmlFor={`player-name-${index}`} className="text-xs flex items-center space-x-1">
-                      <span>Name</span>
-                      <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id={`player-name-${index}`}
-                      value={player.name}
-                      onChange={(e) => handlePlayerChange(index, 'name', e.target.value)}
-                      placeholder="Player Name"
-                      className={`h-8 ${!player.name.trim() ? 'border-red-300' : ''}`}
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label htmlFor={`player-email-${index}`} className="text-xs flex items-center space-x-1">
-                      <span>Email</span>
-                      <span className="text-blue-600 text-[10px]">(for invitation)</span>
-                    </Label>
-                    <Input
-                      id={`player-email-${index}`}
-                      type="email"
-                      value={player.email}
-                      onChange={(e) => handlePlayerChange(index, 'email', e.target.value)}
-                      placeholder="player@email.com"
-                      className="h-8"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label htmlFor={`player-handicap-${index}`} className="text-xs">Handicap</Label>
-                    <Input
-                      id={`player-handicap-${index}`}
-                      type="number"
-                      step="0.1"
-                      min="0"
-                      max="54"
-                      value={player.handicapIndex}
-                      onChange={(e) => handlePlayerChange(index, 'handicapIndex', e.target.value)}
-                      className="h-8"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs opacity-0">Remove</Label>
-                    <Button
-                      type="button"
-                      onClick={() => removePlayer(index)}
-                      variant="outline"
-                      size="sm"
-                      className="h-8 w-full text-red-600 border-red-300 hover:bg-red-50"
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
+          <div className="space-y-3">
+            {/* Player Stats */}
+            <div className="flex gap-4 text-sm text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <Users className="h-4 w-4" />
+                <span>{players.length} / {data.basicInfo.maxPlayers} players</span>
               </div>
-            ))}
+              <div className="flex items-center gap-1">
+                <span>{players.filter(p => p.name.trim()).length} with names</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span>{players.filter(p => p.email.trim()).length} with emails</span>
+              </div>
+            </div>
+
+            {/* Quick Player Preview */}
+            <div className="bg-muted/30 rounded-lg p-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <h5 className="font-medium text-sm">Player List Preview</h5>
+                <Badge variant="secondary">
+                  {players.filter(p => p.name.trim()).length} ready
+                </Badge>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-32 overflow-y-auto">
+                {players.slice(0, 6).map((player) => (
+                  <div key={player.id} className="flex items-center justify-between text-sm">
+                    <span className={player.name.trim() ? 'text-foreground' : 'text-muted-foreground italic'}>
+                      {player.name.trim() || 'Unnamed Player'}
+                    </span>
+                    <Badge 
+                      variant={player.email.trim() ? 'default' : 'outline'} 
+                      className="text-xs"
+                    >
+                      {player.email.trim() ? 'Email' : 'No Email'}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+              
+              {players.length > 6 && (
+                <p className="text-xs text-muted-foreground text-center pt-1">
+                  +{players.length - 6} more players
+                </p>
+              )}
+            </div>
           </div>
         )}
 
         {!hasValidPlayers && players.length > 0 && (
-          <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg flex items-center space-x-2">
-            <AlertCircle className="h-4 w-4" />
+          <div className="text-sm text-destructive bg-destructive/5 p-3 rounded-lg flex items-center space-x-2 border border-destructive/20">
+            <AlertCircle className="h-4 w-4 flex-shrink-0" />
             <span>At least one player must have a name to proceed</span>
           </div>
         )}
 
-        <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg space-y-2">
-          <p><strong>Players:</strong> {players.length} / {data.basicInfo.maxPlayers}</p>
-          {players.some(p => p.email.trim()) && (
-            <p className="text-blue-700">
-              📧 Email invitations will be sent automatically to players with email addresses when you create the tournament.
-            </p>
-          )}
-        </div>
+        {players.some(p => p.email.trim()) && (
+          <div className="text-sm text-blue-700 bg-blue-50 p-3 rounded-lg">
+            📧 Email invitations will be sent automatically to players with email addresses when you create the tournament.
+          </div>
+        )}
       </div>
 
       <div className={`p-3 rounded-lg border ${isComplete ? 'bg-emerald-50 border-emerald-200' : 'bg-yellow-50 border-yellow-200'}`}>
