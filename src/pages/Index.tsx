@@ -75,24 +75,25 @@ const Index = memo(() => {
   console.log('Index page rendered for user:', user?.email || 'not authenticated');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 pb-20 md:pb-0">
+    <div className={`min-h-screen pb-20 md:pb-0 ${isMobile ? 'bg-cover bg-center bg-no-repeat' : 'bg-gradient-to-br from-emerald-50 via-white to-emerald-50'}`} 
+         style={isMobile ? { backgroundImage: 'url(/lovable-uploads/41a3180b-ed2b-4696-9a46-675fbeec4800.png)' } : {}}>
       {!isMobile && <Navbar />}
       
       {/* Hero Section */}
       <div className={`mx-4 sm:mx-6 lg:mx-8 ${isMobile ? 'mt-4' : 'mt-8'}`}>
-        <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white relative overflow-hidden rounded-2xl">
+        <div className={`${isMobile ? 'bg-white/90 backdrop-blur-sm' : 'bg-gradient-to-r from-emerald-600 to-emerald-700'} text-emerald-800 ${isMobile ? '' : 'text-white'} relative overflow-hidden rounded-2xl`}>
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative z-10">
             <div className="text-center">
-              {/* Large background logo - constrained within container */}
-              <div className="absolute inset-4 flex items-center justify-center opacity-30 pointer-events-none">
-                <img src="/lovable-uploads/3bf1d3f9-6ad1-4c1d-8602-6010d0f7e7bd.png" alt="Puffin Logo Background" className="max-h-72 max-w-72 object-contain" />
+              {/* Prominent Puffin Logo */}
+              <div className="flex justify-center mb-6">
+                <img src="/lovable-uploads/3bf1d3f9-6ad1-4c1d-8602-6010d0f7e7bd.png" alt="Puffin Logo" className="h-16 w-16 object-contain" />
               </div>
               
-              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black font-orbitron mb-6 relative z-20 tracking-wider w-full break-words">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black font-orbitron mb-6 tracking-wider w-full break-words">
                 BetLoopr
               </h1>
               
-              <p className="text-xl md:text-2xl text-emerald-100 mb-8 max-w-3xl mx-auto relative z-20">
+              <p className={`text-xl md:text-2xl ${isMobile ? 'text-emerald-700' : 'text-emerald-100'} mb-8 max-w-3xl mx-auto relative z-20`}>
                 {user ? 'Manage Golf tournaments, wagers, side bets and more' : 'The Complete Golf Tournament & Betting Management Platform'}
               </p>
               
