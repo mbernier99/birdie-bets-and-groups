@@ -40,20 +40,20 @@ const Dashboard = () => {
 
   const renderHeroSection = () => (
     <div 
-      className="relative h-80 bg-cover bg-center bg-no-repeat mx-4 mt-4 overflow-hidden rounded-3xl"
-      style={{ backgroundImage: `url(/lovable-uploads/e65800e9-7c13-49c3-841d-259649eb560d.png)` }}
+      className="relative h-80 bg-cover bg-left bg-no-repeat mx-4 mt-4 overflow-hidden rounded-3xl"
+      style={{ backgroundImage: `url(/lovable-uploads/3ab20564-3d62-40e5-b4e6-274d221087c8.png)` }}
     >
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/40" />
       <div className="relative h-full flex flex-col items-center justify-center text-white p-8">
-        <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 mb-4 border border-white/20">
+        <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-6 mb-6 shadow-2xl">
           <img 
-            src="/lovable-uploads/8a170a6f-1cbf-4b56-88ed-9b83f0b5c59d.png" 
-            alt="BetLoopr" 
-            className="w-12 h-12"
+            src="/lovable-uploads/f82c6326-aff5-4eb3-bc9a-0009dd389ef8.png" 
+            alt="Puffer Mascot" 
+            className="w-20 h-20"
           />
         </div>
-        <h1 className="text-4xl font-bold mb-3 tracking-tight">BetLoopr</h1>
-        <p className="text-center text-lg font-medium text-white/90 mb-6 max-w-sm leading-relaxed">
+        <h1 className="text-4xl font-bold mb-3 tracking-tight text-center drop-shadow-lg">BetLoopr</h1>
+        <p className="text-center text-lg font-medium text-white mb-6 max-w-sm leading-relaxed drop-shadow-md">
           {firstTime ? 'Welcome to competitive golf betting' : 'Ready for your next round?'}
         </p>
         {firstTime && (
