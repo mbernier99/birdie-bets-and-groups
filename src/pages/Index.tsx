@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { useTournaments } from '@/hooks/useTournaments';
+import { useIsMobile } from '@/hooks/use-mobile';
 import Navbar from '../components/Navbar';
 import TournamentCard from '../components/TournamentCard';
 import Leaderboard from '../components/Leaderboard';
@@ -13,7 +14,6 @@ import PlayNowModal from '../components/PlayNowModal';
 import WelcomeTutorialSection from '../components/welcome/WelcomeTutorialSection';
 import EnhancedStatsSection from '../components/stats/EnhancedStatsSection';
 import FeatureShowcase from '../components/marketing/FeatureShowcase';
-
 import HowItWorksSection from '../components/marketing/HowItWorksSection';
 import FAQSection from '../components/marketing/FAQSection';
 import { isFirstTimeUser, detectUserActivity } from '../utils/userDetection';
@@ -32,6 +32,7 @@ const Index = memo(() => {
   const { user } = useAuth();
   const { tournaments, loading } = useTournaments();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (user) {
@@ -74,10 +75,10 @@ const Index = memo(() => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 pb-20 md:pb-0">
-      <Navbar />
+      {!isMobile && <Navbar />}
       
       {/* Hero Section */}
-      <div className="mx-4 sm:mx-6 lg:mx-8 mt-8">
+      <div className={`mx-4 sm:mx-6 lg:mx-8 ${isMobile ? 'mt-4' : 'mt-8'}`}>
         <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white relative overflow-hidden rounded-2xl">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative z-10">
             <div className="text-center">
