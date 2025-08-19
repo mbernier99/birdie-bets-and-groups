@@ -83,7 +83,7 @@ const Index = memo(() => {
             <div className="text-center">
               {/* Large background logo - constrained within container */}
               <div className="absolute inset-4 flex items-center justify-center opacity-30 pointer-events-none">
-                <img src="/lovable-uploads/fc297cde-a9d2-4fb0-acf6-d28aacc56592.png" alt="Suntory Cup Background" className="max-h-72 max-w-72 object-contain" />
+                <img src="/lovable-uploads/3bf1d3f9-6ad1-4c1d-8602-6010d0f7e7bd.png" alt="Puffin Logo Background" className="max-h-72 max-w-72 object-contain" />
               </div>
               
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black font-orbitron mb-6 relative z-20 tracking-wider w-full break-words">
