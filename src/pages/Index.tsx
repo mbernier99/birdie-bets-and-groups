@@ -80,7 +80,7 @@ const Index = memo(() => {
       
       {/* Background Image Section for Mobile */}
       <div className={`${isMobile ? 'bg-cover bg-center bg-no-repeat' : ''}`} 
-           style={isMobile ? { backgroundImage: 'url(/lovable-uploads/94582cb5-8e2c-44eb-acdf-522b46c1e9fa.png)' } : {}}>
+           style={isMobile ? { backgroundImage: 'url(/lovable-uploads/ee788dc0-d894-4c70-b73a-45213fbd8274.png)' } : {}}>
         
         {/* Hero Section */}
         <div className={`mx-4 sm:mx-6 lg:mx-8 ${isMobile ? 'mt-4' : 'mt-8'}`}>
@@ -96,8 +96,8 @@ const Index = memo(() => {
                   BetLoopr
                 </h1>
                 
-                <p className={`text-xl md:text-2xl ${isMobile ? 'text-emerald-700' : 'text-emerald-100'} mb-8 max-w-3xl mx-auto relative z-20`}>
-                  {user ? 'Manage Golf tournaments, wagers, side bets and more' : 'The Complete Golf Tournament & Betting Management Platform'}
+                <p className={`text-xl md:text-2xl ${isMobile ? 'text-white' : 'text-emerald-100'} mb-8 max-w-3xl mx-auto relative z-20`}>
+                  {user ? 'Manage Golf tournaments, wagers, side bets and more' : 'Instant Wagers & Tournament Management'}
                 </p>
                 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-20">
@@ -113,10 +113,16 @@ const Index = memo(() => {
                       </button>
                     </>
                   ) : (
-                    <Button onClick={() => navigate('/auth')} className="bg-white text-emerald-600 hover:bg-emerald-50 px-8 py-4 text-lg h-auto">
-                      <LogIn className="h-5 w-5 mr-2" />
-                      Get Started Free
-                    </Button>
+                    <>
+                      <button onClick={handleCreateTournament} className="bg-emerald-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-emerald-700 transition-colors flex items-center justify-center space-x-2">
+                        <Plus className="h-5 w-5" />
+                        <span>Start Tournament</span>
+                      </button>
+                      <button onClick={() => navigate('/bet')} className="bg-emerald-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-emerald-700 transition-colors flex items-center justify-center space-x-2">
+                        <Play className="h-5 w-5" />
+                        <span>Place Bet</span>
+                      </button>
+                    </>
                   )}
                 </div>
               </div>
