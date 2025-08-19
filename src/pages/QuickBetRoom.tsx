@@ -11,6 +11,9 @@ import { calculateDistance } from "@/utils/gpsCalculations";
 import { Plus } from "lucide-react";
 import InviteSheet from "@/components/quickbet/InviteSheet";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import ReferencePointManager from "@/components/ar/ReferencePointManager";
+import ShotTracker from "@/components/ar/ShotTracker";
+import { ARMeasurement } from "@/components/ar/ARMeasurement";
 
 function metersToYards(m: number) {
   return m * 1.09361;
@@ -68,32 +71,52 @@ const QuickBetRoom: React.FC = () => {
     }
   }, [isHost, roomId]);
 
-  const handleCapture = async (setter: (loc: LocationRef) => void) => {
-    try {
-      const loc = await getCurrentLocation({ accuracy: 'high' });
-      if (!loc) {
-        toast({ title: "Location unavailable", description: "Please enable GPS and try again.", variant: 'destructive' });
-        return;
-      }
-      setter({ latitude: loc.latitude, longitude: loc.longitude, accuracy: loc.accuracy, timestamp: Date.now() });
-      toast({ title: "Location set" });
-    } catch (e) {
-      toast({ title: "Failed to get location", variant: 'destructive' });
+  const handleReferencePointSet = (type: 'pin' | 'tee' | 'start', measurement: ARMeasurement) => {
+    const locationRef: LocationRef = {
+      latitude: measurement.latitude,
+      longitude: measurement.longitude,
+      accuracy: measurement.accuracy,
+      timestamp: measurement.timestamp,
+      photoUrl: measurement.photoUrl,
+      confidence: measurement.confidence,
+      method: measurement.method,
+      deviceOrientation: measurement.deviceOrientation
+    };
+
+    if (type === 'pin') {
+      setPinLocation(locationRef);
+    } else if (type === 'tee') {
+      setTeeLocation(locationRef);
+    } else if (type === 'start') {
+      setStartLocation(locationRef);
     }
+
+    toast({ 
+      title: `${type.charAt(0).toUpperCase() + type.slice(1)} location set`,
+      description: `${measurement.confidence.toUpperCase()} accuracy measurement recorded`
+    });
   };
 
-  const handleRecordShot = async () => {
-    try {
-      const loc = await getCurrentLocation({ accuracy: 'high' });
-      if (!loc) {
-        toast({ title: "Location unavailable", description: "Please enable GPS and try again.", variant: 'destructive' });
-        return;
-      }
-      recordShot({ latitude: loc.latitude, longitude: loc.longitude, accuracy: loc.accuracy, timestamp: Date.now() });
-      toast({ title: "Shot recorded" });
-    } catch (e) {
-      toast({ title: "Failed to record shot", variant: 'destructive' });
-    }
+  const handleShotRecorded = (measurement: ARMeasurement & { distanceYards?: number }) => {
+    const locationRef: LocationRef = {
+      latitude: measurement.latitude,
+      longitude: measurement.longitude,
+      accuracy: measurement.accuracy,
+      timestamp: measurement.timestamp,
+      photoUrl: measurement.photoUrl,
+      confidence: measurement.confidence,
+      method: measurement.method,
+      deviceOrientation: measurement.deviceOrientation
+    };
+
+    recordShot(locationRef);
+    
+    toast({ 
+      title: "Shot recorded",
+      description: measurement.distanceYards 
+        ? `Distance: ${measurement.distanceYards.toFixed(1)} yards`
+        : `${measurement.confidence.toUpperCase()} accuracy measurement`
+    });
   };
 
   const leaderboard = useMemo(() => {
@@ -165,48 +188,29 @@ const QuickBetRoom: React.FC = () => {
         </Card>
       )}
 
-      {state.mode === 'ctp' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>CTP Targets</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center justify-between gap-2">
-              <div className="text-sm">
-                <div className="text-muted-foreground">Start point</div>
-                <div>{state.startLocation ? `${state.startLocation.latitude.toFixed(5)}, ${state.startLocation.longitude.toFixed(5)}` : 'Not set'}</div>
-              </div>
-              {isHost && <Button size="sm" onClick={() => handleCapture(setStartLocation)}>Set Start</Button>}
-            </div>
-            <div className="flex items-center justify-between gap-2">
-              <div className="text-sm">
-                <div className="text-muted-foreground">Pin location</div>
-                <div>{state.pinLocation ? `${state.pinLocation.latitude.toFixed(5)}, ${state.pinLocation.longitude.toFixed(5)}` : 'Not set'}</div>
-              </div>
-              {isHost && <Button size="sm" onClick={() => handleCapture(setPinLocation)}>Set Pin</Button>}
-            </div>
-          </CardContent>
-        </Card>
+      {state.mode && (
+        <ReferencePointManager
+          gameMode={state.mode}
+          referencePoints={{
+            pin: state.pinLocation,
+            tee: state.teeLocation,
+            start: state.startLocation
+          }}
+          onReferencePointSet={handleReferencePointSet}
+          isHost={isHost}
+        />
       )}
 
-      {state.mode === 'long-drive' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Long Drive Tee</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-center justify-between">
-            <div className="text-sm">
-              <div className="text-muted-foreground">Tee location</div>
-              <div>{state.teeLocation ? `${state.teeLocation.latitude.toFixed(5)}, ${state.teeLocation.longitude.toFixed(5)}` : 'Not set'}</div>
-            </div>
-            {isHost && <Button size="sm" onClick={() => handleCapture(setTeeLocation)}>Set Tee</Button>}
-          </CardContent>
-        </Card>
+      {state.mode && (
+        <ShotTracker
+          referencePoints={{
+            pin: state.pinLocation,
+            tee: state.teeLocation
+          }}
+          onShotRecorded={handleShotRecorded}
+          gameMode={state.mode}
+        />
       )}
-
-      <Button className="w-full" disabled={!canRecordShot} onClick={handleRecordShot}>
-        Record My Shot {canRecordShot ? '' : '(waiting for host)'}
-      </Button>
 
       <Card>
         <CardHeader>

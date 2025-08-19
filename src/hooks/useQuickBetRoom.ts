@@ -8,6 +8,14 @@ export interface LocationRef {
   longitude: number;
   accuracy?: number;
   timestamp: number;
+  photoUrl?: string;
+  confidence?: 'high' | 'medium' | 'low';
+  method?: 'ar-camera' | 'gps-fallback';
+  deviceOrientation?: {
+    alpha: number;
+    beta: number;
+    gamma: number;
+  };
 }
 
 export interface Shot {
@@ -15,6 +23,7 @@ export interface Shot {
   playerKey: string;
   playerName: string;
   location: LocationRef;
+  distanceYards?: number;
 }
 
 interface UseQuickBetRoomOptions {
