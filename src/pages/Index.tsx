@@ -75,126 +75,135 @@ const Index = memo(() => {
   console.log('Index page rendered for user:', user?.email || 'not authenticated');
 
   return (
-    <div className={`min-h-screen pb-20 md:pb-0 ${isMobile ? 'bg-cover bg-center bg-no-repeat' : 'bg-gradient-to-br from-emerald-50 via-white to-emerald-50'}`} 
-         style={isMobile ? { backgroundImage: 'url(/lovable-uploads/41a3180b-ed2b-4696-9a46-675fbeec4800.png)' } : {}}>
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 pb-20 md:pb-0">
       {!isMobile && <Navbar />}
       
-      {/* Hero Section */}
-      <div className={`mx-4 sm:mx-6 lg:mx-8 ${isMobile ? 'mt-4' : 'mt-8'}`}>
-        <div className={`${isMobile ? 'bg-white/90 backdrop-blur-sm' : 'bg-gradient-to-r from-emerald-600 to-emerald-700'} text-emerald-800 ${isMobile ? '' : 'text-white'} relative overflow-hidden rounded-2xl`}>
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative z-10">
-            <div className="text-center">
-              {/* Prominent Puffin Logo */}
-              <div className="flex justify-center mb-6">
-                <img src="/lovable-uploads/3bf1d3f9-6ad1-4c1d-8602-6010d0f7e7bd.png" alt="Puffin Logo" className="h-16 w-16 object-contain" />
-              </div>
-              
-              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black font-orbitron mb-6 tracking-wider w-full break-words">
-                BetLoopr
-              </h1>
-              
-              <p className={`text-xl md:text-2xl ${isMobile ? 'text-emerald-700' : 'text-emerald-100'} mb-8 max-w-3xl mx-auto relative z-20`}>
-                {user ? 'Manage Golf tournaments, wagers, side bets and more' : 'The Complete Golf Tournament & Betting Management Platform'}
-              </p>
-              
-              <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-20">
-                {user ? (
-                  <>
-                    <button onClick={handleCreateTournament} className="bg-white text-emerald-600 px-8 py-4 rounded-lg font-semibold hover:bg-emerald-50 transition-colors flex items-center justify-center space-x-2">
-                      <Plus className="h-5 w-5" />
-                      <span>Create Tournament</span>
-                    </button>
-                    <button onClick={handlePlayNow} className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-emerald-600 transition-colors flex items-center justify-center space-x-2">
-                      <Play className="h-5 w-5" />
-                      <span>Play Now</span>
-                    </button>
-                  </>
-                ) : (
-                  <Button onClick={() => navigate('/auth')} className="bg-white text-emerald-600 hover:bg-emerald-50 px-8 py-4 text-lg h-auto">
-                    <LogIn className="h-5 w-5 mr-2" />
-                    Get Started Free
-                  </Button>
-                )}
+      {/* Background Image Section for Mobile */}
+      <div className={`${isMobile ? 'bg-cover bg-center bg-no-repeat' : ''}`} 
+           style={isMobile ? { backgroundImage: 'url(/lovable-uploads/94582cb5-8e2c-44eb-acdf-522b46c1e9fa.png)' } : {}}>
+        
+        {/* Hero Section */}
+        <div className={`mx-4 sm:mx-6 lg:mx-8 ${isMobile ? 'mt-4' : 'mt-8'}`}>
+          <div className={`${isMobile ? 'bg-white/90 backdrop-blur-sm' : 'bg-gradient-to-r from-emerald-600 to-emerald-700'} text-emerald-800 ${isMobile ? '' : 'text-white'} relative overflow-hidden rounded-2xl`}>
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative z-10">
+              <div className="text-center">
+                {/* Prominent Puffin Logo */}
+                <div className="flex justify-center mb-6">
+                  <img src="/lovable-uploads/3bf1d3f9-6ad1-4c1d-8602-6010d0f7e7bd.png" alt="Puffin Logo" className="h-16 w-16 object-contain" />
+                </div>
+                
+                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black font-orbitron mb-6 tracking-wider w-full break-words">
+                  BetLoopr
+                </h1>
+                
+                <p className={`text-xl md:text-2xl ${isMobile ? 'text-emerald-700' : 'text-emerald-100'} mb-8 max-w-3xl mx-auto relative z-20`}>
+                  {user ? 'Manage Golf tournaments, wagers, side bets and more' : 'The Complete Golf Tournament & Betting Management Platform'}
+                </p>
+                
+                <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-20">
+                  {user ? (
+                    <>
+                      <button onClick={handleCreateTournament} className="bg-white text-emerald-600 px-8 py-4 rounded-lg font-semibold hover:bg-emerald-50 transition-colors flex items-center justify-center space-x-2">
+                        <Plus className="h-5 w-5" />
+                        <span>Create Tournament</span>
+                      </button>
+                      <button onClick={handlePlayNow} className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-emerald-600 transition-colors flex items-center justify-center space-x-2">
+                        <Play className="h-5 w-5" />
+                        <span>Play Now</span>
+                      </button>
+                    </>
+                  ) : (
+                    <Button onClick={() => navigate('/auth')} className="bg-white text-emerald-600 hover:bg-emerald-50 px-8 py-4 text-lg h-auto">
+                      <LogIn className="h-5 w-5 mr-2" />
+                      Get Started Free
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Authenticated User Content */}
-      {user ? (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          {/* Active Tournaments Prompt */}
-          {activeTournaments.filter(t => t.status === 'draft').length > 0 && (
-            <div className="mb-8 bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-xl p-6 text-white">
-              <h3 className="text-xl font-semibold mb-4">Ready to Start Your Tournaments?</h3>
-              <div className="space-y-3">
-                {activeTournaments.filter(t => t.status === 'draft').map(tournament => (
-                  <div key={tournament.id} className="bg-white/10 rounded-lg p-4 flex justify-between items-center">
-                    <div>
-                      <h4 className="font-medium">{tournament.name}</h4>
-                      <p className="text-emerald-100 text-sm">
-                        Max {tournament.max_players} players • {tournament.game_type}
-                      </p>
+        {/* Authenticated User Content - Upper Sections */}
+        {user && (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            {/* Active Tournaments Prompt */}
+            {activeTournaments.filter(t => t.status === 'draft').length > 0 && (
+              <div className="mb-8 bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-xl p-6 text-white">
+                <h3 className="text-xl font-semibold mb-4">Ready to Start Your Tournaments?</h3>
+                <div className="space-y-3">
+                  {activeTournaments.filter(t => t.status === 'draft').map(tournament => (
+                    <div key={tournament.id} className="bg-white/10 rounded-lg p-4 flex justify-between items-center">
+                      <div>
+                        <h4 className="font-medium">{tournament.name}</h4>
+                        <p className="text-emerald-100 text-sm">
+                          Max {tournament.max_players} players • {tournament.game_type}
+                        </p>
+                      </div>
+                      <button onClick={() => handleStartTournament(tournament.id)} className="bg-white text-emerald-600 px-4 py-2 rounded-lg hover:bg-emerald-50 transition-colors flex items-center space-x-2 font-medium">
+                        <Play className="h-4 w-4" />
+                        <span>Enter Lobby</span>
+                      </button>
                     </div>
-                    <button onClick={() => handleStartTournament(tournament.id)} className="bg-white text-emerald-600 px-4 py-2 rounded-lg hover:bg-emerald-50 transition-colors flex items-center space-x-2 font-medium">
-                      <Play className="h-4 w-4" />
-                      <span>Enter Lobby</span>
-                    </button>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Active Tournaments Section */}
-          <div className="mb-8">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">Active Tournaments</h2>
-              <Button onClick={() => navigate('/tournaments')} variant="outline" className="flex items-center space-x-2">
-                <Calendar className="h-4 w-4" />
-                <span>View All</span>
-              </Button>
-            </div>
-            
-            {!loading && activeTournaments.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {activeTournaments.slice(0, 2).map(tournament => (
-                  <TournamentCard 
-                    key={tournament.id}
-                    id={tournament.id}
-                    title={tournament.name}
-                    players={0} // TODO: Get participant count
-                    maxPlayers={tournament.max_players || 16}
-                    gameType={tournament.game_type}
-                    prize={tournament.entry_fee > 0 ? `$${tournament.prize_pool} Pool` : 'No Entry Fee'}
-                    date={new Date(tournament.created_at).toLocaleDateString()}
-                    status={tournament.status === 'draft' ? 'upcoming' : tournament.status as any}
-                    onAction={() => handleStartTournament(tournament.id)}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 bg-gray-50 rounded-xl">
-                <Trophy className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">No Active Tournaments</h3>
-                <p className="text-gray-600 mb-4">Create your first tournament to get started</p>
-                <Button onClick={handleCreateTournament} className="bg-emerald-600 hover:bg-emerald-700">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Tournament
+            {/* Active Tournaments Section */}
+            <div className="mb-8">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">Active Tournaments</h2>
+                <Button onClick={() => navigate('/tournaments')} variant="outline" className="flex items-center space-x-2">
+                  <Calendar className="h-4 w-4" />
+                  <span>View All</span>
                 </Button>
+              </div>
+              
+              {!loading && activeTournaments.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {activeTournaments.slice(0, 2).map(tournament => (
+                    <TournamentCard 
+                      key={tournament.id}
+                      id={tournament.id}
+                      title={tournament.name}
+                      players={0} // TODO: Get participant count
+                      maxPlayers={tournament.max_players || 16}
+                      gameType={tournament.game_type}
+                      prize={tournament.entry_fee > 0 ? `$${tournament.prize_pool} Pool` : 'No Entry Fee'}
+                      date={new Date(tournament.created_at).toLocaleDateString()}
+                      status={tournament.status === 'draft' ? 'upcoming' : tournament.status as any}
+                      onAction={() => handleStartTournament(tournament.id)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 bg-gray-50 rounded-xl">
+                  <Trophy className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No Active Tournaments</h3>
+                  <p className="text-gray-600 mb-4">Create your first tournament to get started</p>
+                  <Button onClick={handleCreateTournament} className="bg-emerald-600 hover:bg-emerald-700">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Tournament
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            {/* Live Leaderboard Section - Only show if user has active tournaments */}
+            {activeTournaments.some(t => t.status === 'live') && (
+              <div className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Live Leaderboard</h2>
+                <Leaderboard />
               </div>
             )}
           </div>
-
-          {/* Live Leaderboard Section - Only show if user has active tournaments */}
-          {activeTournaments.some(t => t.status === 'live') && (
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Live Leaderboard</h2>
-              <Leaderboard />
-            </div>
-          )}
-
+        )}
+      </div>
+      
+      {/* Lower Content Sections Outside Background */}
+      {user ? (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           {/* User-specific content */}
           {isNewUser ? (
             <WelcomeTutorialSection 
