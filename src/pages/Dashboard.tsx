@@ -40,26 +40,28 @@ const Dashboard = () => {
 
   const renderHeroSection = () => (
     <div 
-      className="relative h-64 bg-cover bg-center bg-no-repeat rounded-2xl mx-4 mt-4 overflow-hidden"
-      style={{ backgroundImage: `url(/lovable-uploads/d4bc4fe8-a6dd-4132-a7d8-c6895b4fe331.png)` }}
+      className="relative h-80 bg-cover bg-center bg-no-repeat mx-4 mt-4 overflow-hidden rounded-3xl"
+      style={{ backgroundImage: `url(/lovable-uploads/e65800e9-7c13-49c3-841d-259649eb560d.png)` }}
     >
-      <div className="absolute inset-0 bg-black/50" />
-      <div className="relative h-full flex flex-col items-center justify-center text-white p-6">
-        <img 
-          src="/lovable-uploads/8a170a6f-1cbf-4b56-88ed-9b83f0b5c59d.png" 
-          alt="BetLoopr" 
-          className="w-16 h-16 mb-3"
-        />
-        <h1 className="text-3xl font-bold mb-2">BetLoopr</h1>
-        <p className="text-center text-sm opacity-90 mb-4">
-          {firstTime ? 'Welcome to golf betting' : 'Ready for your next round?'}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+      <div className="relative h-full flex flex-col items-center justify-center text-white p-8">
+        <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 mb-4 border border-white/20">
+          <img 
+            src="/lovable-uploads/8a170a6f-1cbf-4b56-88ed-9b83f0b5c59d.png" 
+            alt="BetLoopr" 
+            className="w-12 h-12"
+          />
+        </div>
+        <h1 className="text-4xl font-bold mb-3 tracking-tight">BetLoopr</h1>
+        <p className="text-center text-lg font-medium text-white/90 mb-6 max-w-sm leading-relaxed">
+          {firstTime ? 'Welcome to competitive golf betting' : 'Ready for your next round?'}
         </p>
         {firstTime && (
           <Button 
             onClick={() => setIsCreateModalOpen(true)}
-            className="bg-white text-primary hover:bg-white/90"
+            className="bg-white/95 text-gray-900 hover:bg-white font-semibold px-8 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
           >
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="h-5 w-5 mr-2" />
             Create First Tournament
           </Button>
         )}
