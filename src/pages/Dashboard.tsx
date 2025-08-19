@@ -9,6 +9,8 @@ import { useTournaments } from '@/hooks/useTournaments';
 import { useTournamentParticipants } from '@/hooks/useTournamentParticipants';
 import { detectUserActivity, isFirstTimeUser } from '@/utils/userDetection';
 import CreateTournamentModal from '@/components/CreateTournamentModal';
+import { useIsMobile } from '@/hooks/use-mobile';
+import MobileNavigation from '@/components/MobileNavigation';
 import Navbar from '@/components/Navbar';
 
 const Dashboard = () => {
@@ -23,6 +25,7 @@ const Dashboard = () => {
   const { user } = useAuth();
   const { tournaments, loading } = useTournaments();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (user) {
@@ -224,8 +227,8 @@ const Dashboard = () => {
   if (!user) {
     return (
       <div className="min-h-screen bg-background">
-        <Navbar />
-        <div className="pt-16 px-4">
+        {!isMobile && <Navbar />}
+        <div className={isMobile ? "px-4" : "pt-16 px-4"}>
           <div className="text-center py-12">
             <h1 className="text-3xl font-bold mb-4">Welcome to BetLoopr</h1>
             <p className="text-muted-foreground mb-6">Sign in to start playing</p>
@@ -234,29 +237,34 @@ const Dashboard = () => {
             </Button>
           </div>
         </div>
+        {isMobile && <MobileNavigation />}
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20">
-      <Navbar />
+    <div className="min-h-screen bg-background">
+      {!isMobile && <Navbar />}
       
-      {renderHeroSection()}
-      
-      <div className="pt-6 space-y-6">
-        {firstTime ? renderFirstTimeUser() : (
-          <>
-            {renderActiveTournaments()}
-            {renderQuickActions()}
-          </>
-        )}
+      <div className={isMobile ? "pb-20" : "pt-16"}>
+        {renderHeroSection()}
+        
+        <div className="pt-6 space-y-6">
+          {firstTime ? renderFirstTimeUser() : (
+            <>
+              {renderActiveTournaments()}
+              {renderQuickActions()}
+            </>
+          )}
+        </div>
       </div>
 
       <CreateTournamentModal 
         isOpen={isCreateModalOpen} 
         onClose={() => setIsCreateModalOpen(false)} 
       />
+      
+      {isMobile && <MobileNavigation />}
     </div>
   );
 };
