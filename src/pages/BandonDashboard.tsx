@@ -39,12 +39,31 @@ const BandonDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Hero Section */}
+      <div 
+        className="relative h-96 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(/lovable-uploads/cdf100e9-eefe-430d-af52-ca910ea2ab6b.png)` }}
+      >
+        <div className="absolute inset-0 bg-black/40" />
+        <div className="relative container mx-auto px-4 h-full flex items-center justify-center">
+          <div className="text-center text-white">
+            <img 
+              src="/lovable-uploads/8a170a6f-1cbf-4b56-88ed-9b83f0b5c59d.png" 
+              alt="BetLoopr" 
+              className="w-24 h-24 mx-auto mb-4 drop-shadow-lg"
+            />
+            <h1 className="text-5xl font-bold mb-2 drop-shadow-lg">BetLoopr</h1>
+            <p className="text-xl opacity-90 drop-shadow-md">Championship Golf Betting at Bandon Dunes</p>
+          </div>
+        </div>
+      </div>
+
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
+        {/* Welcome Section */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold">Bandon Dunes Tournament</h1>
-            <p className="text-muted-foreground">Welcome back, {user?.displayName}</p>
+            <h2 className="text-2xl font-bold">Welcome back, {user?.displayName}</h2>
+            <p className="text-muted-foreground">Ready for your next round?</p>
           </div>
           
           {user?.role === 'organizer' && (
