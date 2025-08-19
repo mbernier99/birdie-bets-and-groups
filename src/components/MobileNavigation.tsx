@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Users, Zap, User } from 'lucide-react';
+import { Users, Zap, User, Target, Trophy } from 'lucide-react';
 import { ProfileSheet } from './ProfileSheet';
 
 const MobileNavigation = () => {
@@ -11,8 +11,10 @@ const MobileNavigation = () => {
   const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + '/');
   
   const navItems = [
-    { path: '/tournaments', icon: Users, label: 'Groups' },
-    { path: '/quick-bet', icon: Zap, label: 'Quick Bet' },
+    { path: '/', icon: Trophy, label: 'Tournament' },
+    { path: '/groups', icon: Users, label: 'Groups' },
+    { path: '/bet', icon: Zap, label: 'Bet' },
+    { path: '/golf', icon: Target, label: 'Golf' },
   ];
   
   return (
