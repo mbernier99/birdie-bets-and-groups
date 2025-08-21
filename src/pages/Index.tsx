@@ -100,7 +100,7 @@ const Index = memo(() => {
                   {user ? 'Manage Golf tournaments, wagers, side bets and more' : 'Instant Wagers & Tournament Management'}
                 </p>
                 
-                <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-20">
+                <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-20 mt-8">
                   {user ? (
                     <>
                       <button onClick={handleCreateTournament} className="bg-white text-emerald-600 px-8 py-4 rounded-lg font-semibold hover:bg-emerald-50 transition-colors flex items-center justify-center space-x-2">
