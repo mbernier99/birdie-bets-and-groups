@@ -93,15 +93,15 @@ const Index = memo(() => {
               <div className="text-center">
                 {/* Prominent Puffin Logo */}
                 <div className="flex justify-center mb-8">
-                  <img src="/lovable-uploads/3bf1d3f9-6ad1-4c1d-8602-6010d0f7e7bd.png" alt="Puffin Logo" className="h-20 w-20 object-contain" />
+                  <img src="/lovable-uploads/3bf1d3f9-6ad1-4c1d-8602-6010d0f7e7bd.png" alt="Puffin Logo" className="h-24 w-24 object-contain" />
                 </div>
                 
-                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black font-orbitron mb-8 tracking-wider w-full break-words bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 bg-clip-text text-transparent animate-pulse">
+                <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-9xl font-black font-orbitron mb-8 tracking-wider w-full break-words bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 bg-clip-text text-transparent animate-pulse">
                   BetLoopr
                 </h1>
                 
                 <p className={`text-xl md:text-2xl ${isMobile ? 'text-white' : 'text-emerald-100'} mb-12 max-w-3xl mx-auto relative z-20`}>
-                  {user ? 'Manage Golf tournaments, wagers, side bets and more' : 'Instant Wagers & Tournament Management'}
+                  {user ? 'Manage Golf tournaments, wagers, side bets and more' : 'Live Bets, Tournament & Golf Game Management'}
                 </p>
                 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-20 mt-8">
