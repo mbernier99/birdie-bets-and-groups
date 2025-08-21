@@ -80,7 +80,7 @@ const Index = memo(() => {
       
       {/* Background Image Section for Mobile */}
       <div className={`${isMobile ? 'bg-cover bg-center bg-no-repeat min-h-screen absolute inset-0' : ''}`} 
-           style={isMobile ? { backgroundImage: 'url(/lovable-uploads/719bc173-9813-4a5a-b072-264aa3f37df8.png)' } : {}}>
+           style={isMobile ? { backgroundImage: 'url(/lovable-uploads/d2c6429a-fae8-4f29-bf75-11a8172236fa.png)' } : {}}>
       </div>
       
       {/* Content Wrapper */}
