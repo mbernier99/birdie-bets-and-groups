@@ -79,8 +79,8 @@ const Index = memo(() => {
       {!isMobile && <Navbar />}
       
       {/* Background Image Section for Mobile */}
-      <div className={`${isMobile ? 'bg-cover bg-center bg-no-repeat' : ''}`} 
-           style={isMobile ? { backgroundImage: 'url(/lovable-uploads/ee788dc0-d894-4c70-b73a-45213fbd8274.png)' } : {}}>
+      <div className={`${isMobile ? 'bg-cover bg-center bg-no-repeat min-h-screen' : ''}`} 
+           style={isMobile ? { backgroundImage: 'url(/lovable-uploads/719bc173-9813-4a5a-b072-264aa3f37df8.png)' } : {}}>
         
         {/* Hero Section */}
         <div className={`mx-4 sm:mx-6 lg:mx-8 ${isMobile ? 'mt-16' : 'mt-20'}`}>
