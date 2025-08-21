@@ -83,20 +83,20 @@ const Index = memo(() => {
            style={isMobile ? { backgroundImage: 'url(/lovable-uploads/ee788dc0-d894-4c70-b73a-45213fbd8274.png)' } : {}}>
         
         {/* Hero Section */}
-        <div className={`mx-4 sm:mx-6 lg:mx-8 ${isMobile ? 'mt-4' : 'mt-8'}`}>
+        <div className={`mx-4 sm:mx-6 lg:mx-8 ${isMobile ? 'mt-16' : 'mt-20'}`}>
           <div className={`${isMobile ? '' : 'bg-gradient-to-r from-emerald-600 to-emerald-700'} ${isMobile ? 'text-white' : 'text-white'} relative overflow-hidden ${isMobile ? '' : 'rounded-2xl'}`}>
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative z-10">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10">
               <div className="text-center">
                 {/* Prominent Puffin Logo */}
-                <div className="flex justify-center mb-6">
-                  <img src="/lovable-uploads/3bf1d3f9-6ad1-4c1d-8602-6010d0f7e7bd.png" alt="Puffin Logo" className="h-16 w-16 object-contain" />
+                <div className="flex justify-center mb-8">
+                  <img src="/lovable-uploads/3bf1d3f9-6ad1-4c1d-8602-6010d0f7e7bd.png" alt="Puffin Logo" className="h-20 w-20 object-contain" />
                 </div>
                 
-                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black font-orbitron mb-6 tracking-wider w-full break-words">
+                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black font-orbitron mb-8 tracking-wider w-full break-words bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 bg-clip-text text-transparent animate-pulse">
                   BetLoopr
                 </h1>
                 
-                <p className={`text-xl md:text-2xl ${isMobile ? 'text-white' : 'text-emerald-100'} mb-8 max-w-3xl mx-auto relative z-20`}>
+                <p className={`text-xl md:text-2xl ${isMobile ? 'text-white' : 'text-emerald-100'} mb-12 max-w-3xl mx-auto relative z-20`}>
                   {user ? 'Manage Golf tournaments, wagers, side bets and more' : 'Instant Wagers & Tournament Management'}
                 </p>
                 
