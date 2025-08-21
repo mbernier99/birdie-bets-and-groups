@@ -134,6 +134,9 @@ const Index = memo(() => {
           </div>
         </div>
 
+        {/* Feature Showcase - Always visible */}
+        <FeatureShowcase />
+
         {/* Authenticated User Content - Upper Sections */}
         {user && (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -240,7 +243,6 @@ const Index = memo(() => {
       ) : (
         /* Marketing Content for Non-Authenticated Users */
         <>
-          <FeatureShowcase />
           <HowItWorksSection />
           <FAQSection />
         </>
