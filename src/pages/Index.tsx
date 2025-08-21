@@ -75,15 +75,19 @@ const Index = memo(() => {
   console.log('Index page rendered for user:', user?.email || 'not authenticated');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 pb-20 md:pb-0">
+    <div className={`min-h-screen ${isMobile ? '' : 'bg-gradient-to-br from-emerald-50 via-white to-emerald-50'} pb-20 md:pb-0`}>
       {!isMobile && <Navbar />}
       
       {/* Background Image Section for Mobile */}
-      <div className={`${isMobile ? 'bg-cover bg-center bg-no-repeat min-h-screen' : ''}`} 
+      <div className={`${isMobile ? 'bg-cover bg-center bg-no-repeat min-h-screen absolute inset-0' : ''}`} 
            style={isMobile ? { backgroundImage: 'url(/lovable-uploads/719bc173-9813-4a5a-b072-264aa3f37df8.png)' } : {}}>
+      </div>
+      
+      {/* Content Wrapper */}
+      <div className="relative z-10">
         
         {/* Hero Section */}
-        <div className={`mx-4 sm:mx-6 lg:mx-8 ${isMobile ? 'mt-16' : 'mt-20'}`}>
+        <div className={`mx-4 sm:mx-6 lg:mx-8 ${isMobile ? 'pt-16' : 'mt-20'}`}>
           <div className={`${isMobile ? '' : 'bg-gradient-to-r from-emerald-600 to-emerald-700'} ${isMobile ? 'text-white' : 'text-white'} relative overflow-hidden ${isMobile ? '' : 'rounded-2xl'}`}>
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10">
               <div className="text-center">
