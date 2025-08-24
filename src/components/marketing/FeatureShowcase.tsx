@@ -17,8 +17,8 @@ const features = [
   },
   {
     icon: MapPin,
-    title: 'GPS Shot Verification',
-    description: 'Accurate shot tracking and distance measurement using GPS technology for fair play verification.',
+    title: 'Native AR Shot Tracking',
+    description: 'Ultra-precise shot measurement using mobile AR technology for tournament-grade accuracy and instant verification.',
     color: 'text-purple-600'
   },
   {
