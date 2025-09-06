@@ -66,73 +66,85 @@ const QuickBetHome: React.FC = () => {
   return (
     <div className="mx-auto max-w-md p-4">
       <header className="mb-6 text-center">
-        <h1 className="text-2xl font-semibold">Quick Bet</h1>
-        <p className="text-muted-foreground">Create instant Closest to Pin or Long Drive challenges with friends</p>
+        <h1 className="text-2xl font-semibold">Setup Your Bet</h1>
+        <p className="text-muted-foreground">Enter details and invite players to your challenge</p>
       </header>
 
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Setup Your Bet</CardTitle>
+          <CardTitle>Bet Details</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <Input 
-            placeholder="Your display name" 
-            value={name} 
-            onChange={(e) => setName(e.target.value)} 
-          />
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">$</span>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Your Name</label>
             <Input 
-              type="number" 
-              inputMode="decimal" 
-              value={amount} 
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="5" 
+              placeholder="Display name for other players" 
+              value={name} 
+              onChange={(e) => setName(e.target.value)} 
             />
-            <span className="text-sm text-muted-foreground">wager per player</span>
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Wager Amount</label>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">$</span>
+              <Input 
+                type="number" 
+                inputMode="decimal" 
+                value={amount} 
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="5" 
+              />
+              <span className="text-sm text-muted-foreground">per player</span>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Game Type</label>
+            <div className="grid grid-cols-2 gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => startRoom("ctp")} 
+                className="h-16 flex-col gap-1"
+              >
+                <Target className="h-5 w-5" />
+                <div className="text-xs">Closest to Pin</div>
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => startRoom("long-drive")} 
+                className="h-16 flex-col gap-1"
+              >
+                <TrendingUp className="h-5 w-5" />
+                <div className="text-xs">Long Drive</div>
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      <div className="space-y-3 mb-6">
-        <Button onClick={() => startRoom("ctp")} className="w-full h-12 text-left">
-          <div className="flex items-center gap-3">
-            <Target className="h-5 w-5" />
-            <div>
-              <div className="font-medium">Create Closest to Pin</div>
-              <div className="text-xs opacity-75">${amountNum || 0} bet • AR distance tracking</div>
-            </div>
-          </div>
-        </Button>
-        <Button onClick={() => startRoom("long-drive")} variant="secondary" className="w-full h-12 text-left">
-          <div className="flex items-center gap-3">
-            <TrendingUp className="h-5 w-5" />
-            <div>
-              <div className="font-medium">Create Long Drive</div>
-              <div className="text-xs opacity-75">${amountNum || 0} bet • AR distance tracking</div>
-            </div>
-          </div>
-        </Button>
+      <div className="text-center mb-4">
+        <div className="text-sm text-muted-foreground">or</div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Join existing bet</CardTitle>
+          <CardTitle>Join Existing Bet</CardTitle>
         </CardHeader>
-        <CardContent className="flex items-center gap-2">
+        <CardContent className="space-y-3">
           <Input 
-            placeholder="Room code (e.g., ABC123)" 
+            placeholder="Enter room code (e.g., ABC123)" 
             value={joinCode} 
             onChange={(e) => setJoinCode(e.target.value.toUpperCase())} 
           />
-          <Button onClick={joinRoom}>Join</Button>
+          <Button onClick={joinRoom} className="w-full">Join Bet Room</Button>
         </CardContent>
       </Card>
 
       <div className="mt-6 p-3 bg-muted/50 rounded-lg">
         <div className="text-xs text-muted-foreground text-center">
-          <div className="font-medium mb-1">How it works:</div>
-          <div>1. Create or join a room • 2. Set pin/tee location with AR • 3. Record your shots • 4. See live results</div>
+          <div className="font-medium mb-1">Next steps:</div>
+          <div>After creating, you'll get a room code to share with friends. Set reference points with AR, then compete!</div>
         </div>
       </div>
     </div>
