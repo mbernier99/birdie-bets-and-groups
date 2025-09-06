@@ -1,8 +1,9 @@
 
 import React, { useState, useEffect, memo, useCallback } from 'react';
-import { Trophy, Plus, Calendar, Play, LogIn } from 'lucide-react';
+import { Trophy, Plus, Calendar, Play, LogIn, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useMockAuth } from '@/contexts/MockAuthContext';
 import { Button } from '@/components/ui/button';
 import { useTournaments } from '@/hooks/useTournaments';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -18,6 +19,7 @@ import FeatureShowcase from '../components/marketing/FeatureShowcase';
 import HowItWorksSection from '../components/marketing/HowItWorksSection';
 import FAQSection from '../components/marketing/FAQSection';
 import { isFirstTimeUser, detectUserActivity } from '../utils/userDetection';
+import { MOCK_MODE } from '@/utils/mockData';
 
 const Index = memo(() => {
   const [isCreateTournamentModalOpen, setIsCreateTournamentModalOpen] = useState(false);
@@ -31,18 +33,20 @@ const Index = memo(() => {
   });
   
   const { user } = useAuth();
+  const { user: mockUser } = useMockAuth();
+  const currentUser = MOCK_MODE ? mockUser : user;
   const { tournaments, loading } = useTournaments();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    if (user) {
+    if (currentUser) {
       const newUser = isFirstTimeUser();
       const activity = detectUserActivity();
       setIsNewUser(newUser);
       setUserActivity(activity);
     }
-  }, [user]);
+  }, [currentUser]);
 
   const handleCreateTournament = useCallback(() => {
     setIsCreateTournamentModalOpen(true);
@@ -69,14 +73,30 @@ const Index = memo(() => {
   }, [navigate]);
 
   // Filter active tournaments for authenticated users
-  const activeTournaments = user ? tournaments.filter(t => t.status === 'draft' || t.status === 'lobby' || t.status === 'live') : [];
+  const activeTournaments = currentUser ? tournaments.filter(t => t.status === 'draft' || t.status === 'lobby' || t.status === 'live') : [];
 
   // Debug logging
-  console.log('Index page rendered for user:', user?.email || 'not authenticated');
+  const userDisplay = currentUser?.email || (currentUser as any)?.displayName || 'not authenticated';
+  console.log('Index page rendered for user:', userDisplay);
 
   return (
     <div className={`min-h-screen ${isMobile ? '' : 'bg-gradient-to-br from-emerald-50 via-white to-emerald-50'} pb-20 md:pb-0`}>
       {!isMobile && <Navbar />}
+      
+          {/* Profile Management Button for Mock Mode */}
+          {MOCK_MODE && currentUser && (
+            <div className="fixed top-20 right-4 z-50">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => navigate('/profiles')}
+                className="bg-background/95 backdrop-blur border shadow-lg"
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Manage Profiles
+              </Button>
+            </div>
+          )}
       
       {/* Background Image Section for Mobile */}
       <div className={`${isMobile ? 'bg-cover bg-center bg-no-repeat min-h-screen absolute inset-0' : ''}`} 
@@ -101,11 +121,11 @@ const Index = memo(() => {
                 </h1>
                 
                 <p className={`text-xl md:text-2xl ${isMobile ? 'text-white' : 'text-emerald-100'} mb-12 max-w-3xl mx-auto relative z-20`}>
-                  {user ? 'Manage Golf tournaments, wagers, side bets and more' : 'Live Bets, Tournament & Golf Game Management'}
+                  {currentUser ? 'Manage Golf tournaments, wagers, side bets and more' : 'Live Bets, Tournament & Golf Game Management'}
                 </p>
                 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-20 mt-16">
-                  {user ? (
+                  {currentUser ? (
                     <>
                       <button onClick={handleCreateTournament} className="bg-white text-emerald-600 px-8 py-4 rounded-lg font-semibold hover:bg-emerald-50 transition-colors flex items-center justify-center space-x-2">
                         <Plus className="h-5 w-5" />
@@ -118,9 +138,9 @@ const Index = memo(() => {
                     </>
                   ) : (
                     <>
-                      <button onClick={handleCreateTournament} className="bg-emerald-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-emerald-700 transition-colors flex items-center justify-center space-x-2">
+                      <button onClick={() => navigate('/quick-bet')} className="bg-emerald-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-emerald-700 transition-colors flex items-center justify-center space-x-2">
                         <Plus className="h-5 w-5" />
-                        <span>Start Tournament</span>
+                        <span>Quick Bet</span>
                       </button>
                       <button onClick={() => navigate('/bet')} className="bg-emerald-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-emerald-700 transition-colors flex items-center justify-center space-x-2">
                         <Play className="h-5 w-5" />
@@ -138,7 +158,7 @@ const Index = memo(() => {
         <FeatureShowcase />
 
         {/* Authenticated User Content - Upper Sections */}
-        {user && (
+        {currentUser && (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             {/* Active Tournaments Prompt */}
             {activeTournaments.filter(t => t.status === 'draft').length > 0 && (
@@ -215,7 +235,7 @@ const Index = memo(() => {
       </div>
       
       {/* Lower Content Sections Outside Background */}
-      {user ? (
+      {currentUser ? (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           {/* User-specific content */}
           {isNewUser ? (

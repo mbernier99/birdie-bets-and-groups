@@ -2,79 +2,79 @@
 // Mock data utilities for testing without authentication
 export const MOCK_MODE = true; // Set to false for production
 
-// Mock user profiles
+// Bandon Dunes golfers for testing
 export const mockUsers = [
   {
     id: 'user_001',
-    email: 'john.doe@example.com',
-    first_name: 'John',
-    last_name: 'Doe',
+    email: 'matt.bernier@email.com',
+    first_name: 'Matt',
+    last_name: 'Bernier',
     handicap: 12,
     avatar_url: null,
-    home_course: 'Pebble Beach Golf Links'
+    home_course: 'Bandon Dunes Golf Resort'
   },
   {
     id: 'user_002',
-    email: 'sarah.smith@example.com',
-    first_name: 'Sarah',
-    last_name: 'Smith',
+    email: 'erin.whalen@email.com',
+    first_name: 'Erin',
+    last_name: 'Whalen',
     handicap: 8,
     avatar_url: null,
-    home_course: 'Augusta National Golf Club'
+    home_course: 'Bandon Dunes Golf Resort'
   },
   {
     id: 'user_003',
-    email: 'mike.johnson@example.com',
-    first_name: 'Mike',
-    last_name: 'Johnson',
+    email: 'scott.gannon@email.com',
+    first_name: 'Scott',
+    last_name: 'Gannon',
     handicap: 15,
     avatar_url: null,
-    home_course: 'St. Andrews Old Course'
+    home_course: 'Bandon Dunes Golf Resort'
   },
   {
     id: 'user_004',
-    email: 'emily.davis@example.com',
-    first_name: 'Emily',
-    last_name: 'Davis',
+    email: 'matt.traiman@email.com',
+    first_name: 'Matt',
+    last_name: 'Traiman',
     handicap: 6,
     avatar_url: null,
-    home_course: 'Torrey Pines Golf Course'
+    home_course: 'Bandon Dunes Golf Resort'
   },
   {
     id: 'user_005',
-    email: 'alex.wilson@example.com',
-    first_name: 'Alex',
-    last_name: 'Wilson',
+    email: 'drew.tornga@email.com',
+    first_name: 'Drew',
+    last_name: 'Tornga',
     handicap: 18,
     avatar_url: null,
-    home_course: 'Bethpage Black Course'
+    home_course: 'Bandon Dunes Golf Resort'
   },
   {
     id: 'user_006',
-    email: 'lisa.brown@example.com',
-    first_name: 'Lisa',
-    last_name: 'Brown',
+    email: 'hector.saldivar@email.com',
+    first_name: 'Hector',
+    last_name: 'Saldivar',
     handicap: 10,
     avatar_url: null,
-    home_course: 'Pinehurst No. 2'
+    home_course: 'Bandon Dunes Golf Resort'
   },
   {
     id: 'user_007',
-    email: 'david.garcia@example.com',
-    first_name: 'David',
-    last_name: 'Garcia',
+    email: 'lee.crocker@email.com',
+    first_name: 'Lee',
+    last_name: 'Crocker',
     handicap: 14,
     avatar_url: null,
-    home_course: 'TPC Sawgrass'
+    home_course: 'Bandon Dunes Golf Resort'
   },
   {
     id: 'user_008',
-    email: 'jennifer.martinez@example.com',
-    first_name: 'Jennifer',
-    last_name: 'Martinez',
+    email: 'guest@email.com',
+    first_name: "Whalen's",
+    last_name: 'Guest',
     handicap: 9,
     avatar_url: null,
-    home_course: 'Whistling Straits'
+    home_course: 'Bandon Dunes Golf Resort'
   }
 ];
 
