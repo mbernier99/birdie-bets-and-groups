@@ -31,20 +31,42 @@ const InviteSheet: React.FC<InviteSheetProps> = ({ open, onOpenChange, roomId, m
   };
 
   const shareNative = async () => {
-    if ((navigator as any).share) {
+    if (navigator.share && navigator.canShare) {
       try {
-        await (navigator as any).share({ title: 'Quick Bet Invite', text: message, url: link });
-      } catch {
-        // user canceled or unsupported
+        await navigator.share({ 
+          title: 'Quick Bet Invite', 
+          text: message,
+          url: link 
+        });
+        toast({ title: "Invitation shared successfully" });
+      } catch (error) {
+        console.error('Share failed:', error);
+        // Fallback to copy if share is canceled or fails
+        copy(message, 'Invite message');
       }
     } else {
-      copy(message, 'Invite');
+      copy(message, 'Invite message');
     }
   };
 
   const smsInvite = () => {
-    const smsUrl = `sms:?&body=${encodeURIComponent(message)}`;
-    window.location.href = smsUrl;
+    try {
+      const smsUrl = `sms:?body=${encodeURIComponent(message)}`;
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        // Mobile device - try to open SMS app
+        window.open(smsUrl, '_self');
+      } else {
+        // Desktop - copy message and show instructions
+        copy(message, 'SMS message');
+        toast({ 
+          title: "SMS message copied", 
+          description: "Paste this message in your messaging app" 
+        });
+      }
+    } catch (error) {
+      console.error('SMS failed:', error);
+      copy(message, 'SMS message');
+    }
   };
 
   return (
