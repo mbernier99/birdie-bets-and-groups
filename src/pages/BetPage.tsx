@@ -34,34 +34,42 @@ const BetPage = () => {
       >
         <Zap className="h-5 w-5" />
         <div className="text-left">
-          <div className="font-medium">Quick Bet</div>
-          <div className="text-xs opacity-75">Start instant betting with friends</div>
+          <div className="font-medium">Create Quick Bet Room</div>
+          <div className="text-xs opacity-75">Start instant CTP or Long Drive bet</div>
         </div>
       </Button>
       
-      <Button 
-        variant="outline"
-        className="w-full justify-start gap-3 h-auto py-4"
-        onClick={() => navigate('/quick-bet')}
-      >
-        <Target className="h-5 w-5" />
-        <div className="text-left">
-          <div className="font-medium">Closest to Pin</div>
-          <div className="text-xs text-muted-foreground">CTP challenge with friends</div>
-        </div>
-      </Button>
+      <div className="text-center py-2">
+        <div className="text-sm font-medium text-muted-foreground">Or enter room code to join:</div>
+      </div>
       
-      <Button 
-        variant="outline"
-        className="w-full justify-start gap-3 h-auto py-4"
-        onClick={() => navigate('/quick-bet')}
-      >
-        <TrendingUp className="h-5 w-5" />
-        <div className="text-left">
-          <div className="font-medium">Long Drive</div>
-          <div className="text-xs text-muted-foreground">Distance competition</div>
-        </div>
-      </Button>
+      <div className="flex gap-2">
+        <input 
+          type="text" 
+          placeholder="Room code (e.g., ABC123)"
+          className="flex-1 px-3 py-2 border border-input rounded-md text-sm"
+          onKeyPress={(e) => {
+            if (e.key === 'Enter') {
+              const code = e.currentTarget.value.trim().toUpperCase();
+              if (code.length >= 4) {
+                navigate(`/quick-bet/${code}`);
+              }
+            }
+          }}
+        />
+        <Button 
+          variant="outline"
+          onClick={(e) => {
+            const input = e.currentTarget.parentElement?.querySelector('input');
+            const code = input?.value.trim().toUpperCase();
+            if (code && code.length >= 4) {
+              navigate(`/quick-bet/${code}`);
+            }
+          }}
+        >
+          Join
+        </Button>
+      </div>
     </div>
   );
 
@@ -91,8 +99,19 @@ const BetPage = () => {
                 <div className="text-lg font-semibold text-primary">
                   ${bet.amount}
                 </div>
-                <Button size="sm" variant="outline">
-                  View Details
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={() => {
+                    // Navigate to betting room for this bet  
+                    if (bet.bet_type === 'closest-to-pin' || bet.bet_type === 'longest-drive') {
+                      navigate(`/bet-room/${bet.id}`);
+                    } else {
+                      navigate(`/tournament/${bet.tournament_id}/live`);
+                    }
+                  }}
+                >
+                  Join Bet
                 </Button>
               </div>
             </CardContent>

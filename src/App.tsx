@@ -17,6 +17,7 @@ const Index = React.lazy(() => import("./pages/Index"));
 const Dashboard = React.lazy(() => import("./pages/Dashboard"));
 const GroupsPage = React.lazy(() => import("./pages/GroupsPage"));
 const BetPage = React.lazy(() => import("./pages/BetPage"));
+const BetRoom = React.lazy(() => import("./pages/BetRoom"));
 const Tournaments = React.lazy(() => import("./pages/Tournaments"));
 const Tracker = React.lazy(() => import("./pages/Tracker"));
 const GolfTracker = React.lazy(() => import("./pages/GolfTracker"));
@@ -70,6 +71,11 @@ const App = () => (
                   <Route path="/bet" element={
                     <ProtectedRoute>
                       <BetPage />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/bet-room/:betId" element={
+                    <ProtectedRoute>
+                      <BetRoom />
                     </ProtectedRoute>
                   } />
                   <Route path="/auth" element={<Auth />} />

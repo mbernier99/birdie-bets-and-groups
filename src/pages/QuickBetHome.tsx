@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
+import { Target, TrendingUp } from "lucide-react";
 
 function generateRoomCode() {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -64,38 +65,76 @@ const QuickBetHome: React.FC = () => {
 
   return (
     <div className="mx-auto max-w-md p-4">
-      <header className="mb-6">
+      <header className="mb-6 text-center">
         <h1 className="text-2xl font-semibold">Quick Bet</h1>
-        <p className="text-muted-foreground">Closest to the Pin and Long Drive — no login, no setup.</p>
+        <p className="text-muted-foreground">Create instant Closest to Pin or Long Drive challenges with friends</p>
       </header>
 
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Your info</CardTitle>
+          <CardTitle>Setup Your Bet</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <Input placeholder="Display name" value={name} onChange={(e) => setName(e.target.value)} />
+          <Input 
+            placeholder="Your display name" 
+            value={name} 
+            onChange={(e) => setName(e.target.value)} 
+          />
           <div className="flex items-center gap-2">
-            <Input type="number" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} />
-            <span className="text-sm text-muted-foreground">Wager amount</span>
+            <span className="text-sm text-muted-foreground">$</span>
+            <Input 
+              type="number" 
+              inputMode="decimal" 
+              value={amount} 
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="5" 
+            />
+            <span className="text-sm text-muted-foreground">wager per player</span>
           </div>
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-        <Button onClick={() => startRoom("ctp")} className="w-full">Create CTP Room (${amountNum || 0})</Button>
-        <Button onClick={() => startRoom("long-drive")} variant="secondary" className="w-full">Create Long Drive (${amountNum || 0})</Button>
+      <div className="space-y-3 mb-6">
+        <Button onClick={() => startRoom("ctp")} className="w-full h-12 text-left">
+          <div className="flex items-center gap-3">
+            <Target className="h-5 w-5" />
+            <div>
+              <div className="font-medium">Create Closest to Pin</div>
+              <div className="text-xs opacity-75">${amountNum || 0} bet • AR distance tracking</div>
+            </div>
+          </div>
+        </Button>
+        <Button onClick={() => startRoom("long-drive")} variant="secondary" className="w-full h-12 text-left">
+          <div className="flex items-center gap-3">
+            <TrendingUp className="h-5 w-5" />
+            <div>
+              <div className="font-medium">Create Long Drive</div>
+              <div className="text-xs opacity-75">${amountNum || 0} bet • AR distance tracking</div>
+            </div>
+          </div>
+        </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Join a room</CardTitle>
+          <CardTitle>Join existing bet</CardTitle>
         </CardHeader>
         <CardContent className="flex items-center gap-2">
-          <Input placeholder="Room code" value={joinCode} onChange={(e) => setJoinCode(e.target.value.toUpperCase())} />
+          <Input 
+            placeholder="Room code (e.g., ABC123)" 
+            value={joinCode} 
+            onChange={(e) => setJoinCode(e.target.value.toUpperCase())} 
+          />
           <Button onClick={joinRoom}>Join</Button>
         </CardContent>
       </Card>
+
+      <div className="mt-6 p-3 bg-muted/50 rounded-lg">
+        <div className="text-xs text-muted-foreground text-center">
+          <div className="font-medium mb-1">How it works:</div>
+          <div>1. Create or join a room • 2. Set pin/tee location with AR • 3. Record your shots • 4. See live results</div>
+        </div>
+      </div>
     </div>
   );
 };
