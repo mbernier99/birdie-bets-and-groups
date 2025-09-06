@@ -10,7 +10,7 @@ import { MockAuthProvider } from "./contexts/MockAuthContext";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { PageSkeleton } from "./components/ui/loading-skeleton";
 import ProtectedRoute from "./components/ProtectedRoute";
-import MockUserSwitcher from "./components/MockUserSwitcher";
+
 
 // Lazy load pages for code splitting
 const Index = React.lazy(() => import("./pages/Index"));
@@ -58,7 +58,7 @@ const App = () => (
           <TooltipProvider>
             <Toaster />
             <Sonner />
-            <MockUserSwitcher />
+            
             <BrowserRouter>
               <Suspense fallback={<PageSkeleton />}>
                 <Routes>
