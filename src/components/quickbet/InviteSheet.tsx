@@ -17,7 +17,7 @@ interface InviteSheetProps {
 
 const InviteSheet: React.FC<InviteSheetProps> = ({ open, onOpenChange, roomId, mode, amount, name }) => {
   const { toast } = useToast();
-  const link = typeof window !== "undefined" ? `${window.location.origin}/quick-bet/${roomId}` : `/quick-bet/${roomId}`;
+  const link = typeof window !== "undefined" ? `${window.location.origin}/bet-invite/${roomId}` : `/bet-invite/${roomId}`;
   const prettyMode = mode === 'ctp' ? 'Closest to Pin' : mode === 'long-drive' ? 'Long Drive' : 'Quick Bet';
   const message = `${name?.trim() || 'A golfer'} invited you to ${prettyMode}${amount ? ` – $${amount}` : ''}. Code: ${roomId}. Join: ${link}`;
 
