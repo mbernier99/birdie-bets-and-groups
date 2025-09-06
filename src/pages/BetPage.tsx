@@ -1,22 +1,30 @@
 import React, { useState } from 'react';
-import { Zap, Plus, Target, TrendingUp, Clock, CheckCircle, Users } from 'lucide-react';
+import { Zap, Plus, Target, TrendingUp, Clock, CheckCircle, Users, MapPin, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTournaments } from '@/hooks/useTournaments';
 import { usePress } from '@/hooks/usePress';
+import { useIsMobile } from '@/hooks/use-mobile';
 import Navbar from '@/components/Navbar';
 
 const BetPage = () => {
   const [selectedTab, setSelectedTab] = useState('active');
+  const [selectedTournament, setSelectedTournament] = useState('');
+  const [selectedHole, setSelectedHole] = useState('');
+  const [betType, setBetType] = useState('');
+  const [betAmount, setBetAmount] = useState('');
   
   const { user } = useAuth();
   const { tournaments } = useTournaments();
   const { pressBets } = usePress();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   // Get active tournaments for tournament-based betting
   const activeTournaments = tournaments.filter(t => 
@@ -238,50 +246,148 @@ const BetPage = () => {
     </div>
   );
 
+  const renderDesktopTournamentSetup = () => (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            Setup Tournament Bets
+          </CardTitle>
+          <CardDescription>
+            Pre-configure bets for specific holes in upcoming tournaments
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium mb-2 block">Tournament</label>
+              <Select value={selectedTournament} onValueChange={setSelectedTournament}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select tournament" />
+                </SelectTrigger>
+                <SelectContent>
+                  {activeTournaments.map(tournament => (
+                    <SelectItem key={tournament.id} value={tournament.id}>
+                      {tournament.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <label className="text-sm font-medium mb-2 block">Hole Number</label>
+              <Select value={selectedHole} onValueChange={setSelectedHole}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select hole" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 18 }, (_, i) => (
+                    <SelectItem key={i + 1} value={String(i + 1)}>
+                      Hole {i + 1}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium mb-2 block">Bet Type</label>
+              <Select value={betType} onValueChange={setBetType}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select bet type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="closest-to-pin">Closest to Pin</SelectItem>
+                  <SelectItem value="longest-drive">Longest Drive</SelectItem>
+                  <SelectItem value="lowest-score">Lowest Score</SelectItem>
+                  <SelectItem value="first-in-hole">First in Hole</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <label className="text-sm font-medium mb-2 block">Amount ($)</label>
+              <Input 
+                type="number" 
+                placeholder="0" 
+                value={betAmount}
+                onChange={(e) => setBetAmount(e.target.value)}
+              />
+            </div>
+          </div>
+          
+          <Button 
+            className="w-full" 
+            disabled={!selectedTournament || !selectedHole || !betType || !betAmount}
+          >
+            <MapPin className="h-4 w-4 mr-2" />
+            Schedule Bet for Hole {selectedHole}
+          </Button>
+        </CardContent>
+      </Card>
+      
+      <div className="text-center py-8 text-muted-foreground">
+        <MapPin className="h-12 w-12 mx-auto mb-4" />
+        <h3 className="text-lg font-semibold mb-2">Desktop Tournament Setup</h3>
+        <p>Configure bets in advance for specific tournament holes. Live betting and AR features are available on mobile devices.</p>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-background pb-20">
       <Navbar />
       
-      <div className="pt-20 px-4 space-y-6">
-        <div className="flex items-center justify-between">
+      <div className={`px-4 space-y-4 ${isMobile ? 'pt-16' : 'pt-20'}`}>
+        <div>
           <h1 className="text-2xl font-bold">Betting</h1>
-          <Button size="sm" onClick={() => navigate('/quick-bet')}>
-            <Plus className="h-4 w-4 mr-2" />
-            New Bet
-          </Button>
+          <p className="text-muted-foreground text-sm">
+            {isMobile ? 'Live betting with AR tracking' : 'Tournament bet management'}
+          </p>
         </div>
 
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Quick Actions</CardTitle>
-            <CardDescription>Start betting instantly</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {renderQuickBetActions()}
-          </CardContent>
-        </Card>
+        {isMobile ? (
+          <>
+            {/* Mobile: Quick Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Quick Actions</CardTitle>
+                <CardDescription>Start betting instantly with AR</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {renderQuickBetActions()}
+              </CardContent>
+            </Card>
 
-        {/* Bet Management Tabs */}
-        <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="active">Active</TabsTrigger>
-            <TabsTrigger value="history">History</TabsTrigger>
-            <TabsTrigger value="tournament">Tournament</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="active" className="space-y-4">
-            {renderActiveBets()}
-          </TabsContent>
-          
-          <TabsContent value="history" className="space-y-4">
-            {renderCompletedBets()}
-          </TabsContent>
-          
-          <TabsContent value="tournament" className="space-y-4">
-            {renderTournamentBetting()}
-          </TabsContent>
-        </Tabs>
+            {/* Mobile: Bet Management Tabs */}
+            <Tabs value={selectedTab} onValueChange={setSelectedTab}>
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="active">Active</TabsTrigger>
+                <TabsTrigger value="history">History</TabsTrigger>
+                <TabsTrigger value="tournament">Tournament</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="active" className="space-y-4">
+                {renderActiveBets()}
+              </TabsContent>
+              
+              <TabsContent value="history" className="space-y-4">
+                {renderCompletedBets()}
+              </TabsContent>
+              
+              <TabsContent value="tournament" className="space-y-4">
+                {renderTournamentBetting()}
+              </TabsContent>
+            </Tabs>
+          </>
+        ) : (
+          /* Desktop: Tournament Setup Interface */
+          renderDesktopTournamentSetup()
+        )}
       </div>
     </div>
   );
