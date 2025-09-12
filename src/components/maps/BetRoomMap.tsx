@@ -164,29 +164,102 @@ const BetRoomMap: React.FC<BetRoomMapProps> = ({
       markers.current.push(marker);
     });
 
-    // Add shot markers
+    // Add distance lines and shot markers
     if (showAllShots) {
+      // Add distance lines first (behind markers)
+      const targetPoint = gameMode === 'ctp' 
+        ? referencePoints.pin 
+        : referencePoints.tee;
+
+      if (targetPoint) {
+        // Create lines showing distance relationships
+        const lineFeatures = shots.map(shot => ({
+          type: 'Feature' as const,
+          geometry: {
+            type: 'LineString' as const,
+            coordinates: [
+              [targetPoint.longitude, targetPoint.latitude],
+              [shot.measurement.longitude, shot.measurement.latitude]
+            ]
+          },
+          properties: {
+            playerId: shot.playerId,
+            distance: shot.distanceYards,
+            ranking: shot.ranking
+          }
+        }));
+
+        // Add line source and layer
+        if (map.current.getSource('distance-lines')) {
+          const source = map.current.getSource('distance-lines') as mapboxgl.GeoJSONSource;
+          source.setData({
+            type: 'FeatureCollection',
+            features: lineFeatures
+          });
+        } else {
+          map.current.addSource('distance-lines', {
+            type: 'geojson',
+            data: {
+              type: 'FeatureCollection',
+              features: lineFeatures
+            }
+          });
+
+          map.current.addLayer({
+            id: 'distance-lines',
+            type: 'line',
+            source: 'distance-lines',
+            layout: {
+              'line-join': 'round',
+              'line-cap': 'round'
+            },
+            paint: {
+              'line-color': [
+                'case',
+                ['==', ['get', 'ranking'], 1], '#22c55e', // Green for best shot
+                ['<=', ['get', 'ranking'], 3], '#f59e0b', // Yellow for top 3
+                '#64748b' // Gray for others
+              ],
+              'line-width': [
+                'case',
+                ['==', ['get', 'ranking'], 1], 3, // Thicker for best shot
+                2
+              ],
+              'line-opacity': 0.7
+            }
+          });
+        }
+      }
+
+      // Add shot markers
       shots.forEach((shot, index) => {
         const isCurrentPlayer = shot.playerId === currentPlayerId;
+        const isTopShot = shot.ranking === 1;
+        const isTopThree = shot.ranking <= 3;
         
         const el = document.createElement('div');
         el.className = 'shot-marker';
         el.style.cssText = `
-          width: 25px;
-          height: 25px;
+          width: ${isTopShot ? '30px' : '25px'};
+          height: ${isTopShot ? '30px' : '25px'};
           border-radius: 50%;
-          border: 2px solid white;
+          border: ${isTopShot ? '3px' : '2px'} solid white;
           box-shadow: 0 2px 8px rgba(0,0,0,0.3);
           cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 10px;
+          font-size: ${isTopShot ? '12px' : '10px'};
           font-weight: bold;
           color: white;
-          background-color: ${isCurrentPlayer ? '#8b5cf6' : '#64748b'};
+          background-color: ${
+            isTopShot ? '#22c55e' : 
+            isTopThree ? '#f59e0b' : 
+            isCurrentPlayer ? '#8b5cf6' : '#64748b'
+          };
+          ${isTopShot ? 'animation: pulse 2s infinite;' : ''}
         `;
-        el.innerHTML = `${index + 1}`;
+        el.innerHTML = `${shot.ranking || index + 1}`;
 
         el.addEventListener('click', () => {
           setSelectedShot(shot);
@@ -196,13 +269,22 @@ const BetRoomMap: React.FC<BetRoomMapProps> = ({
           ? `${shot.distanceYards.toFixed(1)} yards from pin`
           : `${shot.distanceYards.toFixed(1)} yards from tee`;
 
+        const rankingText = shot.ranking === 1 
+          ? '🏆 LEADER' 
+          : shot.ranking <= 3 
+          ? `🥉 #${shot.ranking}` 
+          : `#${shot.ranking}`;
+
         const marker = new mapboxgl.Marker(el)
           .setLngLat([shot.measurement.longitude, shot.measurement.latitude])
           .setPopup(
             new mapboxgl.Popup({ offset: 25 })
               .setHTML(`
                 <div class="p-3">
-                  <h3 class="font-semibold">${shot.playerName}</h3>
+                  <div class="flex items-center gap-2 mb-2">
+                    <h3 class="font-semibold">${shot.playerName}</h3>
+                    <span class="text-xs font-bold">${rankingText}</span>
+                  </div>
                   <p class="text-sm font-medium">${distanceInfo}</p>
                   <p class="text-xs text-gray-600">
                     ${shot.measurement.confidence.toUpperCase()} confidence • 
