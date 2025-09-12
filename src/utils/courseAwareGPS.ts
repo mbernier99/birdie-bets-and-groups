@@ -70,13 +70,15 @@ export class CourseAwareGPS {
     }
 
     const warnings: string[] = [];
-    let confidence: 'high' | 'medium' | 'low' = 'high';
     let estimatedAccuracy = shotLocation.accuracy || 5;
 
+    // Calculate confidence based on all factors
+    let finalConfidence: 'high' | 'medium' | 'low' = 'high';
+    
     // Check course boundaries
     if (this.courseData.courseBoundary && !this.isPointInBoundary(shotLocation, this.courseData.courseBoundary)) {
       warnings.push('Shot appears to be outside course boundaries');
-      confidence = 'low';
+      finalConfidence = 'low';
     }
 
     // Check hole-specific constraints
@@ -84,10 +86,11 @@ export class CourseAwareGPS {
     const violatesConstraints = this.checkConstraintViolations(shotLocation, hole, holeConstraints);
     warnings.push(...violatesConstraints.warnings);
     
+    // Apply constraint violations
     if (violatesConstraints.severity === 'high') {
-      confidence = 'low';
-    } else if (violatesConstraints.severity === 'medium' && confidence === 'high') {
-      confidence = 'medium';
+      finalConfidence = 'low';
+    } else if (violatesConstraints.severity === 'medium' && finalConfidence === 'high') {
+      finalConfidence = 'medium';
     }
 
     // Improve accuracy if shot aligns with course features
@@ -100,8 +103,8 @@ export class CourseAwareGPS {
     const coursePosition = this.determineCoursePosition(shotLocation, hole);
 
     return {
-      isValid: warnings.length === 0 || confidence !== 'low',
-      confidence,
+      isValid: warnings.length === 0 || finalConfidence !== 'low',
+      confidence: finalConfidence,
       warnings,
       estimatedAccuracy,
       coursePosition
@@ -296,10 +299,14 @@ export class CourseAwareGPS {
   }
 
   private getHoleConstraints(hole: any, shotType: string) {
-    const constraints = {
+    const constraints: {
+      maxDistanceFromTee: number;
+      maxDistanceFromPin: number;
+      validAreas: ('tee' | 'fairway' | 'rough' | 'green')[];
+    } = {
       maxDistanceFromTee: 600, // 600 meters max drive
       maxDistanceFromPin: 200,  // 200 meters max approach
-      validAreas: ['tee', 'fairway', 'rough', 'green'] as const
+      validAreas: ['tee', 'fairway', 'rough', 'green']
     };
 
     if (shotType === 'drive') {
