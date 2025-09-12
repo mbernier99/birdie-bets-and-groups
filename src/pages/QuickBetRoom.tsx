@@ -13,6 +13,8 @@ import InviteSheet from "@/components/quickbet/InviteSheet";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import EnhancedReferencePointManager from "@/components/ar/EnhancedReferencePointManager";
 import EnhancedShotTracker from "@/components/ar/EnhancedShotTracker";
+import BetRoomMap from "@/components/maps/BetRoomMap";
+import EnhancedLeaderboard from "@/components/maps/EnhancedLeaderboard";
 import { ARMeasurement } from "@/components/ar/ARMeasurement";
 import { EnhancedARMeasurement } from "@/components/ar/EnhancedARMeasurement";
 
@@ -41,6 +43,8 @@ const QuickBetRoom: React.FC = () => {
   const [amount, setAmountInput] = useState<string>(sessionStorage.getItem(`qb_amount_${roomId}`) || "5");
   const [inviteOpen, setInviteOpen] = useState(false);
   const [namePromptOpen, setNamePromptOpen] = useState(!storedName);
+  const [mapboxToken, setMapboxToken] = useState<string>(localStorage.getItem('mapbox_token') || '');
+  const [shotHistory, setShotHistory] = useState<EnhancedShotData[]>([]);
 
   const isHost = Boolean(sessionStorage.getItem(`qb_host_${roomId}`));
 
@@ -124,6 +128,13 @@ const QuickBetRoom: React.FC = () => {
     };
 
     recordShot(locationRef);
+    
+    // Add to shot history for map and enhanced leaderboard
+    const enhancedShot = {
+      ...shotData,
+      ranking: 0 // Will be calculated by the leaderboard component
+    };
+    setShotHistory(prev => [...prev, enhancedShot]);
     
     const enhancedInfo = shotData.measurement.method === 'enhanced-ar' ? 
       ` • Stability: ${shotData.measurement.stabilityScore?.toFixed(0) || 0}%` : '';
@@ -226,29 +237,107 @@ const QuickBetRoom: React.FC = () => {
           gameMode={state.mode}
           playerId={name}
           playerName={name}
-          recentShots={[]}
+          recentShots={shotHistory.filter(shot => shot.playerId === name)}
         />
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Leaderboard</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {leaderboard.length === 0 && (
-            <div className="text-sm text-muted-foreground">No shots yet.</div>
-          )}
-          {leaderboard.map((row, idx) => (
-            <div key={row.shotId} className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Badge variant={idx === 0 ? 'default' : 'secondary'}>#{idx + 1}</Badge>
-                <span>{row.playerName}</span>
-              </div>
-              <div className="text-sm font-medium">{metersToYards(row.distanceMeters).toFixed(1)} yd</div>
+      {/* Map and Enhanced Leaderboard */}
+      {state.mode && (state.pinLocation || state.teeLocation || state.startLocation || shotHistory.length > 0) && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Shot Location Map */}
+          <BetRoomMap
+            referencePoints={{
+              pin: state.pinLocation,
+              tee: state.teeLocation,
+              start: state.startLocation
+            }}
+            shots={shotHistory}
+            gameMode={state.mode}
+            currentPlayerId={name}
+            mapboxToken={mapboxToken}
+          />
+          
+          {/* Enhanced Leaderboard */}
+          <EnhancedLeaderboard
+            shots={shotHistory}
+            gameMode={state.mode}
+            currentPlayerId={name}
+          />
+        </div>
+      )}
+
+      {/* Mapbox Token Input (if not set) */}
+      {!mapboxToken && (
+        <Card className="border-yellow-200 bg-yellow-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-yellow-800">
+              🗺️ Enable Map Features
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-yellow-700">
+              Add your Mapbox public token to see shot locations on an interactive map.
+            </p>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Enter your Mapbox public token"
+                value={mapboxToken}
+                onChange={(e) => setMapboxToken(e.target.value)}
+                className="flex-1"
+              />
+              <Button
+                onClick={() => {
+                  if (mapboxToken.trim()) {
+                    localStorage.setItem('mapbox_token', mapboxToken);
+                    toast({
+                      title: "Mapbox token saved",
+                      description: "Map features are now enabled!"
+                    });
+                  }
+                }}
+                disabled={!mapboxToken.trim()}
+              >
+                Save
+              </Button>
             </div>
-          ))}
-        </CardContent>
-      </Card>
+            <div className="text-xs text-yellow-600">
+              Get your free token at{' '}
+              <a 
+                href="https://mapbox.com/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="underline font-medium"
+              >
+                mapbox.com
+              </a>
+              {' '}→ Account → Tokens
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Basic Leaderboard (fallback) */}
+      {shotHistory.length === 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Leaderboard</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {leaderboard.length === 0 && (
+              <div className="text-sm text-muted-foreground">No shots yet.</div>
+            )}
+            {leaderboard.map((row, idx) => (
+              <div key={row.shotId} className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Badge variant={idx === 0 ? 'default' : 'secondary'}>#{idx + 1}</Badge>
+                  <span>{row.playerName}</span>
+                </div>
+                <div className="text-sm font-medium">{metersToYards(row.distanceMeters).toFixed(1)} yd</div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
 
       <div className="flex items-center justify-between pt-2">
         <Button variant="outline" onClick={() => nav('/quick-bet')}>Leave</Button>
