@@ -14,9 +14,20 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import EnhancedReferencePointManager from "@/components/ar/EnhancedReferencePointManager";
 import EnhancedShotTracker from "@/components/ar/EnhancedShotTracker";
 import { ARMeasurement } from "@/components/ar/ARMeasurement";
+import { EnhancedARMeasurement } from "@/components/ar/EnhancedARMeasurement";
 
 function metersToYards(m: number) {
   return m * 1.09361;
+}
+
+interface EnhancedShotData {
+  id: string;
+  playerId: string;
+  playerName: string;
+  measurement: EnhancedARMeasurement;
+  distanceYards: number;
+  timestamp: number;
+  ranking: number;
 }
 
 const QuickBetRoom: React.FC = () => {
@@ -71,7 +82,7 @@ const QuickBetRoom: React.FC = () => {
     }
   }, [isHost, roomId]);
 
-  const handleReferencePointSet = (type: 'pin' | 'tee' | 'start', measurement: ARMeasurement) => {
+  const handleReferencePointSet = (type: 'pin' | 'tee' | 'start', measurement: EnhancedARMeasurement) => {
     const locationRef: LocationRef = {
       latitude: measurement.latitude,
       longitude: measurement.longitude,
@@ -79,7 +90,7 @@ const QuickBetRoom: React.FC = () => {
       timestamp: measurement.timestamp,
       photoUrl: measurement.photoUrl,
       confidence: measurement.confidence,
-      method: measurement.method,
+      method: measurement.method as 'ar-camera' | 'gps-fallback', // Type assertion for compatibility
       deviceOrientation: measurement.deviceOrientation
     };
 
@@ -91,31 +102,35 @@ const QuickBetRoom: React.FC = () => {
       setStartLocation(locationRef);
     }
 
+    const enhancedInfo = measurement.method === 'enhanced-ar' ? 
+      ` • ${measurement.measurements?.length || 0} samples averaged` : '';
+
     toast({ 
       title: `${type.charAt(0).toUpperCase() + type.slice(1)} location set`,
-      description: `${measurement.confidence.toUpperCase()} accuracy measurement recorded`
+      description: `${measurement.confidence.toUpperCase()} accuracy measurement${enhancedInfo}`
     });
   };
 
-  const handleShotRecorded = (measurement: ARMeasurement & { distanceYards?: number }) => {
+  const handleShotRecorded = (shotData: EnhancedShotData) => {
     const locationRef: LocationRef = {
-      latitude: measurement.latitude,
-      longitude: measurement.longitude,
-      accuracy: measurement.accuracy,
-      timestamp: measurement.timestamp,
-      photoUrl: measurement.photoUrl,
-      confidence: measurement.confidence,
-      method: measurement.method,
-      deviceOrientation: measurement.deviceOrientation
+      latitude: shotData.measurement.latitude,
+      longitude: shotData.measurement.longitude,
+      accuracy: shotData.measurement.accuracy,
+      timestamp: shotData.measurement.timestamp,
+      photoUrl: shotData.measurement.photoUrl,
+      confidence: shotData.measurement.confidence,
+      method: shotData.measurement.method as 'ar-camera' | 'gps-fallback', // Type assertion for compatibility
+      deviceOrientation: shotData.measurement.deviceOrientation
     };
 
     recordShot(locationRef);
     
+    const enhancedInfo = shotData.measurement.method === 'enhanced-ar' ? 
+      ` • Stability: ${shotData.measurement.stabilityScore?.toFixed(0) || 0}%` : '';
+
     toast({ 
-      title: "Shot recorded",
-      description: measurement.distanceYards 
-        ? `Distance: ${measurement.distanceYards.toFixed(1)} yards`
-        : `${measurement.confidence.toUpperCase()} accuracy measurement`
+      title: "Enhanced shot recorded",
+      description: `Distance: ${shotData.distanceYards.toFixed(1)} yards • ${shotData.measurement.confidence.toUpperCase()}${enhancedInfo}`
     });
   };
 
