@@ -11,8 +11,8 @@ import { calculateDistance } from "@/utils/gpsCalculations";
 import { Plus } from "lucide-react";
 import InviteSheet from "@/components/quickbet/InviteSheet";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import ReferencePointManager from "@/components/ar/ReferencePointManager";
-import ShotTracker from "@/components/ar/ShotTracker";
+import EnhancedReferencePointManager from "@/components/ar/EnhancedReferencePointManager";
+import EnhancedShotTracker from "@/components/ar/EnhancedShotTracker";
 import { ARMeasurement } from "@/components/ar/ARMeasurement";
 
 function metersToYards(m: number) {
@@ -189,7 +189,7 @@ const QuickBetRoom: React.FC = () => {
       )}
 
       {state.mode && (
-        <ReferencePointManager
+        <EnhancedReferencePointManager
           gameMode={state.mode}
           referencePoints={{
             pin: state.pinLocation,
@@ -202,13 +202,16 @@ const QuickBetRoom: React.FC = () => {
       )}
 
       {state.mode && (
-        <ShotTracker
+        <EnhancedShotTracker
           referencePoints={{
             pin: state.pinLocation,
             tee: state.teeLocation
           }}
           onShotRecorded={handleShotRecorded}
           gameMode={state.mode}
+          playerId={name}
+          playerName={name}
+          recentShots={[]}
         />
       )}
 
