@@ -72,13 +72,13 @@ export class CourseAwareGPS {
     const warnings: string[] = [];
     let estimatedAccuracy = shotLocation.accuracy || 5;
 
-    // Calculate confidence based on all factors
+    // Start with high confidence and degrade based on issues
     let finalConfidence: 'high' | 'medium' | 'low' = 'high';
     
     // Check course boundaries
-    if (this.courseData.courseBoundary && !this.isPointInBoundary(shotLocation, this.courseData.courseBoundary)) {
+    const isOutOfBounds = this.courseData.courseBoundary && !this.isPointInBoundary(shotLocation, this.courseData.courseBoundary);
+    if (isOutOfBounds) {
       warnings.push('Shot appears to be outside course boundaries');
-      finalConfidence = 'low';
     }
 
     // Check hole-specific constraints
@@ -86,10 +86,10 @@ export class CourseAwareGPS {
     const violatesConstraints = this.checkConstraintViolations(shotLocation, hole, holeConstraints);
     warnings.push(...violatesConstraints.warnings);
     
-    // Apply constraint violations
-    if (violatesConstraints.severity === 'high') {
+    // Determine final confidence based on all factors
+    if (isOutOfBounds || violatesConstraints.severity === 'high') {
       finalConfidence = 'low';
-    } else if (violatesConstraints.severity === 'medium' && finalConfidence === 'high') {
+    } else if (violatesConstraints.severity === 'medium') {
       finalConfidence = 'medium';
     }
 
@@ -334,6 +334,9 @@ export class CourseAwareGPS {
       if (minTeeDistance > constraints.maxDistanceFromTee) {
         warnings.push(`Shot is ${Math.round(minTeeDistance)}m from tee (max expected: ${constraints.maxDistanceFromTee}m)`);
         severity = 'high';
+      } else if (minTeeDistance > constraints.maxDistanceFromTee * 0.8) {
+        warnings.push(`Shot is ${Math.round(minTeeDistance)}m from tee (approaching limit: ${constraints.maxDistanceFromTee}m)`);
+        severity = 'medium';
       }
     }
 
