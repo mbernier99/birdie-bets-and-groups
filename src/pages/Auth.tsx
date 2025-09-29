@@ -455,6 +455,16 @@ const Auth = () => {
           </Tabs>
         </CardContent>
       </Card>
+      
+      <div className="mt-6 text-center">
+        <Button
+          variant="ghost"
+          onClick={() => navigate('/quick-login')}
+          className="text-muted-foreground hover:text-golf-green"
+        >
+          Quick Login for Bandon Dunes Tournament →
+        </Button>
+      </div>
     </div>
   );
 };

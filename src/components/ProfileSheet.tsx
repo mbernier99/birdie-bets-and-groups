@@ -19,6 +19,7 @@ import {
 interface ProfileData {
   first_name: string;
   last_name: string;
+  nickname: string;
   email: string;
   phone: string;
   home_course: string;
@@ -38,6 +39,7 @@ export const ProfileSheet = ({ open, onOpenChange }: ProfileSheetProps) => {
   const [profile, setProfile] = useState<ProfileData>({
     first_name: '',
     last_name: '',
+    nickname: '',
     email: '',
     phone: '',
     home_course: '',
@@ -72,6 +74,7 @@ export const ProfileSheet = ({ open, onOpenChange }: ProfileSheetProps) => {
         setProfile({
           first_name: data.first_name || '',
           last_name: data.last_name || '',
+          nickname: data.nickname || '',
           email: data.email || user?.email || '',
           phone: data.phone || '',
           home_course: data.home_course || '',
@@ -117,6 +120,7 @@ export const ProfileSheet = ({ open, onOpenChange }: ProfileSheetProps) => {
         .update({
           first_name: validation.data!.firstName,
           last_name: validation.data!.lastName,
+          nickname: profile.nickname || null,
           phone: validation.data!.phone || null,
           handicap: validation.data!.handicap ? Math.round(validation.data!.handicap) : null,
           home_course: validation.data!.homeCourse || null,
@@ -192,6 +196,9 @@ export const ProfileSheet = ({ open, onOpenChange }: ProfileSheetProps) => {
                   <h3 className="font-semibold text-gray-900">
                     {profile.first_name} {profile.last_name}
                   </h3>
+                  {profile.nickname && (
+                    <p className="text-sm text-golf-green font-medium">"{profile.nickname}"</p>
+                  )}
                   <p className="text-sm text-gray-600">Handicap: {profile.handicap}</p>
                 </div>
               </div>
@@ -222,6 +229,17 @@ export const ProfileSheet = ({ open, onOpenChange }: ProfileSheetProps) => {
                     disabled={!editing}
                   />
                 </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="nickname">Nickname</Label>
+                <Input
+                  id="nickname"
+                  value={profile.nickname}
+                  onChange={(e) => setProfile({ ...profile, nickname: e.target.value })}
+                  disabled={!editing}
+                  placeholder="Your golf nickname"
+                />
               </div>
               
               <div className="space-y-2">

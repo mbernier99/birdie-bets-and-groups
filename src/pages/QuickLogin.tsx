@@ -1,0 +1,144 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { toast } from '@/hooks/use-toast';
+import { Loader2, Trophy } from 'lucide-react';
+
+interface Player {
+  email: string;
+  firstName: string;
+  lastName: string;
+  nickname: string;
+  handicap: number;
+  color: string;
+}
+
+const BANDON_PLAYERS: Player[] = [
+  { email: 'leecrocker@gmail.com', firstName: 'Lee', lastName: 'Crocker', nickname: 'SussPro', handicap: 18, color: 'bg-blue-500' },
+  { email: 'erwhalen@yahoo.com', firstName: 'Erin', lastName: 'Whalen', nickname: 'WhaleBone', handicap: 15, color: 'bg-green-500' },
+  { email: 'drew.tornga@gmail.com', firstName: 'Drew', lastName: 'Tornga', nickname: 'Tornganese', handicap: 22, color: 'bg-orange-500' },
+  { email: 'saldivarhector@hotmail.com', firstName: 'Hector', lastName: 'Saldivar', nickname: 'El Presidente', handicap: 13, color: 'bg-red-500' },
+  { email: 'mbernier@gmail.com', firstName: 'Matt', lastName: 'Bernier', nickname: 'Berniator', handicap: 12, color: 'bg-purple-500' },
+  { email: 'scogo82@hotmail.com', firstName: 'Scott', lastName: 'Gannon', nickname: 'JamBand', handicap: 17, color: 'bg-yellow-500' },
+  { email: 'tom.connaghan@bandongolf.temp', firstName: 'Tom', lastName: 'Connaghan', nickname: 'ConMan', handicap: 14, color: 'bg-pink-500' },
+  { email: 'matt.traiman@gmail.com', firstName: 'Matt', lastName: 'Traimain', nickname: 'TraiDog', handicap: 18, color: 'bg-indigo-500' },
+];
+
+const QuickLogin: React.FC = () => {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState<string | null>(null);
+
+  const handleQuickLogin = async (player: Player) => {
+    setLoading(player.email);
+    
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: player.email,
+        password: 'BandonTest2025!',
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: `Welcome back, ${player.nickname}!`,
+        description: 'Successfully logged in',
+      });
+
+      navigate('/');
+    } catch (error: any) {
+      console.error('Login error:', error);
+      toast({
+        title: 'Login failed',
+        description: error.message || 'Failed to log in. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(null);
+    }
+  };
+
+  const getInitials = (firstName: string, lastName: string) => {
+    return `${firstName[0]}${lastName[0]}`.toUpperCase();
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-golf-green via-background to-golf-fairway/20 flex items-center justify-center p-4">
+      <div className="w-full max-w-5xl">
+        <Card className="border-2 border-golf-green/20 shadow-2xl">
+          <CardHeader className="text-center space-y-4 pb-8">
+            <div className="flex justify-center">
+              <div className="p-4 bg-golf-green/10 rounded-full">
+                <Trophy className="w-12 h-12 text-golf-green" />
+              </div>
+            </div>
+            <CardTitle className="text-4xl font-bold">Bandon Dunes Tournament</CardTitle>
+            <CardDescription className="text-lg">
+              Quick Login - Select Your Profile
+            </CardDescription>
+            <Badge variant="secondary" className="w-fit mx-auto">
+              Testing Mode - One-Click Access
+            </Badge>
+          </CardHeader>
+
+          <CardContent className="px-6 pb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {BANDON_PLAYERS.map((player) => (
+                <Button
+                  key={player.email}
+                  onClick={() => handleQuickLogin(player)}
+                  disabled={loading !== null}
+                  variant="outline"
+                  className="h-auto p-6 flex flex-col items-center gap-4 hover:scale-105 transition-transform"
+                >
+                  {loading === player.email ? (
+                    <Loader2 className="w-16 h-16 animate-spin text-muted-foreground" />
+                  ) : (
+                    <>
+                      <Avatar className={`w-16 h-16 border-4 border-white shadow-lg ${player.color}`}>
+                        <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${player.email}`} />
+                        <AvatarFallback className="text-white font-bold text-lg">
+                          {getInitials(player.firstName, player.lastName)}
+                        </AvatarFallback>
+                      </Avatar>
+                      
+                      <div className="text-center space-y-1">
+                        <p className="font-semibold text-base">
+                          {player.firstName} {player.lastName}
+                        </p>
+                        <p className="text-xl font-bold text-golf-green">
+                          {player.nickname}
+                        </p>
+                        <Badge variant="secondary" className="mt-2">
+                          HCP {player.handicap}
+                        </Badge>
+                      </div>
+                    </>
+                  )}
+                </Button>
+              ))}
+            </div>
+
+            <div className="mt-8 text-center space-y-2">
+              <Button
+                variant="ghost"
+                onClick={() => navigate('/auth')}
+                className="text-muted-foreground"
+              >
+                Back to Standard Login
+              </Button>
+              <p className="text-sm text-muted-foreground">
+                Test password for all accounts: <code className="bg-muted px-2 py-1 rounded">BandonTest2025!</code>
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+export default QuickLogin;

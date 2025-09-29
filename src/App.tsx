@@ -24,6 +24,7 @@ const GolfTracker = React.lazy(() => import("./pages/GolfTracker"));
 const GolfRules = React.lazy(() => import("./pages/GolfRules"));
 
 const Auth = React.lazy(() => import("./pages/Auth"));
+const QuickLogin = React.lazy(() => import("./pages/QuickLogin"));
 const TournamentLobby = React.lazy(() => import("./pages/TournamentLobby"));
 const LiveTournament = React.lazy(() => import("./pages/LiveTournament"));
 const NotFound = React.lazy(() => import("./pages/NotFound"));
@@ -81,6 +82,7 @@ const App = () => (
                     </ProtectedRoute>
                   } />
                   <Route path="/auth" element={<Auth />} />
+                  <Route path="/quick-login" element={<QuickLogin />} />
                   <Route path="/tournaments" element={
                     <ProtectedRoute>
                       <Tournaments />

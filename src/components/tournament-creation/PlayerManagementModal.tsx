@@ -8,7 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { BulkPlayerImport } from './BulkPlayerImport';
-import { 
+import { LoadFromRosterTab } from './LoadFromRosterTab';
+import {
   Plus, 
   Users, 
   Upload, 
@@ -312,8 +313,12 @@ const PlayerManagementModal: React.FC<PlayerManagementModalProps> = ({
         )}
       </div>
 
-      <Tabs defaultValue="quick" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+      <Tabs defaultValue="roster" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="roster" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Roster
+          </TabsTrigger>
           <TabsTrigger value="quick" className="flex items-center gap-2">
             <UserPlus className="h-4 w-4" />
             Quick Add
@@ -327,6 +332,23 @@ const PlayerManagementModal: React.FC<PlayerManagementModalProps> = ({
             Contacts
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="roster" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Load from Roster
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <LoadFromRosterTab
+                onAddPlayers={handleAddPlayers}
+                existingPlayerEmails={players.map(p => p.email)}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="quick" className="space-y-4">
           <QuickAddForm onAddPlayer={handleAddPlayer} />
