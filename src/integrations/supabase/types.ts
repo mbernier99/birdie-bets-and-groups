@@ -356,6 +356,7 @@ export type Database = {
           home_course: string | null
           id: string
           last_name: string | null
+          nickname: string | null
           phone: string | null
           updated_at: string
         }
@@ -368,6 +369,7 @@ export type Database = {
           home_course?: string | null
           id: string
           last_name?: string | null
+          nickname?: string | null
           phone?: string | null
           updated_at?: string
         }
@@ -380,6 +382,7 @@ export type Database = {
           home_course?: string | null
           id?: string
           last_name?: string | null
+          nickname?: string | null
           phone?: string | null
           updated_at?: string
         }
@@ -759,6 +762,10 @@ export type Database = {
       check_user_in_tournament: {
         Args: { tournament_id: string }
         Returns: boolean
+      }
+      get_display_name: {
+        Args: { profile_row: Database["public"]["Tables"]["profiles"]["Row"] }
+        Returns: string
       }
     }
     Enums: {
