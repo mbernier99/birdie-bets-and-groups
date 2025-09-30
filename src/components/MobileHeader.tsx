@@ -35,17 +35,17 @@ const MobileHeader = ({ title }: MobileHeaderProps) => {
               onClick={() => signOut()}
               variant="ghost"
               size="sm"
-              className="flex items-center space-x-1"
+              className="flex items-center space-x-1 text-gray-700"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-5 w-5" />
             </Button>
           ) : (
             <Link 
               to="/auth"
-              className="flex items-center space-x-1 text-emerald-600 hover:text-emerald-700"
+              className="flex items-center gap-1 px-3 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium text-sm"
             >
               <User className="h-4 w-4" />
-              <span className="text-sm">Sign In</span>
+              <span>Sign In</span>
             </Link>
           )}
         </div>
