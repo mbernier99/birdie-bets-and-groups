@@ -44,14 +44,7 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ data, onDataChange }) => 
               value={data.basicInfo.name}
               onChange={(e) => handleBasicInfoChange('name', e.target.value)}
               placeholder="Sunday Morning Championship"
-              className={`${!data.basicInfo.name.trim() ? 'border-red-300 focus:border-red-500' : ''}`}
             />
-            {!data.basicInfo.name.trim() && (
-              <p className="text-sm text-red-600 flex items-center space-x-1">
-                <AlertCircle className="h-3 w-3" />
-                <span>Tournament name is required</span>
-              </p>
-            )}
           </div>
 
           <div className="space-y-2">
@@ -85,22 +78,6 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ data, onDataChange }) => 
             Add Players
           </Button>
         </PlayerManagementModal>
-
-        {!hasValidPlayers && (
-          <div className="text-sm text-destructive bg-destructive/5 p-3 rounded-lg flex items-center space-x-2 border border-destructive/20">
-            <AlertCircle className="h-4 w-4 flex-shrink-0" />
-            <span>At least one player must have a name to proceed</span>
-          </div>
-        )}
-      </div>
-
-      <div className={`p-3 rounded-lg border ${isComplete ? 'bg-emerald-50 border-emerald-200' : 'bg-yellow-50 border-yellow-200'}`}>
-        <div className={`text-sm ${isComplete ? 'text-emerald-700' : 'text-yellow-700'}`}>
-          {isComplete 
-            ? '✓ Ready to continue to Course Setup'
-            : 'Complete tournament name and add at least one player to continue'
-          }
-        </div>
       </div>
     </div>
   );
