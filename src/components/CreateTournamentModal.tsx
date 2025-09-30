@@ -53,6 +53,11 @@ export interface TournamentData {
     name: string;
     playerIds: string[];
   }>;
+  teeTimeGroups: Array<{
+    id: string;
+    time: string;
+    playerIds: string[];
+  }>;
   pairings: Array<{
     id: string;
     name: string;
@@ -101,6 +106,7 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
     },
     players: [],
     teams: [],
+    teeTimeGroups: [],
     pairings: [],
     wagering: {
       entryFee: 0,
@@ -183,6 +189,7 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
         settings: {
           course: tournamentData.course,
           teams: tournamentData.teams,
+          teeTimeGroups: tournamentData.teeTimeGroups,
           pairings: tournamentData.pairings,
           wagering: tournamentData.wagering
         }
@@ -216,40 +223,63 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
 
   const CurrentStepComponent = steps[currentStep].component;
 
-  const StepProgress = () => (
-    <div className="flex-shrink-0 px-4 py-3 border-b bg-gray-50">
-      <div className="flex items-center justify-between overflow-x-auto">
-        {steps.map((step, index) => {
-          const validation = validateStep(index, tournamentData);
-          const isCompleted = index < currentStep || (index <= currentStep && validation.isValid);
-          
-          return (
-            <div key={index} className="flex items-center flex-shrink-0">
-              <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium ${
-                isCompleted ? 'bg-emerald-600 text-white' : 
-                index === currentStep ? 'bg-blue-600 text-white' :
-                'bg-gray-200 text-gray-600'
-              }`}>
-                {index + 1}
+  const StepProgress = () => {
+    if (isMobile) {
+      return (
+        <div className="flex-shrink-0 px-4 py-3 border-b bg-background">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handlePrevious}
+              disabled={currentStep === 0}
+              className="h-9 w-9 p-0"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
+            <span className="text-sm font-medium text-muted-foreground">
+              Step {currentStep + 1} of {steps.length}
+            </span>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex-shrink-0 px-4 py-3 border-b bg-muted/30">
+        <div className="flex items-center justify-between overflow-x-auto">
+          {steps.map((step, index) => {
+            const validation = validateStep(index, tournamentData);
+            const isCompleted = index < currentStep || (index <= currentStep && validation.isValid);
+            
+            return (
+              <div key={index} className="flex items-center flex-shrink-0">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                  isCompleted ? 'bg-primary text-primary-foreground' : 
+                  index === currentStep ? 'bg-primary text-primary-foreground' :
+                  'bg-muted text-muted-foreground'
+                }`}>
+                  {index + 1}
+                </div>
+                <span className={`ml-2 text-sm truncate ${
+                  isCompleted ? 'text-primary' : 
+                  index === currentStep ? 'text-primary' :
+                  'text-muted-foreground'
+                }`}>
+                  {step.title}
+                </span>
+                {index < steps.length - 1 && (
+                  <div className={`w-8 h-0.5 mx-4 ${
+                    isCompleted ? 'bg-primary' : 'bg-muted'
+                  }`} />
+                )}
               </div>
-              <span className={`ml-1 sm:ml-2 text-xs sm:text-sm truncate max-w-20 sm:max-w-none ${
-                isCompleted ? 'text-emerald-600' : 
-                index === currentStep ? 'text-blue-600' :
-                'text-gray-500'
-              }`}>
-                {isMobile ? step.title.split(' ')[0] : step.title}
-              </span>
-              {index < steps.length - 1 && (
-                <div className={`w-2 sm:w-8 h-0.5 mx-1 sm:mx-4 ${
-                  isCompleted ? 'bg-emerald-600' : 'bg-gray-200'
-                }`} />
-              )}
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const NavigationButtons = () => {
     const currentStepValidation = validateStep(currentStep, tournamentData);

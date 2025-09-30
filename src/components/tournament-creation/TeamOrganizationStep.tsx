@@ -1,11 +1,17 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { TournamentData } from '../CreateTournamentModal';
 import { PlayerCard } from './PlayerCard';
 import { TeamCard } from './TeamCard';
-import { UnassignedPlayerCard } from './UnassignedPlayerCard';
 import { GameTypeInfo } from './GameTypeInfo';
+import { DraggablePlayerCard } from './DraggablePlayerCard';
+import { DropZone } from './DropZone';
+import { PlayerPool } from './PlayerPool';
+import { TeeTimeGroup } from './TeeTimeGroup';
+import { useDragAndDrop } from '@/hooks/useDragAndDrop';
+import { useHapticFeedback } from '@/hooks/useHapticFeedback';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface TeamOrganizationStepProps {
   data: TournamentData;
@@ -13,6 +19,10 @@ interface TeamOrganizationStepProps {
 }
 
 const TeamOrganizationStep: React.FC<TeamOrganizationStepProps> = ({ data, onDataChange }) => {
+  const { dragState, handleTouchStart, handleTouchMove, handleTouchEnd } = useDragAndDrop();
+  const { triggerSelection } = useHapticFeedback();
+  const [activeTab, setActiveTab] = useState<'teams' | 'teetimes'>('teams');
+
   // Get players per team based on game type
   const getPlayersPerTeam = () => {
     if (data.gameType.type === 'best-ball-match-play') return 2;
@@ -143,11 +153,14 @@ const TeamOrganizationStep: React.FC<TeamOrganizationStepProps> = ({ data, onDat
     onDataChange('teams', updatedTeams);
   };
 
+  const isTeamBased = ['best-ball', 'best-ball-match-play', 'scramble'].includes(data.gameType.type);
+  const needsTeeTimeGroups = !isTeamBased || data.gameType.type === 'best-ball-match-play';
+  
   const unassignedPlayers = data.players.filter(player => 
-    !data.teams.some(team => team.playerIds.includes(player.id))
+    !data.teams.some(team => team.playerIds.includes(player.id)) &&
+    !data.teeTimeGroups.some(group => group.playerIds.includes(player.id))
   );
 
-  const isTeamBased = ['best-ball', 'best-ball-match-play', 'scramble'].includes(data.gameType.type);
   const optimalTeamCount = calculateOptimalTeamCount();
   const playersPerTeam = getPlayersPerTeam();
 
@@ -158,77 +171,243 @@ const TeamOrganizationStep: React.FC<TeamOrganizationStepProps> = ({ data, onDat
     return { current: currentCount, max: playersPerTeam, isFull: currentCount >= playersPerTeam };
   };
 
+  // Tee Time Management Functions
+  const addTeeTimeGroup = () => {
+    const newGroup = {
+      id: `teetime-${Date.now()}`,
+      time: '08:00',
+      playerIds: []
+    };
+    onDataChange('teeTimeGroups', [...data.teeTimeGroups, newGroup]);
+  };
+
+  const updateTeeTime = (groupId: string, time: string) => {
+    const updated = data.teeTimeGroups.map(g => 
+      g.id === groupId ? { ...g, time } : g
+    );
+    onDataChange('teeTimeGroups', updated);
+  };
+
+  const addPlayerToTeeTime = (groupId: string, playerId: string) => {
+    const updated = data.teeTimeGroups.map(g => {
+      if (g.id === groupId && g.playerIds.length < 4) {
+        return { ...g, playerIds: [...g.playerIds, playerId] };
+      }
+      return g;
+    });
+    onDataChange('teeTimeGroups', updated);
+  };
+
+  const removePlayerFromTeeTime = (groupId: string, playerId: string) => {
+    const updated = data.teeTimeGroups.map(g => ({
+      ...g,
+      playerIds: g.playerIds.filter(id => id !== playerId)
+    }));
+    onDataChange('teeTimeGroups', updated);
+  };
+
+  const handleSwipeRightToTeeTime = (playerId: string) => {
+    const availableGroup = data.teeTimeGroups.find(g => g.playerIds.length < 4);
+    if (availableGroup) {
+      addPlayerToTeeTime(availableGroup.id, playerId);
+      triggerSelection();
+    } else {
+      const newGroup = {
+        id: `teetime-${Date.now()}`,
+        time: '08:00',
+        playerIds: [playerId]
+      };
+      onDataChange('teeTimeGroups', [...data.teeTimeGroups, newGroup]);
+      triggerSelection();
+    }
+  };
+
   const getStepTitle = () => {
+    if (isTeamBased && needsTeeTimeGroups) return 'Teams & Tee Times';
     if (isTeamBased) return 'Team Organization';
-    return 'Player Management';
+    return 'Tee Time Organization';
   };
 
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-semibold text-gray-900">{getStepTitle()}</h3>
+      <h3 className="text-lg font-semibold">{getStepTitle()}</h3>
 
-      {/* Players List */}
-      <div className="space-y-4">
-        <h4 className="font-medium text-gray-900">Players ({data.players.length})</h4>
-        {data.players.length === 0 ? (
-          <div className="text-gray-500 text-sm">No players added yet. Add players in the previous step.</div>
-        ) : (
-          <div className="space-y-2">
-            {data.players.map(player => (
-              <PlayerCard
-                key={player.id}
-                player={player}
-                onUpdateStatus={updatePlayerStatus}
-                onUpdateName={updatePlayerName}
-                onRemovePlayer={removePlayer}
-              />
+      {/* Show tabs if both teams and tee times are needed */}
+      {isTeamBased && needsTeeTimeGroups ? (
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'teams' | 'teetimes')}>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="teams">Teams</TabsTrigger>
+            <TabsTrigger value="teetimes">Tee Times</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="teams" className="space-y-4 mt-4">
+            {/* Team Organization UI */}
+            <div className="flex justify-between items-center">
+              <h4 className="font-medium">
+                Teams ({playersPerTeam} players each)
+              </h4>
+              <Button onClick={autoGenerateTeams} variant="outline" size="sm">
+                Auto-Generate
+              </Button>
+            </div>
+
+            {data.teams.map(team => (
+              <DropZone
+                key={team.id}
+                id={team.id}
+                title={team.name}
+                capacity={{ current: team.playerIds.length, max: playersPerTeam }}
+              >
+                {team.playerIds.map(playerId => {
+                  const player = data.players.find(p => p.id === playerId);
+                  return player ? (
+                    <DraggablePlayerCard
+                      key={playerId}
+                      player={player}
+                      isDragging={dragState.isDragging && dragState.draggedId === playerId}
+                      onTouchStart={(e) => handleTouchStart(e, playerId, 'player')}
+                      onTouchMove={handleTouchMove}
+                      onTouchEnd={(e) => {
+                        e.preventDefault();
+                        handleTouchEnd((draggedId) => removePlayerFromTeam(team.id, draggedId));
+                      }}
+                    />
+                  ) : null;
+                })}
+              </DropZone>
             ))}
-          </div>
-        )}
-      </div>
 
-      {/* Team Organization */}
-      {isTeamBased && (
+            {unassignedPlayers.length > 0 && (
+              <div className="space-y-2">
+                <h5 className="font-medium text-sm text-muted-foreground">Available Players</h5>
+                <PlayerPool
+                  players={unassignedPlayers}
+                  onSwipeRight={(playerId) => addPlayerToTeam(1, playerId)}
+                  onSwipeLeft={(playerId) => removePlayer(playerId)}
+                />
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="teetimes" className="space-y-4 mt-4">
+            {/* Tee Time Organization UI */}
+            <div className="flex justify-between items-center">
+              <h4 className="font-medium">Tee Times</h4>
+              <Button onClick={addTeeTimeGroup} variant="outline" size="sm">
+                Add Group
+              </Button>
+            </div>
+
+            <div className="space-y-3">
+              {data.teeTimeGroups.map(group => {
+                const groupPlayers = data.players.filter(p => group.playerIds.includes(p.id));
+                return (
+                  <TeeTimeGroup
+                    key={group.id}
+                    groupId={group.id}
+                    time={group.time}
+                    players={groupPlayers}
+                    maxPlayers={4}
+                    onUpdateTime={updateTeeTime}
+                    onRemovePlayer={removePlayerFromTeeTime}
+                  />
+                );
+              })}
+            </div>
+
+            {unassignedPlayers.length > 0 && (
+              <div className="space-y-2">
+                <h5 className="font-medium text-sm text-muted-foreground">Available Players</h5>
+                <PlayerPool
+                  players={unassignedPlayers}
+                  onSwipeRight={handleSwipeRightToTeeTime}
+                />
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      ) : isTeamBased ? (
+        /* Teams only */
         <div className="space-y-4">
           <div className="flex justify-between items-center">
-            <h4 className="font-medium text-gray-900">
-              Teams ({playersPerTeam} players each) - Optimal: {optimalTeamCount} teams
+            <h4 className="font-medium">
+              Teams ({playersPerTeam} players each)
             </h4>
-            <Button onClick={autoGenerateTeams} variant="outline">
-              Auto-Generate Teams
+            <Button onClick={autoGenerateTeams} variant="outline" size="sm">
+              Auto-Generate
             </Button>
           </div>
 
-          {/* Teams */}
-          <div className="space-y-4">
-            {data.teams.map(team => (
-              <TeamCard
-                key={team.id}
-                team={team}
-                players={data.players}
-                playersPerTeam={playersPerTeam}
-                onUpdateTeamName={updateTeamName}
-                onRemovePlayerFromTeam={removePlayerFromTeam}
-              />
-            ))}
-          </div>
+          {data.teams.map(team => (
+            <DropZone
+              key={team.id}
+              id={team.id}
+              title={team.name}
+              capacity={{ current: team.playerIds.length, max: playersPerTeam }}
+            >
+              {team.playerIds.map(playerId => {
+                const player = data.players.find(p => p.id === playerId);
+                return player ? (
+                  <DraggablePlayerCard
+                    key={playerId}
+                    player={player}
+                    isDragging={dragState.isDragging && dragState.draggedId === playerId}
+                    onTouchStart={(e) => handleTouchStart(e, playerId, 'player')}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={(e) => {
+                      e.preventDefault();
+                      handleTouchEnd((draggedId) => removePlayerFromTeam(team.id, draggedId));
+                    }}
+                  />
+                ) : null;
+              })}
+            </DropZone>
+          ))}
 
-          {/* Unassigned Players with Numerical Team Assignment */}
           {unassignedPlayers.length > 0 && (
             <div className="space-y-2">
-              <h5 className="font-medium text-gray-700">Available Players</h5>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {unassignedPlayers.map(player => (
-                  <UnassignedPlayerCard
-                    key={player.id}
-                    player={player}
-                    optimalTeamCount={optimalTeamCount}
-                    existingTeamCount={data.teams.length}
-                    getTeamCapacity={getTeamCapacity}
-                    onAddPlayerToTeam={addPlayerToTeam}
-                  />
-                ))}
-              </div>
+              <h5 className="font-medium text-sm text-muted-foreground">Available Players</h5>
+              <PlayerPool
+                players={unassignedPlayers}
+                onSwipeRight={(playerId) => addPlayerToTeam(1, playerId)}
+              />
+            </div>
+          )}
+        </div>
+      ) : (
+        /* Tee times only */
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h4 className="font-medium">Tee Times</h4>
+            <Button onClick={addTeeTimeGroup} variant="outline" size="sm">
+              Add Group
+            </Button>
+          </div>
+
+          <div className="space-y-3">
+            {data.teeTimeGroups.map(group => {
+              const groupPlayers = data.players.filter(p => group.playerIds.includes(p.id));
+              return (
+                <TeeTimeGroup
+                  key={group.id}
+                  groupId={group.id}
+                  time={group.time}
+                  players={groupPlayers}
+                  maxPlayers={4}
+                  onUpdateTime={updateTeeTime}
+                  onRemovePlayer={removePlayerFromTeeTime}
+                />
+              );
+            })}
+          </div>
+
+          {unassignedPlayers.length > 0 && (
+            <div className="space-y-2">
+              <h5 className="font-medium text-sm text-muted-foreground">Available Players</h5>
+              <PlayerPool
+                players={unassignedPlayers}
+                onSwipeRight={handleSwipeRightToTeeTime}
+              />
             </div>
           )}
         </div>
