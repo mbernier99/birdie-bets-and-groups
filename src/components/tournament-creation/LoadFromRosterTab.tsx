@@ -149,7 +149,7 @@ export const LoadFromRosterTab: React.FC<LoadFromRosterTabProps> = ({
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-60 md:max-h-96 overflow-y-auto">
             {filteredProfiles.map((profile) => {
               const alreadyAdded = isAlreadyAdded(profile.email);
               const isSelected = selectedIds.has(profile.id);

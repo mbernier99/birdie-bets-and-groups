@@ -293,10 +293,10 @@ const PlayerManagementModal: React.FC<PlayerManagementModalProps> = ({
   const playersWithEmails = players.filter(p => p.email.trim());
 
   const ModalContent = () => (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold">Add Players</h3>
+          <h3 className="text-base md:text-lg font-semibold">Add Players</h3>
           <p className="text-sm text-muted-foreground">
             {players.length} of {maxPlayers} players added
           </p>
@@ -317,25 +317,25 @@ const PlayerManagementModal: React.FC<PlayerManagementModalProps> = ({
         // Mobile: Simple tabs with Quick Add and Contacts only
         <Tabs defaultValue="quick" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="quick" className="flex items-center gap-2">
+            <TabsTrigger value="quick" className="flex items-center gap-2 text-sm">
               <UserPlus className="h-4 w-4" />
               Manual Add
             </TabsTrigger>
-            <TabsTrigger value="contacts" className="flex items-center gap-2">
+            <TabsTrigger value="contacts" className="flex items-center gap-2 text-sm">
               <Contact className="h-4 w-4" />
               Contacts
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="quick" className="space-y-4">
+          <TabsContent value="quick" className="space-y-3 mt-4">
             <QuickAddForm onAddPlayer={handleAddPlayer} />
           </TabsContent>
 
-          <TabsContent value="contacts" className="space-y-4">
+          <TabsContent value="contacts" className="space-y-3 mt-4">
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Contact className="h-5 w-5" />
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Contact className="h-4 w-4" />
                   Your Contacts
                 </CardTitle>
               </CardHeader>
@@ -425,17 +425,17 @@ const PlayerManagementModal: React.FC<PlayerManagementModalProps> = ({
       )}
 
       {players.length > 0 && (
-        <div className="space-y-4">
+        <div className="space-y-3 md:space-y-4">
           <div className="flex items-center justify-between">
-            <h4 className="font-medium">Current Players</h4>
-            <div className="flex gap-2 text-sm text-muted-foreground">
+            <h4 className="text-sm md:text-base font-medium">Current Players</h4>
+            <div className="flex gap-2 text-xs md:text-sm text-muted-foreground">
               <span>{playersWithNames.length} with names</span>
               <span>•</span>
               <span>{playersWithEmails.length} with emails</span>
             </div>
           </div>
           
-          <div className="grid gap-3 max-h-60 overflow-y-auto">
+          <div className="grid gap-3 max-h-48 md:max-h-60 overflow-y-auto">
             {players.map((player) => (
               <PlayerCard
                 key={player.id}
@@ -448,7 +448,7 @@ const PlayerManagementModal: React.FC<PlayerManagementModalProps> = ({
         </div>
       )}
 
-      <div className="flex gap-2 pt-4 border-t">
+      <div className="flex gap-2 pt-3 md:pt-4 border-t sticky bottom-0 bg-background pb-2">
         <Button 
           onClick={() => setIsOpen(false)} 
           variant="outline" 
@@ -466,12 +466,14 @@ const PlayerManagementModal: React.FC<PlayerManagementModalProps> = ({
         <SheetTrigger asChild>
           {children}
         </SheetTrigger>
-        <SheetContent side="bottom" className="h-[90vh]">
-          <SheetHeader>
+        <SheetContent side="bottom" className="h-[85vh] flex flex-col p-0">
+          <SheetHeader className="px-6 pt-6 pb-4 border-b">
             <SheetTitle>Player Management</SheetTitle>
           </SheetHeader>
-          <div className="mt-6">
-            <ModalContent />
+          <div className="flex-1 overflow-y-auto px-6 pb-6">
+            <div className="mt-4">
+              <ModalContent />
+            </div>
           </div>
         </SheetContent>
       </Sheet>
