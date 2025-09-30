@@ -9,6 +9,7 @@ import { useTournaments } from '@/hooks/useTournaments';
 import { useTournamentParticipants } from '@/hooks/useTournamentParticipants';
 import { detectUserActivity, isFirstTimeUser } from '@/utils/userDetection';
 import CreateTournamentModal from '@/components/CreateTournamentModal';
+import MobileTournamentSheet from '@/components/mobile/MobileTournamentSheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import MobileNavigation from '@/components/MobileNavigation';
 import Navbar from '@/components/Navbar';
@@ -262,10 +263,17 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <CreateTournamentModal 
-        isOpen={isCreateModalOpen} 
-        onClose={() => setIsCreateModalOpen(false)} 
-      />
+      {isMobile ? (
+        <MobileTournamentSheet 
+          isOpen={isCreateModalOpen} 
+          onClose={() => setIsCreateModalOpen(false)} 
+        />
+      ) : (
+        <CreateTournamentModal 
+          isOpen={isCreateModalOpen} 
+          onClose={() => setIsCreateModalOpen(false)} 
+        />
+      )}
       
       {isMobile && <MobileNavigation />}
     </div>
