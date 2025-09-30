@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, memo, useCallback } from 'react';
-import { Trophy, Plus, Calendar, Play, LogIn, Settings } from 'lucide-react';
+import { Trophy, Plus, Calendar, Play, LogIn } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMockAuth } from '@/contexts/MockAuthContext';
@@ -82,21 +82,6 @@ const Index = memo(() => {
   return (
     <div className={`min-h-screen ${isMobile ? '' : 'bg-gradient-to-br from-emerald-50 via-white to-emerald-50'} pb-20 md:pb-0`}>
       {!isMobile && <Navbar />}
-      
-          {/* Profile Management Button for Mock Mode */}
-          {MOCK_MODE && currentUser && (
-            <div className="fixed top-20 right-4 z-50">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => navigate('/profiles')}
-                className="bg-background/95 backdrop-blur border shadow-lg"
-              >
-                <Settings className="h-4 w-4 mr-2" />
-                Manage Profiles
-              </Button>
-            </div>
-          )}
       
       {/* Background Image Section for Mobile */}
       <div className={`${isMobile ? 'bg-cover bg-center bg-no-repeat min-h-screen absolute inset-0' : ''}`} 
