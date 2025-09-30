@@ -336,16 +336,14 @@ const PlayerManagementModal: React.FC<PlayerManagementModalProps> = ({
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Contact className="h-5 w-5" />
-                  Import from Contacts
+                  Your Contacts
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Contact import feature coming soon. Use Manual Add for now.
-                </p>
-                <Button variant="outline" disabled>
-                  Access Contacts
-                </Button>
+                <LoadFromRosterTab
+                  onAddPlayers={handleAddPlayers}
+                  existingPlayerEmails={players.map(p => p.email)}
+                />
               </CardContent>
             </Card>
           </TabsContent>
@@ -412,16 +410,14 @@ const PlayerManagementModal: React.FC<PlayerManagementModalProps> = ({
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Contact className="h-5 w-5" />
-                  Import from Contacts
+                  Your Contacts
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Contact import feature coming soon. Use Quick Add or Bulk Import for now.
-                </p>
-                <Button variant="outline" disabled>
-                  Access Contacts
-                </Button>
+                <LoadFromRosterTab
+                  onAddPlayers={handleAddPlayers}
+                  existingPlayerEmails={players.map(p => p.email)}
+                />
               </CardContent>
             </Card>
           </TabsContent>
