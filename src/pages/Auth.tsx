@@ -278,27 +278,27 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl text-center">Golf Tournament Tracker</CardTitle>
-          <CardDescription className="text-center">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 flex flex-col items-center justify-center p-4 py-8">
+      <Card className="w-full max-w-md shadow-lg">
+        <CardHeader className="space-y-2 pb-4">
+          <CardTitle className="text-xl sm:text-2xl text-center font-bold">BetLoopr</CardTitle>
+          <CardDescription className="text-center text-sm sm:text-base">
             Sign in to your account or create a new one
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-4 sm:px-6">
           <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 h-10 sm:h-11">
+              <TabsTrigger value="login" className="text-sm sm:text-base">Login</TabsTrigger>
+              <TabsTrigger value="signup" className="text-sm sm:text-base">Sign Up</TabsTrigger>
             </TabsList>
             
-            <TabsContent value="login">
-              <div className="space-y-4">
+            <TabsContent value="login" className="mt-4">
+              <div className="space-y-3 sm:space-y-4">
                 <Button 
                   onClick={handleGoogleSignIn} 
                   variant="outline" 
-                  className="w-full" 
+                  className="w-full h-10 sm:h-11 text-sm sm:text-base" 
                   disabled={googleLoading || loading || isLocked}
                 >
                   {googleLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -325,9 +325,9 @@ const Auth = () => {
                   </Alert>
                 )}
 
-                <form onSubmit={handleLogin} className="space-y-4">
-                  <div className="space-y-1">
-                    <Label htmlFor="login-email">Email</Label>
+                <form onSubmit={handleLogin} className="space-y-3 sm:space-y-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="login-email" className="text-sm">Email</Label>
                     <Input
                       id="login-email"
                       type="email"
@@ -337,11 +337,12 @@ const Auth = () => {
                       required
                       aria-invalid={!!loginErrors.email}
                       disabled={isLocked}
+                      className="h-10 sm:h-11"
                     />
                     <FieldError error={loginErrors.email} />
                   </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="login-password">Password</Label>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="login-password" className="text-sm">Password</Label>
                     <Input
                       id="login-password"
                       type="password"
@@ -351,13 +352,14 @@ const Auth = () => {
                       required
                       aria-invalid={!!loginErrors.password}
                       disabled={isLocked}
+                      className="h-10 sm:h-11"
                     />
                     <FieldError error={loginErrors.password} />
                   </div>
                   <FormError error={loginErrors.form} />
                   <Button 
                     type="submit" 
-                    className="w-full" 
+                    className="w-full h-10 sm:h-11" 
                     disabled={loading || googleLoading || isLocked}
                   >
                     {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -367,12 +369,12 @@ const Auth = () => {
               </div>
             </TabsContent>
             
-            <TabsContent value="signup">
-              <div className="space-y-4">
+            <TabsContent value="signup" className="mt-4">
+              <div className="space-y-3 sm:space-y-4">
                 <Button 
                   onClick={handleGoogleSignIn} 
                   variant="outline" 
-                  className="w-full" 
+                  className="w-full h-10 sm:h-11 text-sm sm:text-base" 
                   disabled={googleLoading || loading}
                 >
                   {googleLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -390,10 +392,10 @@ const Auth = () => {
                   </div>
                 </div>
 
-                <form onSubmit={handleSignup} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <Label htmlFor="signup-firstname">First Name</Label>
+                <form onSubmit={handleSignup} className="space-y-3 sm:space-y-4">
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="signup-firstname" className="text-sm">First Name</Label>
                       <Input
                         id="signup-firstname"
                         placeholder="John"
@@ -401,11 +403,12 @@ const Auth = () => {
                         onChange={(e) => setSignupForm({ ...signupForm, firstName: e.target.value })}
                         required
                         aria-invalid={!!signupErrors.firstName}
+                        className="h-10 sm:h-11"
                       />
                       <FieldError error={signupErrors.firstName} />
                     </div>
-                    <div className="space-y-1">
-                      <Label htmlFor="signup-lastname">Last Name</Label>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="signup-lastname" className="text-sm">Last Name</Label>
                       <Input
                         id="signup-lastname"
                         placeholder="Doe"
@@ -413,12 +416,13 @@ const Auth = () => {
                         onChange={(e) => setSignupForm({ ...signupForm, lastName: e.target.value })}
                         required
                         aria-invalid={!!signupErrors.lastName}
+                        className="h-10 sm:h-11"
                       />
                       <FieldError error={signupErrors.lastName} />
                     </div>
                   </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="signup-email">Email</Label>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="signup-email" className="text-sm">Email</Label>
                     <Input
                       id="signup-email"
                       type="email"
@@ -427,11 +431,12 @@ const Auth = () => {
                       onChange={(e) => setSignupForm({ ...signupForm, email: e.target.value })}
                       required
                       aria-invalid={!!signupErrors.email}
+                      className="h-10 sm:h-11"
                     />
                     <FieldError error={signupErrors.email} />
                   </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="signup-password">Password</Label>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="signup-password" className="text-sm">Password</Label>
                     <Input
                       id="signup-password"
                       type="password"
@@ -440,12 +445,13 @@ const Auth = () => {
                       onChange={(e) => setSignupForm({ ...signupForm, password: e.target.value })}
                       required
                       aria-invalid={!!signupErrors.password}
+                      className="h-10 sm:h-11"
                     />
                     <PasswordStrengthIndicator password={signupForm.password} />
                     <FieldError error={signupErrors.password} />
                   </div>
                   <FormError error={signupErrors.form} />
-                  <Button type="submit" className="w-full" disabled={loading || googleLoading}>
+                  <Button type="submit" className="w-full h-10 sm:h-11" disabled={loading || googleLoading}>
                     {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Create Account
                   </Button>
@@ -456,13 +462,13 @@ const Auth = () => {
         </CardContent>
       </Card>
       
-      <div className="mt-6 text-center">
+      <div className="mt-4 sm:mt-6 text-center w-full max-w-md px-4">
         <Button
           variant="ghost"
           onClick={() => navigate('/quick-login')}
-          className="text-muted-foreground hover:text-golf-green"
+          className="text-sm sm:text-base text-muted-foreground hover:text-emerald-600 w-full sm:w-auto"
         >
-          Quick Login for Bandon Dunes Tournament →
+          Quick Login for Bandon Dunes →
         </Button>
       </div>
     </div>
