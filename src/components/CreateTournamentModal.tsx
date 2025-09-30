@@ -316,9 +316,6 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
             <span>Previous</span>
           </Button>
 
-          <div className="text-sm text-gray-500">
-            Step {currentStep + 1} of {steps.length}
-          </div>
 
           {currentStep < steps.length - 1 ? (
             <Button
@@ -352,13 +349,6 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
     return (
       <Sheet open={isOpen} onOpenChange={onClose}>
         <SheetContent side="bottom" className="h-[95vh] flex flex-col p-0">
-          <SheetHeader className="flex-shrink-0 px-4 py-3 border-b">
-            <SheetTitle className="text-lg">Create Tournament</SheetTitle>
-            <SheetDescription className="text-sm">
-              Set up a new golf tournament with customizable rules and teams.
-            </SheetDescription>
-          </SheetHeader>
-
           <StepProgress />
 
           <div className="flex-1 overflow-y-auto p-4 min-h-0">
@@ -378,13 +368,6 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-[95vw] max-w-5xl h-[90vh] flex flex-col p-0 gap-0">
-        <DialogHeader className="flex-shrink-0 px-6 py-4 border-b">
-          <DialogTitle className="text-xl">Create Tournament</DialogTitle>
-          <DialogDescription className="text-sm">
-            Set up a new golf tournament with customizable rules, teams, and wagering options.
-          </DialogDescription>
-        </DialogHeader>
-
         <StepProgress />
 
         <div className="flex-1 overflow-y-auto px-6 py-6 min-h-0">
