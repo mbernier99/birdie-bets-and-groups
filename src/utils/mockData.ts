@@ -1,6 +1,6 @@
 
 // Mock data utilities for testing without authentication
-export const MOCK_MODE = true; // Set to false for production
+export const MOCK_MODE = false; // Set to false for production
 
 // Bandon Dunes golfers for testing
 export const mockUsers = [

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useMockAuth } from '@/contexts/MockAuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -7,7 +7,7 @@ import { Plus, Users, Trophy, MapPin, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const BandonDashboard: React.FC = () => {
-  const { user } = useMockAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const bandonCourses = [
@@ -62,16 +62,14 @@ const BandonDashboard: React.FC = () => {
         {/* Welcome Section */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-2xl font-bold">Welcome back, {user?.displayName}</h2>
+            <h2 className="text-2xl font-bold">Welcome back, {user?.email?.split('@')[0]}</h2>
             <p className="text-muted-foreground">Ready for your next round?</p>
           </div>
           
-          {user?.role === 'organizer' && (
-            <Button onClick={() => navigate('/create-tournament')} className="gap-2">
-              <Plus className="h-4 w-4" />
-              Create Tournament
-            </Button>
-          )}
+          <Button onClick={() => navigate('/tournaments')} className="gap-2">
+            <Plus className="h-4 w-4" />
+            Create Tournament
+          </Button>
         </div>
 
         {/* Quick Stats */}

@@ -1,10 +1,8 @@
 
 import React, { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useMockAuth } from '@/contexts/MockAuthContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
-import { MOCK_MODE } from '@/utils/mockData';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -15,18 +13,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   requireAdmin = false 
 }) => {
-  const mockAuth = useMockAuth();
-  const realAuth = useAuth();
+  const { user, loading, session, refreshSession } = useAuth();
   const location = useLocation();
-  
-  // Use mock auth in mock mode, real auth otherwise
-  const { user, loading, session, refreshSession } = MOCK_MODE ? 
-    { ...mockAuth, loading: false, session: null, refreshSession: () => {} } : 
-    realAuth;
 
-  // Check session validity and refresh if needed (skip in mock mode)
+  // Check session validity and refresh if needed
   useEffect(() => {
-    if (!MOCK_MODE && session) {
+    if (session) {
       const expiresAt = new Date(session.expires_at! * 1000).getTime();
       const now = Date.now();
       const timeUntilExpiry = expiresAt - now;
@@ -38,9 +30,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
   }, [session, refreshSession]);
 
-  // Check for CSRF protection (skip in mock mode)
+  // Check for CSRF protection
   useEffect(() => {
-    if (!MOCK_MODE && user) {
+    if (user) {
       localStorage.setItem('lastAuthenticatedPath', location.pathname);
     }
   }, [location.pathname, user]);
@@ -51,11 +43,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
-  }
-
-  // In mock mode, always allow access
-  if (MOCK_MODE) {
-    return <>{children}</>;
   }
 
   // If no user is authenticated, redirect to auth page

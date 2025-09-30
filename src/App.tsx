@@ -6,7 +6,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
-import { MockAuthProvider } from "./contexts/MockAuthContext";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { PageSkeleton } from "./components/ui/loading-skeleton";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -57,10 +56,9 @@ const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <MockAuthProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
             
             <BrowserRouter>
               <Suspense fallback={<PageSkeleton />}>
@@ -122,7 +120,6 @@ const App = () => (
               </Suspense>
             </BrowserRouter>
           </TooltipProvider>
-        </MockAuthProvider>
       </AuthProvider>
     </QueryClientProvider>
   </ErrorBoundary>

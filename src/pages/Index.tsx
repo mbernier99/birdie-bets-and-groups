@@ -3,7 +3,6 @@ import React, { useState, useEffect, memo, useCallback } from 'react';
 import { Trophy, Plus, Calendar, Play, LogIn } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { useMockAuth } from '@/contexts/MockAuthContext';
 import { Button } from '@/components/ui/button';
 import { useTournaments } from '@/hooks/useTournaments';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -19,7 +18,6 @@ import FeatureShowcase from '../components/marketing/FeatureShowcase';
 import HowItWorksSection from '../components/marketing/HowItWorksSection';
 import FAQSection from '../components/marketing/FAQSection';
 import { isFirstTimeUser, detectUserActivity } from '../utils/userDetection';
-import { MOCK_MODE } from '@/utils/mockData';
 
 const Index = memo(() => {
   const [isCreateTournamentModalOpen, setIsCreateTournamentModalOpen] = useState(false);
@@ -33,20 +31,18 @@ const Index = memo(() => {
   });
   
   const { user } = useAuth();
-  const { user: mockUser } = useMockAuth();
-  const currentUser = MOCK_MODE ? mockUser : user;
   const { tournaments, loading } = useTournaments();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    if (currentUser) {
+    if (user) {
       const newUser = isFirstTimeUser();
       const activity = detectUserActivity();
       setIsNewUser(newUser);
       setUserActivity(activity);
     }
-  }, [currentUser]);
+  }, [user]);
 
   const handleCreateTournament = useCallback(() => {
     setIsCreateTournamentModalOpen(true);
@@ -73,11 +69,7 @@ const Index = memo(() => {
   }, [navigate]);
 
   // Filter active tournaments for authenticated users
-  const activeTournaments = currentUser ? tournaments.filter(t => t.status === 'draft' || t.status === 'lobby' || t.status === 'live') : [];
-
-  // Debug logging
-  const userDisplay = currentUser?.email || (currentUser as any)?.displayName || 'not authenticated';
-  console.log('Index page rendered for user:', userDisplay);
+  const activeTournaments = user ? tournaments.filter(t => t.status === 'draft' || t.status === 'lobby' || t.status === 'live') : [];
 
   return (
     <div className={`min-h-screen ${isMobile ? '' : 'bg-gradient-to-br from-emerald-50 via-white to-emerald-50'} pb-20 md:pb-0`}>
@@ -106,11 +98,11 @@ const Index = memo(() => {
                 </h1>
                 
                 <p className={`text-xl md:text-2xl ${isMobile ? 'text-white font-semibold drop-shadow-lg' : 'text-emerald-100'} mb-12 max-w-3xl mx-auto relative z-20`}>
-                  {currentUser ? 'Manage Golf tournaments, wagers, side bets and more' : 'Live Bets, Tournament & Golf Game Management'}
+                  {user ? 'Manage Golf tournaments, wagers, side bets and more' : 'Live Bets, Tournament & Golf Game Management'}
                 </p>
                 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-20 mt-16">
-                  {currentUser ? (
+                  {user ? (
                     <>
                       <button onClick={handleCreateTournament} className="bg-white text-emerald-600 px-8 py-4 rounded-lg font-semibold hover:bg-emerald-50 transition-colors flex items-center justify-center space-x-2">
                         <Plus className="h-5 w-5" />
@@ -143,7 +135,7 @@ const Index = memo(() => {
         <FeatureShowcase />
 
         {/* Mobile: Quick Access Tiles */}
-        {isMobile && currentUser && (
+        {isMobile && user && (
           <div className="max-w-7xl mx-auto px-4 py-8">
             <div className="grid grid-cols-1 gap-4">
               {/* Game Formats Tile */}
@@ -186,7 +178,7 @@ const Index = memo(() => {
         )}
 
         {/* Desktop: Authenticated User Content */}
-        {!isMobile && currentUser && (
+        {!isMobile && user && (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             {/* Active Tournaments Prompt */}
             {activeTournaments.filter(t => t.status === 'draft').length > 0 && (
@@ -263,7 +255,7 @@ const Index = memo(() => {
       </div>
       
       {/* Desktop: Lower Content Sections */}
-      {!isMobile && currentUser ? (
+      {!isMobile && user ? (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           {isNewUser ? (
             <WelcomeTutorialSection 
@@ -286,7 +278,7 @@ const Index = memo(() => {
             </Button>
           </div>
         </div>
-      ) : !isMobile && !currentUser ? (
+      ) : !isMobile && !user ? (
         <>
           <HowItWorksSection />
           <FAQSection />
