@@ -466,7 +466,7 @@ const PlayerManagementModal: React.FC<PlayerManagementModalProps> = ({
         <SheetTrigger asChild>
           {children}
         </SheetTrigger>
-        <SheetContent side="bottom" className="h-[85vh] flex flex-col p-0">
+        <SheetContent side="bottom" className="h-[100dvh] flex flex-col p-0">
           <SheetHeader className="px-6 pt-6 pb-4 border-b">
             <SheetTitle>Player Management</SheetTitle>
           </SheetHeader>
