@@ -296,7 +296,7 @@ const PlayerManagementModal: React.FC<PlayerManagementModalProps> = ({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold">Manage Tournament Players</h3>
+          <h3 className="text-lg font-semibold">Add Players</h3>
           <p className="text-sm text-muted-foreground">
             {players.length} of {maxPlayers} players added
           </p>
@@ -313,80 +313,120 @@ const PlayerManagementModal: React.FC<PlayerManagementModalProps> = ({
         )}
       </div>
 
-      <Tabs defaultValue="roster" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="roster" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            Roster
-          </TabsTrigger>
-          <TabsTrigger value="quick" className="flex items-center gap-2">
-            <UserPlus className="h-4 w-4" />
-            Quick Add
-          </TabsTrigger>
-          <TabsTrigger value="bulk" className="flex items-center gap-2">
-            <Upload className="h-4 w-4" />
-            Bulk Import
-          </TabsTrigger>
-          <TabsTrigger value="contacts" className="flex items-center gap-2">
-            <Contact className="h-4 w-4" />
-            Contacts
-          </TabsTrigger>
-        </TabsList>
+      {isMobile ? (
+        // Mobile: Simple tabs with Quick Add and Contacts only
+        <Tabs defaultValue="quick" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="quick" className="flex items-center gap-2">
+              <UserPlus className="h-4 w-4" />
+              Manual Add
+            </TabsTrigger>
+            <TabsTrigger value="contacts" className="flex items-center gap-2">
+              <Contact className="h-4 w-4" />
+              Contacts
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="roster" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Load from Roster
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <LoadFromRosterTab
-                onAddPlayers={handleAddPlayers}
-                existingPlayerEmails={players.map(p => p.email)}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
+          <TabsContent value="quick" className="space-y-4">
+            <QuickAddForm onAddPlayer={handleAddPlayer} />
+          </TabsContent>
 
-        <TabsContent value="quick" className="space-y-4">
-          <QuickAddForm onAddPlayer={handleAddPlayer} />
-        </TabsContent>
+          <TabsContent value="contacts" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Contact className="h-5 w-5" />
+                  Import from Contacts
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Contact import feature coming soon. Use Manual Add for now.
+                </p>
+                <Button variant="outline" disabled>
+                  Access Contacts
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      ) : (
+        // Desktop: Full tabs with all options
+        <Tabs defaultValue="roster" className="w-full">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="roster" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Roster
+            </TabsTrigger>
+            <TabsTrigger value="quick" className="flex items-center gap-2">
+              <UserPlus className="h-4 w-4" />
+              Quick Add
+            </TabsTrigger>
+            <TabsTrigger value="bulk" className="flex items-center gap-2">
+              <Upload className="h-4 w-4" />
+              Bulk Import
+            </TabsTrigger>
+            <TabsTrigger value="contacts" className="flex items-center gap-2">
+              <Contact className="h-4 w-4" />
+              Contacts
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="bulk" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Upload className="h-5 w-5" />
-                Bulk Import Players
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <BulkPlayerImport onAddPlayers={handleAddPlayers} />
-            </CardContent>
-          </Card>
-        </TabsContent>
+          <TabsContent value="roster" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Load from Roster
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <LoadFromRosterTab
+                  onAddPlayers={handleAddPlayers}
+                  existingPlayerEmails={players.map(p => p.email)}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        <TabsContent value="contacts" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Contact className="h-5 w-5" />
-                Import from Contacts
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">
-                Contact import feature coming soon. Use Quick Add or Bulk Import for now.
-              </p>
-              <Button variant="outline" disabled>
-                Access Contacts
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="quick" className="space-y-4">
+            <QuickAddForm onAddPlayer={handleAddPlayer} />
+          </TabsContent>
+
+          <TabsContent value="bulk" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Upload className="h-5 w-5" />
+                  Bulk Import Players
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <BulkPlayerImport onAddPlayers={handleAddPlayers} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="contacts" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Contact className="h-5 w-5" />
+                  Import from Contacts
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Contact import feature coming soon. Use Quick Add or Bulk Import for now.
+                </p>
+                <Button variant="outline" disabled>
+                  Access Contacts
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      )}
 
       {players.length > 0 && (
         <div className="space-y-4">
