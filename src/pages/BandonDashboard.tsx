@@ -48,9 +48,9 @@ const BandonDashboard: React.FC = () => {
         <div className="relative container mx-auto px-4 h-full flex items-center justify-center">
           <div className="text-center text-white">
             <img 
-              src="/lovable-uploads/8a170a6f-1cbf-4b56-88ed-9b83f0b5c59d.png" 
-              alt="BetLoopr" 
-              className="w-24 h-24 mx-auto mb-4 drop-shadow-lg"
+              src="/lovable-uploads/bandon-dunes-logo.png" 
+              alt="Bandon Dunes Logo" 
+              className="h-28 w-auto mx-auto mb-6 drop-shadow-lg"
             />
             <h1 className="text-5xl font-bold mb-2 drop-shadow-lg">BetLoopr</h1>
             <p className="text-xl opacity-90 drop-shadow-md">Championship Golf Betting at Bandon Dunes</p>

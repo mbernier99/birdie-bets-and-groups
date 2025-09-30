@@ -88,9 +88,9 @@ const Index = memo(() => {
           <div className={`${isMobile ? '' : 'bg-gradient-to-r from-emerald-600 to-emerald-700'} ${isMobile ? 'text-white' : 'text-white'} relative overflow-hidden ${isMobile ? '' : 'rounded-2xl'}`}>
             <div className={`max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 ${isMobile ? 'py-12' : 'py-20'} relative z-10`}>
               <div className="text-center">
-                {/* Prominent Puffin Logo */}
-                <div className={`flex justify-center ${isMobile ? 'mb-4' : 'mb-8'}`}>
-                  <img src="/lovable-uploads/3bf1d3f9-6ad1-4c1d-8602-6010d0f7e7bd.png" alt="Puffin Logo" className={`object-contain ${isMobile ? 'h-28 w-28' : 'h-24 w-24'}`} />
+                {/* Bandon Dunes Logo */}
+                <div className={`flex justify-center ${isMobile ? 'mb-6' : 'mb-8'}`}>
+                  <img src="/lovable-uploads/bandon-dunes-logo.png" alt="Bandon Dunes Logo" className={`object-contain ${isMobile ? 'h-32 w-auto' : 'h-28 w-auto'}`} />
                 </div>
                 
                 <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-9xl font-black font-orbitron mb-8 tracking-wider w-full break-words bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 bg-clip-text text-transparent animate-pulse">
