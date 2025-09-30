@@ -157,8 +157,51 @@ const Index = memo(() => {
         {/* Feature Showcase - Always visible */}
         <FeatureShowcase />
 
-        {/* Authenticated User Content - Upper Sections */}
-        {currentUser && (
+        {/* Mobile: Quick Access Tiles */}
+        {isMobile && currentUser && (
+          <div className="max-w-7xl mx-auto px-4 py-8">
+            <div className="grid grid-cols-1 gap-4">
+              {/* Game Formats Tile */}
+              <button
+                onClick={() => navigate('/game-formats')}
+                className="bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-2xl p-6 text-white text-left hover:shadow-xl transition-shadow"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="p-4 bg-white/20 rounded-xl">
+                    <Trophy className="h-8 w-8" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold mb-1">Game Formats</h3>
+                    <p className="text-emerald-100 text-sm">
+                      Explore match play, stroke play, and more
+                    </p>
+                  </div>
+                </div>
+              </button>
+
+              {/* Betting Tile */}
+              <button
+                onClick={() => navigate('/betting-info')}
+                className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 text-white text-left hover:shadow-xl transition-shadow"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="p-4 bg-white/20 rounded-xl">
+                    <Trophy className="h-8 w-8" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold mb-1">Betting Guide</h3>
+                    <p className="text-blue-100 text-sm">
+                      Learn about presses, side bets, and more
+                    </p>
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Desktop: Authenticated User Content */}
+        {!isMobile && currentUser && (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             {/* Active Tournaments Prompt */}
             {activeTournaments.filter(t => t.status === 'draft').length > 0 && (
@@ -200,7 +243,7 @@ const Index = memo(() => {
                       key={tournament.id}
                       id={tournament.id}
                       title={tournament.name}
-                      players={0} // TODO: Get participant count
+                      players={0}
                       maxPlayers={tournament.max_players || 16}
                       gameType={tournament.game_type}
                       prize={tournament.entry_fee > 0 ? `$${tournament.prize_pool} Pool` : 'No Entry Fee'}
@@ -223,7 +266,7 @@ const Index = memo(() => {
               )}
             </div>
 
-            {/* Live Leaderboard Section - Only show if user has active tournaments */}
+            {/* Live Leaderboard Section */}
             {activeTournaments.some(t => t.status === 'live') && (
               <div className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Live Leaderboard</h2>
@@ -234,10 +277,9 @@ const Index = memo(() => {
         )}
       </div>
       
-      {/* Lower Content Sections Outside Background */}
-      {currentUser ? (
+      {/* Desktop: Lower Content Sections */}
+      {!isMobile && currentUser ? (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          {/* User-specific content */}
           {isNewUser ? (
             <WelcomeTutorialSection 
               onCreateTournament={handleCreateTournament} 
@@ -248,7 +290,6 @@ const Index = memo(() => {
             <EnhancedStatsSection userActivity={userActivity} />
           )}
 
-          {/* Quick Action CTA */}
           <div className="mt-12 bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-2xl p-8 text-white text-center">
             <h3 className="text-2xl font-bold mb-4">Ready to Get Started?</h3>
             <p className="text-emerald-100 mb-6 max-w-2xl mx-auto">
@@ -260,13 +301,12 @@ const Index = memo(() => {
             </Button>
           </div>
         </div>
-      ) : (
-        /* Marketing Content for Non-Authenticated Users */
+      ) : !isMobile && !currentUser ? (
         <>
           <HowItWorksSection />
           <FAQSection />
         </>
-      )}
+      ) : null}
 
       {/* Modals */}
       <CreateTournamentModal isOpen={isCreateTournamentModalOpen} onClose={handleCloseCreateTournamentModal} />

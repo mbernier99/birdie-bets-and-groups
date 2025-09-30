@@ -22,6 +22,8 @@ const Tournaments = React.lazy(() => import("./pages/Tournaments"));
 const Tracker = React.lazy(() => import("./pages/Tracker"));
 const GolfTracker = React.lazy(() => import("./pages/GolfTracker"));
 const GolfRules = React.lazy(() => import("./pages/GolfRules"));
+const GameFormats = React.lazy(() => import("./pages/GameFormats"));
+const BettingInfo = React.lazy(() => import("./pages/BettingInfo"));
 
 const Auth = React.lazy(() => import("./pages/Auth"));
 const QuickLogin = React.lazy(() => import("./pages/QuickLogin"));
@@ -99,6 +101,8 @@ const App = () => (
                     </ProtectedRoute>
                   } />
                   <Route path="/rules" element={<GolfRules />} />
+                  <Route path="/game-formats" element={<GameFormats />} />
+                  <Route path="/betting-info" element={<BettingInfo />} />
                   <Route path="/tournament/:id/lobby" element={
                     <ProtectedRoute>
                       <TournamentLobby />

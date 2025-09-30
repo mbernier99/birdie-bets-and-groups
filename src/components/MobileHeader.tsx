@@ -5,20 +5,28 @@ import { LogOut, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 
-const MobileHeader = () => {
+interface MobileHeaderProps {
+  title?: string;
+}
+
+const MobileHeader = ({ title }: MobileHeaderProps) => {
   const { user, signOut } = useAuth();
 
   return (
-    <header className="bg-white shadow-sm border-b border-emerald-100 md:hidden">
+    <header className="bg-white shadow-sm border-b border-emerald-100 md:hidden fixed top-0 left-0 right-0 z-50">
       <div className="flex items-center justify-center h-16 px-4 relative">
-        {/* Centered Puffin Logo */}
-        <Link to="/" className="absolute left-1/2 transform -translate-x-1/2">
-          <img 
-            src="/lovable-uploads/471c923e-8ed4-4255-8e79-e902970029d3.png" 
-            alt="Puffin Logo" 
-            className="h-10 w-10 object-contain"
-          />
-        </Link>
+        {/* Centered Puffin Logo or Title */}
+        {title ? (
+          <h1 className="text-lg font-bold text-gray-900">{title}</h1>
+        ) : (
+          <Link to="/" className="absolute left-1/2 transform -translate-x-1/2">
+            <img 
+              src="/lovable-uploads/471c923e-8ed4-4255-8e79-e902970029d3.png" 
+              alt="Puffin Logo" 
+              className="h-10 w-10 object-contain"
+            />
+          </Link>
+        )}
         
         {/* Right side user actions */}
         <div className="absolute right-4 flex items-center space-x-2">
