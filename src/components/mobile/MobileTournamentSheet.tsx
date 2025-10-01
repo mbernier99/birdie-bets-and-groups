@@ -197,7 +197,7 @@ const MobileTournamentSheet: React.FC<MobileTournamentSheetProps> = ({ isOpen, o
 
   return (
     <Drawer open={isOpen} onOpenChange={onClose}>
-      <DrawerContent className="h-[95vh] flex flex-col">
+      <DrawerContent className="h-screen flex flex-col pb-safe">
         <DrawerHeader className="flex-shrink-0 border-b">
           <div className="flex items-center justify-between">
             {currentStep > 0 && (
