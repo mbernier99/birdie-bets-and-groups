@@ -68,9 +68,39 @@ export interface TournamentData {
     entryFee: number;
     payoutStructure: string;
     currency: string;
+    skinValue?: number;
+    nassauBets?: {
+      front9: number;
+      back9: number;
+      overall: number;
+    };
   };
   sideBets: {
     enabled: boolean;
+  };
+  adminBetting?: {
+    liveEnabled: boolean;
+    maxBetAmount: number;
+    livePermissions: {
+      initiators: 'all-players' | 'admin-only' | 'verified-only';
+      settlement: 'auto' | 'admin-review' | 'gps-verified';
+    };
+    sidePools: {
+      longestDrive?: {
+        enabled: boolean;
+        entryFee: number;
+        holes: string;
+      };
+      closestToPin?: {
+        enabled: boolean;
+        entryFee: number;
+        holes: string;
+      };
+      mostBirdies?: {
+        enabled: boolean;
+        entryFee: number;
+      };
+    };
   };
 }
 
@@ -115,6 +145,15 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
     },
     sideBets: {
       enabled: false
+    },
+    adminBetting: {
+      liveEnabled: false,
+      maxBetAmount: 100,
+      livePermissions: {
+        initiators: 'all-players',
+        settlement: 'auto'
+      },
+      sidePools: {}
     }
   });
 

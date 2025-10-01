@@ -5,6 +5,8 @@ import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useTournaments } from '@/hooks/useTournaments';
 import MobileQuickSetupStep from './MobileQuickSetupStep';
+import MobileCourseGameStep from './MobileCourseGameStep';
+import MobileAdminBettingStep from './MobileAdminBettingStep';
 import MobileOrganizationStep from './MobileOrganizationStep';
 import MobileGoLiveStep from './MobileGoLiveStep';
 import { TournamentData } from '../CreateTournamentModal';
@@ -53,8 +55,17 @@ const MobileTournamentSheet: React.FC<MobileTournamentSheetProps> = ({ isOpen, o
       currency: 'USD',
     },
     sideBets: {
-      enabled: false,
+      enabled: false
     },
+    adminBetting: {
+      liveEnabled: false,
+      maxBetAmount: 100,
+      livePermissions: {
+        initiators: 'all-players',
+        settlement: 'auto'
+      },
+      sidePools: {}
+    }
   });
 
   const steps = [
@@ -75,21 +86,12 @@ const MobileTournamentSheet: React.FC<MobileTournamentSheetProps> = ({ isOpen, o
   const handleNext = () => {
     triggerImpact('light');
     
-    // Validation for step 1
+    // Validation for step 0 (Quick Setup)
     if (currentStep === 0) {
       if (!tournamentData.basicInfo.name.trim()) {
         toast({
           title: 'Tournament name required',
           description: 'Please enter a name for your tournament',
-          variant: 'destructive',
-        });
-        triggerNotification('error');
-        return;
-      }
-      if (!tournamentData.gameType.type) {
-        toast({
-          title: 'Game type required',
-          description: 'Please select a game type',
           variant: 'destructive',
         });
         triggerNotification('error');
@@ -106,11 +108,36 @@ const MobileTournamentSheet: React.FC<MobileTournamentSheetProps> = ({ isOpen, o
       }
     }
 
+    // Validation for step 1 (Course & Game)
+    if (currentStep === 1) {
+      if (!tournamentData.course.name.trim()) {
+        toast({
+          title: 'Course required',
+          description: 'Please select a course',
+          variant: 'destructive',
+        });
+        triggerNotification('error');
+        return;
+      }
+      if (!tournamentData.gameType.type) {
+        toast({
+          title: 'Game type required',
+          description: 'Please select a game format',
+          variant: 'destructive',
+        });
+        triggerNotification('error');
+        return;
+      }
+    }
+
     // Skip organization step if not needed
-    if (currentStep === 0 && !needsOrganization()) {
-      setCurrentStep(2); // Jump to Go Live
+    const isTeamGame = ['best-ball', 'scramble', 'team-match-play'].includes(tournamentData.gameType.type);
+    const needsOrg = isTeamGame && tournamentData.players.length > 1;
+    
+    if (currentStep === 2 && !needsOrg) {
+      setCurrentStep(4); // Skip to review
     } else {
-      setCurrentStep(prev => prev + 1);
+      setCurrentStep(currentStep + 1);
     }
   };
 
@@ -118,10 +145,13 @@ const MobileTournamentSheet: React.FC<MobileTournamentSheetProps> = ({ isOpen, o
     triggerImpact('light');
     
     // Skip organization step when going back if not needed
-    if (currentStep === 2 && !needsOrganization()) {
-      setCurrentStep(0);
+    const isTeamGame = ['best-ball', 'scramble', 'team-match-play'].includes(tournamentData.gameType.type);
+    const needsOrg = isTeamGame && tournamentData.players.length > 1;
+    
+    if (currentStep === 4 && !needsOrg) {
+      setCurrentStep(2); // Skip back over organization
     } else {
-      setCurrentStep(prev => prev - 1);
+      setCurrentStep(currentStep - 1);
     }
   };
 
@@ -181,8 +211,12 @@ const MobileTournamentSheet: React.FC<MobileTournamentSheetProps> = ({ isOpen, o
       case 0:
         return <MobileQuickSetupStep data={tournamentData} onDataChange={handleDataChange} />;
       case 1:
-        return <MobileOrganizationStep data={tournamentData} onDataChange={handleDataChange} />;
+        return <MobileCourseGameStep data={tournamentData} onDataChange={handleDataChange} />;
       case 2:
+        return <MobileAdminBettingStep data={tournamentData} onDataChange={handleDataChange} />;
+      case 3:
+        return <MobileOrganizationStep data={tournamentData} onDataChange={handleDataChange} />;
+      case 4:
         return <MobileGoLiveStep data={tournamentData} onCreate={handleCreate} isSubmitting={isSubmitting} />;
       default:
         return null;
@@ -190,9 +224,35 @@ const MobileTournamentSheet: React.FC<MobileTournamentSheetProps> = ({ isOpen, o
   };
 
   const getCurrentStepTitle = () => {
-    if (currentStep === 0) return 'Quick Setup';
-    if (currentStep === 1 || (currentStep === 2 && !needsOrganization())) return 'Organization';
-    return 'Go Live';
+    switch (currentStep) {
+      case 0:
+        return 'Quick Setup';
+      case 1:
+        return 'Course & Game';
+      case 2:
+        return 'Betting Controls';
+      case 3:
+        return 'Organize Teams';
+      case 4:
+        return 'Review & Go Live';
+      default:
+        return 'Setup Tournament';
+    }
+  };
+
+  const canProceed = () => {
+    switch (currentStep) {
+      case 0:
+        return tournamentData.basicInfo.name.trim() && tournamentData.players.length > 0;
+      case 1:
+        return tournamentData.course.name.trim() && tournamentData.gameType.type;
+      case 2:
+      case 3:
+      case 4:
+        return true;
+      default:
+        return false;
+    }
   };
 
   return (
@@ -222,12 +282,13 @@ const MobileTournamentSheet: React.FC<MobileTournamentSheetProps> = ({ isOpen, o
           {renderStep()}
         </div>
 
-        {currentStep < 2 && (
+        {currentStep < 4 && (
           <div className="flex-shrink-0 p-4 border-t bg-background">
             <Button
               onClick={handleNext}
               className="w-full h-12 text-base font-semibold"
               size="lg"
+              disabled={!canProceed()}
             >
               Continue
               <ArrowRight className="h-5 w-5 ml-2" />

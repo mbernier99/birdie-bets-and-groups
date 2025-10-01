@@ -49,14 +49,38 @@ export const validateGameType = (data: TournamentData): { isValid: boolean; erro
   };
 };
 
+export const validateCourseAndGame = (data: TournamentData): { isValid: boolean; errors: string[] } => {
+  const errors: string[] = [];
+  
+  if (!data.course.name.trim()) {
+    errors.push('Course name is required');
+  }
+  
+  if (!data.gameType.type) {
+    errors.push('Game type selection is required');
+  }
+  
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+};
+
 export const validateStep = (stepIndex: number, data: TournamentData): { isValid: boolean; errors: string[] } => {
   switch (stepIndex) {
     case 0:
       return validateBasicInfo(data);
     case 1:
-      return validateCourseSetup(data);
+      return validateCourseAndGame(data);
     case 2:
-      return validateGameType(data);
+      // Admin betting is optional
+      return { isValid: true, errors: [] };
+    case 3:
+      // Organization is conditional
+      return { isValid: true, errors: [] };
+    case 4:
+      // Final review
+      return validateBasicInfo(data);
     default:
       return { isValid: true, errors: [] };
   }
