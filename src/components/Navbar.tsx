@@ -23,18 +23,16 @@ const Navbar = memo(() => {
       {/* Desktop Navigation */}
       <nav className="bg-white shadow-lg border-b border-emerald-100 hidden md:block">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-center items-center h-16 relative">
-            {/* Centered Puffin Logo */}
-            <div className="absolute left-1/2 transform -translate-x-1/2">
-              <img 
-                src="/lovable-uploads/471c923e-8ed4-4255-8e79-e902970029d3.png" 
-                alt="Puffin Logo" 
-                className="h-12 w-12 object-contain"
-              />
-            </div>
-            
-            {/* Left side navigation */}
-            <div className="absolute left-0 flex items-center space-x-8">
+          <div className="flex justify-between items-center h-16">
+            {/* Left side - Logo and navigation */}
+            <div className="flex items-center space-x-8">
+              <Link to="/" className="flex-shrink-0">
+                <img 
+                  src="/lovable-uploads/loopr-logo.png" 
+                  alt="LOOPR Logo" 
+                  className="h-10 w-10 object-contain"
+                />
+              </Link>
               <Link 
                 to="/" 
                 className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
@@ -72,34 +70,23 @@ const Navbar = memo(() => {
               </Link>
             </div>
             
-            {/* Right side user actions */}
-            <div className="absolute right-0 flex items-center space-x-4">
+            {/* Right side - Profile */}
+            <div className="flex items-center">
               {user ? (
-                <>
-                  <button 
-                    onClick={() => setProfileOpen(true)}
-                    className="flex items-center space-x-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
-                  >
-                    <User className="h-4 w-4" />
-                    <span>Profile</span>
-                  </button>
-                  <Button
-                    onClick={() => signOut()}
-                    variant="outline"
-                    size="sm"
-                    className="flex items-center space-x-2"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    <span>Logout</span>
-                  </Button>
-                </>
+                <button 
+                  onClick={() => setProfileOpen(true)}
+                  className="flex items-center justify-center h-10 w-10 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                  aria-label="Profile"
+                >
+                  <User className="h-5 w-5" />
+                </button>
               ) : (
                 <Link 
                   to="/auth"
-                  className="flex items-center space-x-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
+                  className="flex items-center justify-center h-10 w-10 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                  aria-label="Sign In"
                 >
-                  <User className="h-4 w-4" />
-                  <span>Sign In</span>
+                  <User className="h-5 w-5" />
                 </Link>
               )}
             </div>

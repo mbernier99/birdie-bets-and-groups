@@ -14,38 +14,38 @@ const MobileHeader = ({ title }: MobileHeaderProps) => {
 
   return (
     <header className="bg-white shadow-sm border-b border-emerald-100 md:hidden fixed top-0 left-0 right-0 z-50">
-      <div className="flex items-center justify-center h-16 px-4 relative">
-        {/* Centered Puffin Logo or Title */}
-        {title ? (
+      <div className="flex items-center justify-between h-16 px-4">
+        {/* Left side - LOOPR Logo */}
+        <Link to="/" className="flex-shrink-0">
+          <img 
+            src="/lovable-uploads/loopr-logo.png" 
+            alt="LOOPR Logo" 
+            className="h-8 w-8 object-contain"
+          />
+        </Link>
+
+        {/* Center - Title (if provided) */}
+        {title && (
           <h1 className="text-lg font-bold text-gray-900">{title}</h1>
-        ) : (
-          <Link to="/" className="absolute left-1/2 transform -translate-x-1/2">
-            <img 
-              src="/lovable-uploads/471c923e-8ed4-4255-8e79-e902970029d3.png" 
-              alt="Puffin Logo" 
-              className="h-10 w-10 object-contain"
-            />
-          </Link>
         )}
         
-        {/* Right side user actions */}
-        <div className="absolute right-4 flex items-center space-x-2">
+        {/* Right side - Profile icon */}
+        <div className="flex items-center">
           {user ? (
-            <Button
+            <button
               onClick={() => signOut()}
-              variant="ghost"
-              size="sm"
-              className="flex items-center space-x-1"
+              className="flex items-center justify-center h-9 w-9 rounded-full bg-primary text-primary-foreground"
+              aria-label="Profile"
             >
-              <LogOut className="h-4 w-4" />
-            </Button>
+              <User className="h-4 w-4" />
+            </button>
           ) : (
             <Link 
               to="/auth"
-              className="flex items-center space-x-1 text-emerald-600 hover:text-emerald-700"
+              className="flex items-center justify-center h-9 w-9 rounded-full bg-primary text-primary-foreground"
+              aria-label="Sign In"
             >
               <User className="h-4 w-4" />
-              <span className="text-sm">Sign In</span>
             </Link>
           )}
         </div>
