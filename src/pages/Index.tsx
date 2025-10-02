@@ -36,12 +36,16 @@ const Index = memo(() => {
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    if (user) {
-      const newUser = isFirstTimeUser();
-      const activity = detectUserActivity();
-      setIsNewUser(newUser);
-      setUserActivity(activity);
-    }
+    const loadUserActivity = async () => {
+      if (user) {
+        const newUser = await isFirstTimeUser(user.id);
+        const activity = await detectUserActivity(user.id);
+        setIsNewUser(newUser);
+        setUserActivity(activity);
+      }
+    };
+    
+    loadUserActivity();
   }, [user]);
 
   const handleCreateTournament = useCallback(() => {

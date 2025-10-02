@@ -29,10 +29,14 @@ const Dashboard = () => {
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    if (user) {
-      const activity = detectUserActivity();
-      setUserActivity(activity);
-    }
+    const loadUserActivity = async () => {
+      if (user) {
+        const activity = await detectUserActivity(user.id);
+        setUserActivity(activity);
+      }
+    };
+    
+    loadUserActivity();
   }, [user]);
 
   const activeTournaments = tournaments.filter(t => 
@@ -40,7 +44,7 @@ const Dashboard = () => {
   );
 
   const userTournaments = activeTournaments.slice(0, 2);
-  const firstTime = isFirstTimeUser();
+  const firstTime = !userActivity.hasPlayedTournaments;
 
   const renderHeroSection = () => (
     <div 
