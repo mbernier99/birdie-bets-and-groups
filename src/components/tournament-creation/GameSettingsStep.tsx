@@ -142,31 +142,40 @@ const GameSettingsStep: React.FC<GameSettingsStepProps> = ({ data, onDataChange 
       <div className="flex-1 overflow-y-auto space-y-6 pb-4">
         {/* Traditional Formats - Horizontal Scroll */}
         <div className="space-y-3">
-          <Label className="text-lg font-semibold">Traditional Formats</Label>
-          <div className="flex gap-3 overflow-x-auto pb-2 -mx-6 px-6 snap-x snap-mandatory">
-            {traditionalFormats.map((format) => (
-              <GameFormatCard
-                key={format.id}
-                format={format}
-                isSelected={gameConfig.primaryFormat === format.id}
-                onSelect={() => handleFormatSelect(format.id)}
-                onShowRules={format.hasRules ? () => handleShowRules(format.id) : undefined}
-              />
-            ))}
+          <Label className="text-lg font-semibold px-6">Traditional Formats</Label>
+          <div className="relative">
+            <div 
+              className="flex gap-4 overflow-x-auto pb-4 px-6 snap-x snap-mandatory scrollbar-hide touch-pan-x"
+              style={{
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+                WebkitOverflowScrolling: 'touch'
+              }}
+            >
+              {traditionalFormats.map((format) => (
+                <GameFormatCard
+                  key={format.id}
+                  format={format}
+                  isSelected={gameConfig.primaryFormat === format.id}
+                  onSelect={() => handleFormatSelect(format.id)}
+                  onShowRules={format.hasRules ? () => handleShowRules(format.id) : undefined}
+                />
+              ))}
+            </div>
           </div>
           {gameConfig.primaryFormat && (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground px-6">
               {traditionalFormats.find(f => f.id === gameConfig.primaryFormat)?.description}
             </p>
           )}
         </div>
 
         {/* + Add Side Game */}
-        <div className="space-y-3">
+        <div className="space-y-3 px-6">
           <Collapsible open={sideGamesExpanded} onOpenChange={setSideGamesExpanded}>
             <CollapsibleTrigger asChild>
-              <Button variant="outline" className="w-full justify-start gap-2">
-                <Plus className="h-4 w-4" />
+              <Button variant="outline" className="w-full justify-start gap-2 h-12 text-base">
+                <Plus className="h-5 w-5" />
                 Add Side Game
               </Button>
             </CollapsibleTrigger>
@@ -177,7 +186,7 @@ const GameSettingsStep: React.FC<GameSettingsStepProps> = ({ data, onDataChange 
                   <Button
                     key={game.id}
                     variant={isActive ? 'secondary' : 'ghost'}
-                    className="w-full justify-start"
+                    className="w-full justify-start h-12 text-base"
                     onClick={() => handleSideGameToggle(game.id)}
                   >
                     {isActive ? '✓ ' : ''}
@@ -208,31 +217,35 @@ const GameSettingsStep: React.FC<GameSettingsStepProps> = ({ data, onDataChange 
         </div>
 
         {/* Course selection */}
-        <div className="space-y-3">
+        <div className="space-y-3 px-6">
+          <Label className="text-base">Course</Label>
           <button
             onClick={() => setShowCourseSearch(true)}
-            className="w-full p-4 rounded-xl border-2 hover:border-primary transition-colors text-left"
+            className="w-full p-4 rounded-xl border-2 hover:border-primary transition-colors text-left active:scale-98"
           >
             <div className="flex items-start gap-3">
-              <MapPin className="h-6 w-6 text-primary mt-1" />
+              <MapPin className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
               <div className="flex-1 min-w-0">
-                <div className="font-semibold text-lg">
+                <div className="font-semibold text-base">
                   {data.course.name || 'Select Course'}
                 </div>
+                {data.course.location && (
+                  <div className="text-sm text-muted-foreground mt-1">{data.course.location}</div>
+                )}
               </div>
             </div>
           </button>
         </div>
 
         {/* Date */}
-        <div className="space-y-2">
-          <Label>Date</Label>
+        <div className="space-y-2 px-6">
+          <Label className="text-base">Date</Label>
           <div className="relative">
             <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
               type="date"
               defaultValue={new Date().toISOString().split('T')[0]}
-              className="pl-10 h-12"
+              className="pl-10 h-14 text-base"
             />
           </div>
         </div>
@@ -240,21 +253,21 @@ const GameSettingsStep: React.FC<GameSettingsStepProps> = ({ data, onDataChange 
         {/* Tee selections - only show if course is selected */}
         {data.course.name && data.course.availableTees && data.course.availableTees.length > 0 && (
           <>
-            <div className="space-y-3">
-              <Label>Default Men's Tee</Label>
+            <div className="space-y-3 px-6">
+              <Label className="text-base">Default Men's Tee</Label>
               <Dialog open={showMensTeeDialog} onOpenChange={setShowMensTeeDialog}>
                 <DialogTrigger asChild>
-                  <button className="w-full p-4 rounded-xl border-2 hover:border-primary transition-colors text-left">
+                  <button className="w-full p-4 rounded-xl border-2 hover:border-primary transition-colors text-left active:scale-98">
                     <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-semibold">{data.course.mensTee || 'Select Tee'}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-base">{data.course.mensTee || 'Select Tee'}</div>
                         {data.course.mensRating && (
-                          <div className="text-sm text-muted-foreground">
+                          <div className="text-sm text-muted-foreground mt-1">
                             Rating: {data.course.mensRating} / Slope: {data.course.mensSlope}
                           </div>
                         )}
                       </div>
-                      <Trophy className="h-5 w-5 text-muted-foreground" />
+                      <Trophy className="h-5 w-5 text-muted-foreground flex-shrink-0 ml-2" />
                     </div>
                   </button>
                 </DialogTrigger>
@@ -280,21 +293,21 @@ const GameSettingsStep: React.FC<GameSettingsStepProps> = ({ data, onDataChange 
               </Dialog>
             </div>
 
-            <div className="space-y-3">
-              <Label>Default Women's Tee</Label>
+            <div className="space-y-3 px-6">
+              <Label className="text-base">Default Women's Tee</Label>
               <Dialog open={showWomensTeeDialog} onOpenChange={setShowWomensTeeDialog}>
                 <DialogTrigger asChild>
-                  <button className="w-full p-4 rounded-xl border-2 hover:border-primary transition-colors text-left">
+                  <button className="w-full p-4 rounded-xl border-2 hover:border-primary transition-colors text-left active:scale-98">
                     <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-semibold">{data.course.womensTee || 'Select Tee'}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-base">{data.course.womensTee || 'Select Tee'}</div>
                         {data.course.womensRating && (
-                          <div className="text-sm text-muted-foreground">
+                          <div className="text-sm text-muted-foreground mt-1">
                             Rating: {data.course.womensRating} / Slope: {data.course.womensSlope}
                           </div>
                         )}
                       </div>
-                      <Trophy className="h-5 w-5 text-muted-foreground" />
+                      <Trophy className="h-5 w-5 text-muted-foreground flex-shrink-0 ml-2" />
                     </div>
                   </button>
                 </DialogTrigger>

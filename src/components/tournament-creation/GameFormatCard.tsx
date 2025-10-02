@@ -35,10 +35,10 @@ const GameFormatCard: React.FC<GameFormatCardProps> = ({ format, isSelected, onS
     <button
       onClick={onSelect}
       className={cn(
-        "relative flex-shrink-0 w-36 h-40 p-4 rounded-2xl border-2 transition-all",
-        "flex flex-col items-center justify-center gap-3 active:scale-95",
+        "relative flex-shrink-0 w-40 h-44 p-4 rounded-2xl border-2 transition-all snap-center",
+        "flex flex-col items-center justify-center gap-3 active:scale-95 touch-manipulation",
         isSelected 
-          ? "bg-primary text-primary-foreground border-primary shadow-lg" 
+          ? "bg-primary text-primary-foreground border-primary shadow-lg scale-105" 
           : "bg-card border-border hover:border-primary/50"
       )}
     >
