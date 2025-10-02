@@ -3,10 +3,15 @@ import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MapPin, Calendar, Users, Trophy } from 'lucide-react';
+import { MapPin, Calendar, Plus, Trophy } from 'lucide-react';
 import { TournamentData } from '../CreateTournamentModal';
-import { Badge } from '@/components/ui/badge';
 import EnhancedCourseSearch from '../golf/EnhancedCourseSearch';
+import GameFormatCard from './GameFormatCard';
+import SideGameChip from './SideGameChip';
+import GameConfigDrawer from './GameConfigDrawer';
+import RulesModal from './RulesModal';
+import { traditionalFormats, sideGames, gameRules, gameConfigFields } from './gameFormats';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface GameSettingsStepProps {
   data: TournamentData;
@@ -17,10 +22,26 @@ const GameSettingsStep: React.FC<GameSettingsStepProps> = ({ data, onDataChange 
   const [showCourseSearch, setShowCourseSearch] = useState(false);
   const [showMensTeeDialog, setShowMensTeeDialog] = useState(false);
   const [showWomensTeeDialog, setShowWomensTeeDialog] = useState(false);
-  const isTeamGame = data.gameType.format === 'team';
+  const [sideGamesExpanded, setSideGamesExpanded] = useState(false);
+  const [configDrawer, setConfigDrawer] = useState<{ isOpen: boolean; gameId: string; gameName: string } | null>(null);
+  const [rulesModal, setRulesModal] = useState<{ isOpen: boolean; gameId: string; gameName: string } | null>(null);
 
-  const teamSizes = [2, 3, 4, 5];
-  const scoresCountedOptions = [1, 2, 3, 4, 5];
+  // Initialize gameConfig if not exists
+  const gameConfig = data.gameType.rules?.gameConfig || {
+    primaryFormat: null,
+    sideGames: [],
+  };
+
+  const updateGameConfig = (updates: any) => {
+    onDataChange('gameType', {
+      ...data.gameType,
+      type: updates.primaryFormat || gameConfig.primaryFormat || '',
+      rules: {
+        ...data.gameType.rules,
+        gameConfig: { ...gameConfig, ...updates },
+      },
+    });
+  };
 
   const handleCourseSelect = (course: any) => {
     // Load course with all available tees
@@ -48,7 +69,6 @@ const GameSettingsStep: React.FC<GameSettingsStepProps> = ({ data, onDataChange 
       [teeType === 'men' ? 'mensSlope' : 'womensSlope']: teeData.slope,
     });
     
-    // Close the appropriate dialog
     if (teeType === 'men') {
       setShowMensTeeDialog(false);
     } else {
@@ -56,77 +76,136 @@ const GameSettingsStep: React.FC<GameSettingsStepProps> = ({ data, onDataChange 
     }
   };
 
+  const handleFormatSelect = (formatId: string) => {
+    const format = traditionalFormats.find(f => f.id === formatId);
+    if (!format) return;
+
+    updateGameConfig({ primaryFormat: formatId });
+
+    // Open config drawer if format has configuration
+    if (gameConfigFields[formatId]) {
+      setConfigDrawer({ isOpen: true, gameId: formatId, gameName: format.name });
+    }
+  };
+
+  const handleSideGameToggle = (gameId: string) => {
+    const isActive = gameConfig.sideGames?.some((sg: any) => sg.id === gameId);
+    const game = sideGames.find(g => g.id === gameId);
+    
+    if (isActive) {
+      // Remove side game
+      updateGameConfig({
+        sideGames: gameConfig.sideGames.filter((sg: any) => sg.id !== gameId),
+      });
+    } else {
+      // Add side game with default config
+      const defaultConfig = gameConfigFields[gameId]?.reduce((acc, field) => {
+        acc[field.key] = field.defaultValue;
+        return acc;
+      }, {} as any) || {};
+
+      updateGameConfig({
+        sideGames: [...(gameConfig.sideGames || []), { id: gameId, name: game?.name, config: defaultConfig }],
+      });
+
+      // Open config drawer
+      if (gameConfigFields[gameId] && game) {
+        setConfigDrawer({ isOpen: true, gameId, gameName: game.name });
+      }
+    }
+  };
+
+  const handleConfigSave = (gameId: string, config: any) => {
+    if (gameId === gameConfig.primaryFormat) {
+      // Update primary format config
+      updateGameConfig({
+        primaryFormatConfig: config,
+      });
+    } else {
+      // Update side game config
+      const updatedSideGames = gameConfig.sideGames?.map((sg: any) =>
+        sg.id === gameId ? { ...sg, config } : sg
+      );
+      updateGameConfig({ sideGames: updatedSideGames });
+    }
+  };
+
+  const handleShowRules = (formatId: string) => {
+    const format = traditionalFormats.find(f => f.id === formatId);
+    if (format && gameRules[formatId]) {
+      setRulesModal({ isOpen: true, gameId: formatId, gameName: format.name });
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto space-y-6 pb-4">
-        {/* Game Type Selection */}
+        {/* Traditional Formats - Horizontal Scroll */}
         <div className="space-y-3">
-          <Label>Game Type</Label>
-          <div className="grid grid-cols-2 gap-3">
-            <Button
-              variant={data.gameType.type === 'Stroke Play' ? 'default' : 'outline'}
-              onClick={() => onDataChange('gameType', {
-                ...data.gameType,
-                type: 'Stroke Play',
-                format: 'individual'
-              })}
-              className="h-20 flex-col"
-            >
-              <Trophy className="h-6 w-6 mb-2" />
-              <span>Stroke Play</span>
-            </Button>
-            
-            <Button
-              variant={data.gameType.type === 'Match Play' ? 'default' : 'outline'}
-              onClick={() => onDataChange('gameType', {
-                ...data.gameType,
-                type: 'Match Play',
-                format: 'individual'
-              })}
-              className="h-20 flex-col"
-            >
-              <Users className="h-6 w-6 mb-2" />
-              <span>Match Play</span>
-            </Button>
-            
-            <Button
-              variant={data.gameType.type === 'Scramble' ? 'default' : 'outline'}
-              onClick={() => onDataChange('gameType', {
-                ...data.gameType,
-                type: 'Scramble',
-                format: 'team',
-                rules: { ...data.gameType.rules, teamSize: 2 }
-              })}
-              className="h-20 flex-col"
-            >
-              <Users className="h-6 w-6 mb-2" />
-              <span>Scramble</span>
-            </Button>
-            
-            <Button
-              variant={data.gameType.type === 'Best Ball' ? 'default' : 'outline'}
-              onClick={() => onDataChange('gameType', {
-                ...data.gameType,
-                type: 'Best Ball',
-                format: 'team',
-                rules: { ...data.gameType.rules, teamSize: 2 }
-              })}
-              className="h-20 flex-col"
-            >
-              <Trophy className="h-6 w-6 mb-2" />
-              <span>Best Ball</span>
-            </Button>
+          <Label className="text-lg font-semibold">Traditional Formats</Label>
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-6 px-6 snap-x snap-mandatory">
+            {traditionalFormats.map((format) => (
+              <GameFormatCard
+                key={format.id}
+                format={format}
+                isSelected={gameConfig.primaryFormat === format.id}
+                onSelect={() => handleFormatSelect(format.id)}
+                onShowRules={format.hasRules ? () => handleShowRules(format.id) : undefined}
+              />
+            ))}
           </div>
+          {gameConfig.primaryFormat && (
+            <p className="text-sm text-muted-foreground">
+              {traditionalFormats.find(f => f.id === gameConfig.primaryFormat)?.description}
+            </p>
+          )}
         </div>
 
-        {/* Show selected game type badge */}
-        {data.gameType.type && (
-          <div>
-            <Badge variant="secondary" className="text-base px-4 py-2">
-              {isTeamGame ? 'Teams' : 'Individual'} • {data.gameType.type}
-            </Badge>
-          </div>
-        )}
+        {/* + Add Side Game */}
+        <div className="space-y-3">
+          <Collapsible open={sideGamesExpanded} onOpenChange={setSideGamesExpanded}>
+            <CollapsibleTrigger asChild>
+              <Button variant="outline" className="w-full justify-start gap-2">
+                <Plus className="h-4 w-4" />
+                Add Side Game
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pt-3 space-y-2">
+              {sideGames.map((game) => {
+                const isActive = gameConfig.sideGames?.some((sg: any) => sg.id === game.id);
+                return (
+                  <Button
+                    key={game.id}
+                    variant={isActive ? 'secondary' : 'ghost'}
+                    className="w-full justify-start"
+                    onClick={() => handleSideGameToggle(game.id)}
+                  >
+                    {isActive ? '✓ ' : ''}
+                    {game.name}
+                  </Button>
+                );
+              })}
+            </CollapsibleContent>
+          </Collapsible>
+
+          {/* Active Side Games Chips */}
+          {gameConfig.sideGames && gameConfig.sideGames.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {gameConfig.sideGames.map((sg: any) => (
+                <SideGameChip
+                  key={sg.id}
+                  name={sg.name}
+                  onRemove={() => handleSideGameToggle(sg.id)}
+                  onClick={() => {
+                    if (gameConfigFields[sg.id]) {
+                      setConfigDrawer({ isOpen: true, gameId: sg.id, gameName: sg.name });
+                    }
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Course selection */}
         <div className="space-y-3">
@@ -157,49 +236,6 @@ const GameSettingsStep: React.FC<GameSettingsStepProps> = ({ data, onDataChange 
             />
           </div>
         </div>
-
-        {/* Team-specific settings */}
-        {isTeamGame && (
-          <>
-            <div className="space-y-3">
-              <Label>Team Size</Label>
-              <div className="flex gap-2">
-                {teamSizes.map((size) => (
-                  <Button
-                    key={size}
-                    variant={data.gameType.rules?.teamSize === size ? 'default' : 'outline'}
-                    onClick={() => onDataChange('gameType', {
-                      ...data.gameType,
-                      rules: { ...data.gameType.rules, teamSize: size }
-                    })}
-                    className="flex-1 h-14 text-lg"
-                  >
-                    {size}
-                  </Button>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <Label>Scores Counted per Hole (Combined)</Label>
-              <div className="flex gap-2">
-                {scoresCountedOptions.slice(0, data.gameType.rules?.teamSize || 2).map((count) => (
-                  <Button
-                    key={count}
-                    variant={data.gameType.rules?.scoresCounted === count ? 'default' : 'outline'}
-                    onClick={() => onDataChange('gameType', {
-                      ...data.gameType,
-                      rules: { ...data.gameType.rules, scoresCounted: count }
-                    })}
-                    className="flex-1 h-14 text-lg"
-                  >
-                    {count}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </>
-        )}
 
         {/* Tee selections - only show if course is selected */}
         {data.course.name && data.course.availableTees && data.course.availableTees.length > 0 && (
@@ -293,6 +329,32 @@ const GameSettingsStep: React.FC<GameSettingsStepProps> = ({ data, onDataChange 
             <EnhancedCourseSearch onCourseImported={handleCourseSelect} />
           </DialogContent>
         </Dialog>
+      )}
+
+      {/* Game Config Drawer */}
+      {configDrawer && (
+        <GameConfigDrawer
+          isOpen={configDrawer.isOpen}
+          onClose={() => setConfigDrawer(null)}
+          gameName={configDrawer.gameName}
+          config={
+            configDrawer.gameId === gameConfig.primaryFormat
+              ? gameConfig.primaryFormatConfig || {}
+              : gameConfig.sideGames?.find((sg: any) => sg.id === configDrawer.gameId)?.config || {}
+          }
+          onSave={(config) => handleConfigSave(configDrawer.gameId, config)}
+          fields={gameConfigFields[configDrawer.gameId] || []}
+        />
+      )}
+
+      {/* Rules Modal */}
+      {rulesModal && (
+        <RulesModal
+          isOpen={rulesModal.isOpen}
+          onClose={() => setRulesModal(null)}
+          gameName={rulesModal.gameName}
+          rules={gameRules[rulesModal.gameId] || []}
+        />
       )}
     </div>
   );
