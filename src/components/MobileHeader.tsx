@@ -20,7 +20,7 @@ const MobileHeader = ({ title }: MobileHeaderProps) => {
           <img 
             src="/lovable-uploads/loopr-logo.png" 
             alt="LOOPR Logo" 
-            className="h-8 w-8 object-contain"
+            className="h-9 w-9 object-contain"
           />
         </Link>
 
