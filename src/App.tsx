@@ -27,6 +27,7 @@ const BettingInfo = React.lazy(() => import("./pages/BettingInfo"));
 const Auth = React.lazy(() => import("./pages/Auth"));
 const QuickLogin = React.lazy(() => import("./pages/QuickLogin"));
 const TournamentLobby = React.lazy(() => import("./pages/TournamentLobby"));
+const TournamentInvite = React.lazy(() => import("./pages/TournamentInvite"));
 const LiveTournament = React.lazy(() => import("./pages/LiveTournament"));
 const NotFound = React.lazy(() => import("./pages/NotFound"));
 
@@ -100,6 +101,8 @@ const App = () => (
                   <Route path="/rules" element={<GolfRules />} />
                   <Route path="/game-formats" element={<GameFormats />} />
                   <Route path="/betting-info" element={<BettingInfo />} />
+                  {/* Public tournament invite (no auth required) */}
+                  <Route path="/tournament/invite/:tournamentId" element={<TournamentInvite />} />
                   <Route path="/tournament/:id/lobby" element={
                     <ProtectedRoute>
                       <TournamentLobby />
