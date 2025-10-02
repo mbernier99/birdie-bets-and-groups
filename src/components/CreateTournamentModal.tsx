@@ -239,7 +239,7 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
   const renderStep = () => {
     switch (currentStep) {
       case 0:
-        return <InvitePlayersStep data={tournamentData} onDataChange={handleDataChange} />;
+        return <InvitePlayersStep data={tournamentData} onDataChange={handleDataChange} onNext={handleNext} />;
       case 1:
         return <GameSettingsStep data={tournamentData} onDataChange={handleDataChange} />;
       case 2:
@@ -263,24 +263,28 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
         </div>
 
         <div className="flex-shrink-0 p-6 border-t space-y-3">
-          <Button 
-            onClick={currentStep < steps.length - 1 ? handleNext : handleCreate}
-            disabled={!canProceed()}
-            size="lg"
-            className="w-full h-14 text-lg font-semibold"
-          >
-            {currentStep < steps.length - 1 ? 'Next' : 'Create Tournament'}
-          </Button>
+          {currentStep !== 0 && (
+            <>
+              <Button 
+                onClick={currentStep < steps.length - 1 ? handleNext : handleCreate}
+                disabled={!canProceed()}
+                size="lg"
+                className="w-full h-14 text-lg font-semibold"
+              >
+                {currentStep < steps.length - 1 ? 'Next' : 'Create Tournament'}
+              </Button>
 
-          {currentStep > 0 && (
-            <Button 
-              variant="ghost" 
-              onClick={handlePrevious}
-              size="lg"
-              className="w-full h-12"
-            >
-              Back
-            </Button>
+              {currentStep > 0 && (
+                <Button 
+                  variant="ghost" 
+                  onClick={handlePrevious}
+                  size="lg"
+                  className="w-full h-12"
+                >
+                  Back
+                </Button>
+              )}
+            </>
           )}
         </div>
       </DialogContent>

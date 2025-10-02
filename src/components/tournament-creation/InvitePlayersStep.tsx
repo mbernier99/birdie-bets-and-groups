@@ -11,9 +11,10 @@ import { supabase } from '@/integrations/supabase/client';
 interface InvitePlayersStepProps {
   data: TournamentData;
   onDataChange: (key: keyof TournamentData, value: any) => void;
+  onNext?: () => void;
 }
 
-const InvitePlayersStep: React.FC<InvitePlayersStepProps> = ({ data, onDataChange }) => {
+const InvitePlayersStep: React.FC<InvitePlayersStepProps> = ({ data, onDataChange, onNext }) => {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [isPlayerModalOpen, setIsPlayerModalOpen] = useState(false);
@@ -126,39 +127,8 @@ const InvitePlayersStep: React.FC<InvitePlayersStepProps> = ({ data, onDataChang
   };
 
   return (
-    <div className="flex flex-col h-full space-y-4 py-4">
-      <div className="flex-1 overflow-y-auto space-y-6 px-1">
-        {/* Share options */}
-        <div className="grid grid-cols-3 gap-2">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={handleShareLink}
-            className="flex flex-col h-auto py-3 gap-1.5"
-          >
-            <Share2 className="h-5 w-5" />
-            <span className="text-xs">Share Link</span>
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={handleCopyLink}
-            className="flex flex-col h-auto py-3 gap-1.5"
-          >
-            <LinkIcon className="h-5 w-5" />
-            <span className="text-xs">Copy Link</span>
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleCopyCode}
-            className="flex flex-col h-auto py-3 gap-1.5"
-          >
-            <span className="text-xs font-mono text-lg">{inviteCode}</span>
-            <span className="text-xs opacity-70">Invite Code</span>
-          </Button>
-        </div>
-
+    <div className="flex flex-col h-full">
+      <div className="flex-1 overflow-y-auto space-y-6 px-1 py-4 pb-24">
         {/* Search */}
         <div>
           <div className="flex items-center justify-between mb-3">
@@ -279,6 +249,17 @@ const InvitePlayersStep: React.FC<InvitePlayersStepProps> = ({ data, onDataChang
             Add Guest Player
           </Button>
         </div>
+      </div>
+
+      {/* Fixed Next Button */}
+      <div className="sticky bottom-0 left-0 right-0 p-4 bg-background border-t mt-auto">
+        <Button
+          onClick={onNext}
+          size="lg"
+          className="w-full h-14 text-lg font-semibold"
+        >
+          Next
+        </Button>
       </div>
 
       <PlayerManagementModal
