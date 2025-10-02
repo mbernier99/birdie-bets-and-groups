@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Share2, Link as LinkIcon, Copy, Search, Plus } from 'lucide-react';
@@ -6,6 +6,7 @@ import { TournamentData } from '../CreateTournamentModal';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import PlayerManagementModal from './PlayerManagementModal';
+import { supabase } from '@/integrations/supabase/client';
 
 interface InvitePlayersStepProps {
   data: TournamentData;
@@ -16,8 +17,39 @@ const InvitePlayersStep: React.FC<InvitePlayersStepProps> = ({ data, onDataChang
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [isPlayerModalOpen, setIsPlayerModalOpen] = useState(false);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   const inviteCode = 'NBULA2'; // TODO: Generate unique code
+
+  // Search for players in database
+  useEffect(() => {
+    const searchPlayers = async () => {
+      if (searchQuery.trim().length < 2) {
+        setSearchResults([]);
+        return;
+      }
+
+      setIsSearching(true);
+      try {
+        const { data: profiles, error } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name, nickname, email, handicap, avatar_url')
+          .or(`first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%,nickname.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`)
+          .limit(10);
+
+        if (error) throw error;
+        setSearchResults(profiles || []);
+      } catch (error) {
+        console.error('Error searching players:', error);
+      } finally {
+        setIsSearching(false);
+      }
+    };
+
+    const debounce = setTimeout(searchPlayers, 300);
+    return () => clearTimeout(debounce);
+  }, [searchQuery]);
 
   const handleShareLink = async () => {
     const shareUrl = `${window.location.origin}/tournament-invite/${inviteCode}`;
@@ -51,94 +83,154 @@ const InvitePlayersStep: React.FC<InvitePlayersStepProps> = ({ data, onDataChang
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
 
+  const addPlayerFromSearch = (profile: any) => {
+    const displayName = profile.nickname || `${profile.first_name} ${profile.last_name}`.trim() || profile.email;
+    
+    // Check if player already added
+    if (data.players.some(p => p.email === profile.email)) {
+      toast({ title: 'Player already added', variant: 'destructive' });
+      return;
+    }
+
+    // Check max players
+    if (data.players.length >= data.basicInfo.maxPlayers) {
+      toast({ title: 'Maximum players reached', variant: 'destructive' });
+      return;
+    }
+
+    const newPlayer = {
+      id: profile.id,
+      name: displayName,
+      email: profile.email,
+      handicapIndex: profile.handicap || 0,
+      status: 'invited' as const
+    };
+
+    onDataChange('players', [...data.players, newPlayer]);
+    toast({ title: `Added ${displayName}` });
+    setSearchQuery('');
+  };
+
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto space-y-6 pb-4">
+    <div className="flex flex-col h-full space-y-4 py-4">
+      <div className="flex-1 overflow-y-auto space-y-6 px-1">
         {/* Share options */}
-        <div className="flex gap-3">
+        <div className="grid grid-cols-3 gap-2">
           <Button
             variant="secondary"
-            size="lg"
+            size="sm"
             onClick={handleShareLink}
-            className="flex-1 flex flex-col h-auto py-4 gap-2"
+            className="flex flex-col h-auto py-3 gap-1.5"
           >
-            <Share2 className="h-6 w-6" />
-            <span className="text-sm">Share Link</span>
+            <Share2 className="h-5 w-5" />
+            <span className="text-xs">Share Link</span>
           </Button>
           <Button
             variant="secondary"
-            size="lg"
+            size="sm"
             onClick={handleCopyLink}
-            className="flex-1 flex flex-col h-auto py-4 gap-2"
+            className="flex flex-col h-auto py-3 gap-1.5"
           >
-            <LinkIcon className="h-6 w-6" />
-            <span className="text-sm">Copy Link</span>
+            <LinkIcon className="h-5 w-5" />
+            <span className="text-xs">Copy Link</span>
           </Button>
           <Button
             variant="outline"
-            size="lg"
+            size="sm"
             onClick={handleCopyCode}
-            className="flex-1 flex flex-col h-auto py-4 gap-2"
+            className="flex flex-col h-auto py-3 gap-1.5"
           >
-            <Copy className="h-6 w-6" />
-            <span className="text-sm font-mono">{inviteCode}</span>
+            <span className="text-xs font-mono text-lg">{inviteCode}</span>
+            <span className="text-xs opacity-70">Invite Code</span>
           </Button>
         </div>
 
         {/* Search */}
         <div>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">Search on Leaderboard</h3>
-            <span className="text-muted-foreground">{data.players.length}/{data.basicInfo.maxPlayers}</span>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-base font-semibold">Search Players</h3>
+            <span className="text-sm text-muted-foreground">{data.players.length}/{data.basicInfo.maxPlayers}</span>
           </div>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Name or Club"
+              placeholder="Name or email"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-12"
+              className="pl-9 h-11"
             />
           </div>
+
+          {/* Search Results */}
+          {searchQuery.trim().length >= 2 && (
+            <div className="mt-3 space-y-2 max-h-60 overflow-y-auto">
+              {isSearching ? (
+                <div className="text-center py-4 text-sm text-muted-foreground">Searching...</div>
+              ) : searchResults.length === 0 ? (
+                <div className="text-center py-4 text-sm text-muted-foreground">No players found</div>
+              ) : (
+                searchResults.map((profile) => {
+                  const displayName = profile.nickname || `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || profile.email;
+                  const isAdded = data.players.some(p => p.email === profile.email);
+                  
+                  return (
+                    <div key={profile.id} className="flex items-center justify-between p-3 rounded-lg border bg-card">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <Avatar className="h-10 w-10 flex-shrink-0">
+                          <AvatarImage src={profile.avatar_url} />
+                          <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium truncate">{displayName}</div>
+                          <div className="text-xs text-muted-foreground truncate">{profile.email}</div>
+                          {profile.handicap && (
+                            <div className="text-xs text-muted-foreground">HCP: {profile.handicap}</div>
+                          )}
+                        </div>
+                      </div>
+                      <Button 
+                        size="sm" 
+                        onClick={() => addPlayerFromSearch(profile)}
+                        disabled={isAdded}
+                        className="flex-shrink-0"
+                      >
+                        {isAdded ? 'Added' : 'Add'}
+                      </Button>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          )}
         </div>
 
         {/* Current players */}
-        <div className="flex gap-4 overflow-x-auto pb-2">
-          <button
-            onClick={() => setIsPlayerModalOpen(true)}
-            className="flex flex-col items-center gap-2 min-w-[80px]"
-          >
-            <div className="w-16 h-16 rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center">
-              <Plus className="h-6 w-6 text-muted-foreground" />
-            </div>
-            <span className="text-sm text-muted-foreground">Add Guest</span>
-          </button>
-          
-          {data.players.map((player, index) => (
-            <div key={index} className="flex flex-col items-center gap-2 min-w-[80px]">
-              <Avatar className="w-16 h-16">
-                <AvatarFallback>{getInitials(player.name)}</AvatarFallback>
-              </Avatar>
-              <span className="text-sm text-center line-clamp-2">{player.name.split(' ')[0]}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Recent players */}
-        <div>
-          <h3 className="text-lg font-semibold mb-4">Recent</h3>
-          <div className="space-y-3">
-            {/* TODO: Fetch recent players from groups/previous tournaments */}
-            <div className="flex items-center justify-between p-3 rounded-lg border">
-              <div className="flex items-center gap-3">
-                <Avatar>
-                  <AvatarFallback>T</AvatarFallback>
-                </Avatar>
-                <span className="font-medium">Recent players will appear here</span>
-              </div>
-              <Button size="sm" onClick={() => setIsPlayerModalOpen(true)}>Add</Button>
+        {data.players.length > 0 && (
+          <div>
+            <h3 className="text-base font-semibold mb-3">Added Players</h3>
+            <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
+              {data.players.map((player, index) => (
+                <div key={index} className="flex flex-col items-center gap-1.5 min-w-[70px]">
+                  <Avatar className="w-14 h-14">
+                    <AvatarFallback className="text-sm">{getInitials(player.name)}</AvatarFallback>
+                  </Avatar>
+                  <span className="text-xs text-center line-clamp-2 w-full">{player.name.split(' ')[0]}</span>
+                </div>
+              ))}
             </div>
           </div>
+        )}
+
+        {/* Add Guest Button */}
+        <div>
+          <Button
+            variant="outline"
+            onClick={() => setIsPlayerModalOpen(true)}
+            className="w-full h-12 gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Add Guest Player
+          </Button>
         </div>
       </div>
 
