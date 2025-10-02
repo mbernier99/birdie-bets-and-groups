@@ -76,19 +76,15 @@ const Index = memo(() => {
   const activeTournaments = user ? tournaments.filter(t => t.status === 'draft' || t.status === 'lobby' || t.status === 'live') : [];
 
   return (
-    <div className={`min-h-screen ${isMobile ? '' : 'bg-gradient-to-br from-emerald-50 via-white to-emerald-50'} pb-20 md:pb-0`}>
+    <div className={`min-h-screen ${isMobile ? 'bg-cover bg-center bg-no-repeat' : 'bg-gradient-to-br from-emerald-50 via-white to-emerald-50'} pb-20 md:pb-0`}
+         style={isMobile ? { backgroundImage: 'url(/lovable-uploads/6673b7a5-3ea3-4a09-a631-48b032cc2620.png)' } : {}}>
       <Navbar />
-      
-      {/* Background Image Section for Mobile */}
-      <div className={`${isMobile ? 'bg-cover bg-center bg-no-repeat min-h-screen absolute inset-0' : ''}`} 
-           style={isMobile ? { backgroundImage: 'url(/lovable-uploads/6673b7a5-3ea3-4a09-a631-48b032cc2620.png)' } : {}}>
-      </div>
       
       {/* Content Wrapper */}
       <div className="relative z-10">
         
         {/* Hero Section */}
-        <div className={`mx-4 sm:mx-6 lg:mx-8 ${isMobile ? 'pt-16' : 'mt-20'}`}>
+        <div className={`mx-4 sm:mx-6 lg:mx-8 ${isMobile ? 'pt-4' : 'mt-20'}`}>
           <div className={`${isMobile ? '' : 'bg-gradient-to-r from-emerald-600 to-emerald-700'} ${isMobile ? 'text-white' : 'text-white'} relative overflow-hidden ${isMobile ? '' : 'rounded-2xl'}`}>
             <div className={`max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 ${isMobile ? 'py-12' : 'py-20'} relative z-10`}>
               <div className="text-center">

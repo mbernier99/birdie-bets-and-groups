@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { LogOut, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -11,22 +11,31 @@ interface MobileHeaderProps {
 
 const MobileHeader = ({ title }: MobileHeaderProps) => {
   const { user, signOut } = useAuth();
+  const location = useLocation();
+  const isHomePage = location.pathname === '/';
 
   return (
-    <header className="bg-white shadow-sm border-b border-emerald-100 md:hidden fixed top-0 left-0 right-0 z-50">
+    <header className={`md:hidden fixed top-0 left-0 right-0 z-50 ${
+      isHomePage 
+        ? 'bg-transparent' 
+        : 'bg-white shadow-sm border-b border-emerald-100'
+    }`}>
       <div className="flex items-center justify-between h-16 px-4">
         {/* Left side - LOOPR Logo */}
-        <Link to="/" className="flex-shrink-0">
+        <Link to="/" className="flex-shrink-0 drop-shadow-lg">
           <img 
             src="/lovable-uploads/loopr-logo.png" 
             alt="LOOPR Logo" 
             className="h-9 w-9 object-contain"
+            style={isHomePage ? { filter: 'brightness(0) invert(1)' } : {}}
           />
         </Link>
 
         {/* Center - Title (if provided) */}
         {title && (
-          <h1 className="text-lg font-bold text-gray-900">{title}</h1>
+          <h1 className={`text-lg font-bold ${isHomePage ? 'text-white drop-shadow-lg' : 'text-gray-900'}`}>
+            {title}
+          </h1>
         )}
         
         {/* Right side - Profile icon */}
@@ -34,7 +43,11 @@ const MobileHeader = ({ title }: MobileHeaderProps) => {
           {user ? (
             <button
               onClick={() => signOut()}
-              className="flex items-center justify-center h-8 w-8 rounded-full bg-emerald-700 text-white hover:bg-emerald-800 transition-colors"
+              className={`flex items-center justify-center h-8 w-8 rounded-full transition-colors drop-shadow-lg ${
+                isHomePage 
+                  ? 'bg-white/20 backdrop-blur-sm text-white border border-white/30 hover:bg-white/30' 
+                  : 'bg-emerald-700 text-white hover:bg-emerald-800'
+              }`}
               aria-label="Profile"
             >
               <User className="h-4 w-4" />
@@ -42,7 +55,11 @@ const MobileHeader = ({ title }: MobileHeaderProps) => {
           ) : (
             <Link 
               to="/auth"
-              className="flex items-center justify-center h-8 w-8 rounded-full bg-emerald-700 text-white hover:bg-emerald-800 transition-colors"
+              className={`flex items-center justify-center h-8 w-8 rounded-full transition-colors drop-shadow-lg ${
+                isHomePage 
+                  ? 'bg-white/20 backdrop-blur-sm text-white border border-white/30 hover:bg-white/30' 
+                  : 'bg-emerald-700 text-white hover:bg-emerald-800'
+              }`}
               aria-label="Sign In"
             >
               <User className="h-4 w-4" />
