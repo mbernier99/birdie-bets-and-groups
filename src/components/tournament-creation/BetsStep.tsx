@@ -195,6 +195,14 @@ const BetsStep: React.FC<BetsStepProps> = ({ data, onDataChange }) => {
                         handleWageringChange('firstPlacePercentage', 50);
                         handleWageringChange('secondPlacePercentage', 30);
                       }
+                    } else if (!checked) {
+                      // When disabling 3rd place, redistribute percentages
+                      if (!data.wagering.secondPlaceEnabled) {
+                        handleWageringChange('firstPlacePercentage', 100);
+                      } else {
+                        handleWageringChange('firstPlacePercentage', 70);
+                        handleWageringChange('secondPlacePercentage', 30);
+                      }
                     }
                   }}
                 />
