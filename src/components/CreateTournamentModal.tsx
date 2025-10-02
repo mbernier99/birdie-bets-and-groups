@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTournaments } from '@/hooks/useTournaments';
 import { validateStep } from '../utils/tournamentValidation';
+import FormatSelectionStep from './tournament-creation/FormatSelectionStep';
 import BasicInfoStep from './tournament-creation/BasicInfoStep';
 import CourseSetupStep from './tournament-creation/CourseSetupStep';
 import GameTypeStep from './tournament-creation/GameTypeStep';
@@ -39,6 +40,7 @@ export interface TournamentData {
   };
   gameType: {
     type: string;
+    format?: 'individual' | 'team';
     rules: Record<string, any>;
   };
   players: Array<{
@@ -132,6 +134,7 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
     },
     gameType: {
       type: '',
+      format: 'individual',
       rules: {}
     },
     players: [],
@@ -157,11 +160,12 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
     }
   });
 
-  // Simplified to 5 essential steps
+  // Updated to 6 steps with format selection
   const steps = [
     { title: 'Basic Info', component: BasicInfoStep },
     { title: 'Course Setup', component: CourseSetupStep },
-    { title: 'Game Type', component: GameTypeStep },
+    { title: 'Select Format', component: FormatSelectionStep },
+    { title: 'Select Game', component: GameTypeStep },
     { title: 'Players & Teams', component: TeamOrganizationStep },
     { title: 'Review', component: ReviewStep }
   ];

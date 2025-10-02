@@ -66,6 +66,19 @@ export const validateCourseAndGame = (data: TournamentData): { isValid: boolean;
   };
 };
 
+export const validateFormatSelection = (data: TournamentData): { isValid: boolean; errors: string[] } => {
+  const errors: string[] = [];
+  
+  if (!data.gameType.format) {
+    errors.push('Format selection is required');
+  }
+  
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+};
+
 export const validateStep = (stepIndex: number, data: TournamentData): { isValid: boolean; errors: string[] } => {
   switch (stepIndex) {
     case 0:
@@ -73,12 +86,13 @@ export const validateStep = (stepIndex: number, data: TournamentData): { isValid
     case 1:
       return validateCourseSetup(data);
     case 2:
-      // Admin betting is optional
-      return { isValid: true, errors: [] };
+      return validateFormatSelection(data);
     case 3:
-      // Organization is conditional
-      return { isValid: true, errors: [] };
+      return validateGameType(data);
     case 4:
+      // Players & Teams - optional validation
+      return { isValid: true, errors: [] };
+    case 5:
       // Final review
       return validateCourseAndGame(data);
     default:

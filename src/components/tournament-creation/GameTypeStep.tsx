@@ -1,10 +1,9 @@
-
 import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { AlertCircle } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { TournamentData } from '../CreateTournamentModal';
 
 interface GameTypeStepProps {
@@ -12,14 +11,22 @@ interface GameTypeStepProps {
   onDataChange: (key: keyof TournamentData, value: any) => void;
 }
 
-const gameTypes = [
-  { id: 'stroke-play', name: 'Stroke Play', description: 'Individual stroke play tournament', minPlayers: 2, maxPlayers: 32 },
-  { id: 'best-ball', name: 'Best Ball', description: 'Teams of 2, lowest score on each hole counts', minPlayers: 4, maxPlayers: 16 },
-  { id: 'best-ball-match-play', name: '2-Man Best Ball Match Play', description: 'Teams of 2 compete hole-by-hole in match play format', minPlayers: 4, maxPlayers: 16 },
-  { id: 'scramble', name: 'Scramble', description: 'Team scramble format - all play from best shot', minPlayers: 4, maxPlayers: 16 },
-  { id: 'match-play', name: 'Match Play', description: 'Head-to-head elimination format', minPlayers: 2, maxPlayers: 8 },
-  { id: 'nassau', name: 'Nassau', description: 'Three separate bets: front 9, back 9, and overall', minPlayers: 2, maxPlayers: 8 },
-  { id: 'skins', name: 'Skins', description: 'Hole-by-hole competition', minPlayers: 2, maxPlayers: 8 },
+const allGameTypes = [
+  // Individual formats
+  { id: 'stroke-play', name: 'Stroke Play', description: 'Lowest score wins', format: 'individual', icon: '🎯', minPlayers: 2, maxPlayers: 32 },
+  { id: 'stableford', name: 'Stableford', description: 'Highest number of points wins', format: 'individual', icon: '123', minPlayers: 2, maxPlayers: 32 },
+  { id: 'match-play', name: 'Match Play', description: 'Head to head matches with optional presses', format: 'individual', icon: '👥', minPlayers: 2, maxPlayers: 8 },
+  { id: 'nassau', name: 'Nassau', description: 'Match Play with front, back, and overall wagers, plus optional presses', format: 'individual', icon: '💰', minPlayers: 2, maxPlayers: 8 },
+  { id: 'skins', name: 'Skins', description: 'Earn a skin by beating the entire field on a given hole. Skins can also be added alongside any other game type.', format: 'individual', icon: '📊', minPlayers: 2, maxPlayers: 8 },
+  { id: 'quota', name: 'Quota', description: 'Modified Stableford with a points target for each player', format: 'individual', icon: '🎲', minPlayers: 2, maxPlayers: 32 },
+  
+  // Team formats
+  { id: 'best-ball', name: 'Best Ball', description: 'Combined total, best X out of Y balls', format: 'team', icon: '⭐', minPlayers: 4, maxPlayers: 16 },
+  { id: 'best-ball-match-play', name: 'Best Ball Match Play', description: 'Head to head team matches with optional presses', format: 'team', icon: '👥', minPlayers: 4, maxPlayers: 16 },
+  { id: 'team-nassau', name: 'Team Nassau', description: 'Match Play with front, back, and overall wagers, plus optional presses', format: 'team', icon: '💰', minPlayers: 4, maxPlayers: 16 },
+  { id: 'scramble', name: 'Scramble', description: 'Everyone hits, pick the best shot and repeat', format: 'team', icon: '🎯', minPlayers: 4, maxPlayers: 16 },
+  { id: 'chapman', name: 'Chapman / Pinehurst', description: 'Partners tee off, swap balls, hit second shots, pick a ball, play alt shot in', format: 'team', icon: '🔄', minPlayers: 4, maxPlayers: 16 },
+  { id: 'alternate-shot', name: 'Alternate Shot', description: 'Partners alternate shots to produce a single team score', format: 'team', icon: '🔁', minPlayers: 4, maxPlayers: 16 },
 ];
 
 const GameTypeStep: React.FC<GameTypeStepProps> = ({ data, onDataChange }) => {
@@ -37,7 +44,11 @@ const GameTypeStep: React.FC<GameTypeStepProps> = ({ data, onDataChange }) => {
     });
   };
 
-  const selectedGameType = gameTypes.find(gt => gt.id === data.gameType.type);
+  // Filter game types based on selected format
+  const selectedFormat = data.gameType.format || 'individual';
+  const gameTypes = allGameTypes.filter(gt => gt.format === selectedFormat);
+  
+  const selectedGameType = allGameTypes.find(gt => gt.id === data.gameType.type);
   const isComplete = !!data.gameType.type;
 
   const renderGameSpecificRules = () => {
@@ -159,41 +170,47 @@ const GameTypeStep: React.FC<GameTypeStepProps> = ({ data, onDataChange }) => {
     }
   };
 
+  const formatTitle = selectedFormat === 'individual' ? 'Individual Games' : 'Team Games';
+
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-semibold text-gray-900">Game Format</h3>
-      
-      <div className="space-y-2">
-        <Label className="flex items-center space-x-1">
-          <span>Select Game Type</span>
-          <span className="text-red-500">*</span>
-        </Label>
-        <Select value={data.gameType.type} onValueChange={(value) => handleGameTypeChange('type', value)}>
-          <SelectTrigger className={`${!data.gameType.type ? 'border-red-300' : ''}`}>
-            <SelectValue placeholder="Choose your tournament format" />
-          </SelectTrigger>
-          <SelectContent>
-            {gameTypes.map((gameType) => (
-              <SelectItem key={gameType.id} value={gameType.id}>
-                <div>
-                  <div className="font-medium">{gameType.name}</div>
-                  <div className="text-sm text-gray-500">{gameType.description}</div>
-                  <div className="text-xs text-gray-400">
-                    {gameType.minPlayers === gameType.maxPlayers 
-                      ? `${gameType.minPlayers} players` 
-                      : `${gameType.minPlayers}-${gameType.maxPlayers} players`}
-                  </div>
+      <div>
+        <h3 className="text-2xl font-bold text-foreground mb-2">{formatTitle}</h3>
+        <p className="text-muted-foreground">Choose your game type</p>
+      </div>
+
+      <div className="space-y-3">
+        {gameTypes.map((gameType) => {
+          const isSelected = data.gameType.type === gameType.id;
+          return (
+            <div
+              key={gameType.id}
+              onClick={() => handleGameTypeChange('type', gameType.id)}
+              className={`p-4 rounded-lg border-2 cursor-pointer transition-all hover:shadow-md ${
+                isSelected
+                  ? 'border-primary bg-primary/5'
+                  : 'border-border hover:border-primary/50'
+              }`}
+            >
+              <div className="flex items-start gap-4">
+                <div className={`p-3 rounded-full text-2xl ${
+                  isSelected 
+                    ? 'bg-primary text-primary-foreground' 
+                    : 'bg-primary/10'
+                }`}>
+                  {gameType.icon}
                 </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {!data.gameType.type && (
-          <p className="text-sm text-red-600 flex items-center space-x-1">
-            <AlertCircle className="h-3 w-3" />
-            <span>Game type selection is required</span>
-          </p>
-        )}
+                <div className="flex-1">
+                  <h4 className="text-lg font-semibold text-foreground mb-1">{gameType.name}</h4>
+                  <p className="text-sm text-muted-foreground">{gameType.description}</p>
+                </div>
+                <ChevronRight className={`h-5 w-5 mt-1 ${
+                  isSelected ? 'text-primary' : 'text-muted-foreground'
+                }`} />
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {selectedGameType && (

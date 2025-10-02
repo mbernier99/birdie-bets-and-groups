@@ -43,6 +43,7 @@ const MobileTournamentSheet: React.FC<MobileTournamentSheetProps> = ({ isOpen, o
     },
     gameType: {
       type: '',
+      format: 'individual',
       rules: {},
     },
     players: [],
