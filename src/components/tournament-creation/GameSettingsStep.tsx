@@ -15,6 +15,8 @@ interface GameSettingsStepProps {
 
 const GameSettingsStep: React.FC<GameSettingsStepProps> = ({ data, onDataChange }) => {
   const [showCourseSearch, setShowCourseSearch] = useState(false);
+  const [showMensTeeDialog, setShowMensTeeDialog] = useState(false);
+  const [showWomensTeeDialog, setShowWomensTeeDialog] = useState(false);
   const isTeamGame = data.gameType.format === 'team';
 
   const teamSizes = [2, 3, 4, 5];
@@ -45,6 +47,13 @@ const GameSettingsStep: React.FC<GameSettingsStepProps> = ({ data, onDataChange 
       [teeType === 'men' ? 'mensRating' : 'womensRating']: teeData.rating,
       [teeType === 'men' ? 'mensSlope' : 'womensSlope']: teeData.slope,
     });
+    
+    // Close the appropriate dialog
+    if (teeType === 'men') {
+      setShowMensTeeDialog(false);
+    } else {
+      setShowWomensTeeDialog(false);
+    }
   };
 
   return (
@@ -135,7 +144,7 @@ const GameSettingsStep: React.FC<GameSettingsStepProps> = ({ data, onDataChange 
           <>
             <div className="space-y-3">
               <Label>Default Men's Tee</Label>
-              <Dialog>
+              <Dialog open={showMensTeeDialog} onOpenChange={setShowMensTeeDialog}>
                 <DialogTrigger asChild>
                   <button className="w-full p-4 rounded-xl border-2 hover:border-primary transition-colors text-left">
                     <div className="flex items-center justify-between">
@@ -175,7 +184,7 @@ const GameSettingsStep: React.FC<GameSettingsStepProps> = ({ data, onDataChange 
 
             <div className="space-y-3">
               <Label>Default Women's Tee</Label>
-              <Dialog>
+              <Dialog open={showWomensTeeDialog} onOpenChange={setShowWomensTeeDialog}>
                 <DialogTrigger asChild>
                   <button className="w-full p-4 rounded-xl border-2 hover:border-primary transition-colors text-left">
                     <div className="flex items-center justify-between">
