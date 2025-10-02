@@ -63,13 +63,9 @@ export const traditionalFormats: GameFormat[] = [
 ];
 
 export const sideGames = [
-  { id: 'bingo-bango-bongo', name: 'Bingo-Bango-Bongo' },
-  { id: 'quota', name: 'Quota' },
-  { id: 'sixes', name: 'Sixes / Hollywood' },
-  { id: 'chicago', name: 'Chicago' },
-  { id: 'rabbit', name: 'Rabbit' },
-  { id: 'hammer', name: 'Hammer' },
-  { id: 'vegas', name: 'Vegas' },
+  { id: 'snake', name: 'Snake' },
+  { id: 'skins', name: 'Skins' },
+  { id: 'nassau', name: 'Nassau' },
 ];
 
 export const gameRules: Record<string, string[]> = {
