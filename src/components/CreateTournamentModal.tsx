@@ -28,6 +28,16 @@ export interface TournamentData {
     }>;
     rating: number;
     slope: number;
+    id?: string;
+    location?: string;
+    par?: number;
+    availableTees?: any[];
+    mensTee?: string;
+    mensRating?: number;
+    mensSlope?: number;
+    womensTee?: string;
+    womensRating?: number;
+    womensSlope?: number;
   };
   gameType: {
     type: string;

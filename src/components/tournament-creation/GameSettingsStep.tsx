@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,13 +21,30 @@ const GameSettingsStep: React.FC<GameSettingsStepProps> = ({ data, onDataChange 
   const scoresCountedOptions = [1, 2, 3, 4, 5];
 
   const handleCourseSelect = (course: any) => {
+    // Load course with all available tees
+    const availableTees = course.course_tees || [];
+    
     onDataChange('course', {
       ...data.course,
+      id: course.id,
       name: course.name,
-      rating: course.rating,
-      slope: course.slope,
+      location: course.location,
+      holes: course.holes,
+      par: course.par,
+      availableTees: availableTees,
+      rating: course.rating || availableTees[0]?.rating,
+      slope: course.slope || availableTees[0]?.slope,
     });
     setShowCourseSearch(false);
+  };
+
+  const handleTeeSelect = (teeType: 'men' | 'women', teeData: any) => {
+    onDataChange('course', {
+      ...data.course,
+      [teeType === 'men' ? 'mensTee' : 'womensTee']: teeData.tee_name,
+      [teeType === 'men' ? 'mensRating' : 'womensRating']: teeData.rating,
+      [teeType === 'men' ? 'mensSlope' : 'womensSlope']: teeData.slope,
+    });
   };
 
   return (
@@ -113,46 +130,96 @@ const GameSettingsStep: React.FC<GameSettingsStepProps> = ({ data, onDataChange 
           </>
         )}
 
-        {/* Tee selections */}
-        <div className="space-y-3">
-          <Label>Default Men's Tee</Label>
-          <button className="w-full p-4 rounded-xl border-2 hover:border-primary transition-colors text-left">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-semibold">{data.course.teeBox || 'Select Tee'}</div>
-                {data.course.rating && (
-                  <div className="text-sm text-muted-foreground">
-                    {data.course.rating} / {data.course.slope}
+        {/* Tee selections - only show if course is selected */}
+        {data.course.name && data.course.availableTees && data.course.availableTees.length > 0 && (
+          <>
+            <div className="space-y-3">
+              <Label>Default Men's Tee</Label>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <button className="w-full p-4 rounded-xl border-2 hover:border-primary transition-colors text-left">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-semibold">{data.course.mensTee || 'Select Tee'}</div>
+                        {data.course.mensRating && (
+                          <div className="text-sm text-muted-foreground">
+                            Rating: {data.course.mensRating} / Slope: {data.course.mensSlope}
+                          </div>
+                        )}
+                      </div>
+                      <Trophy className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                  </button>
+                </DialogTrigger>
+                <DialogContent>
+                  <div className="space-y-3">
+                    <h3 className="font-semibold">Select Men's Tee</h3>
+                    {data.course.availableTees.map((tee: any) => (
+                      <div
+                        key={tee.id}
+                        className="p-4 border rounded-lg hover:bg-accent cursor-pointer transition-colors"
+                        onClick={() => {
+                          handleTeeSelect('men', tee);
+                        }}
+                      >
+                        <div className="font-semibold">{tee.tee_name}</div>
+                        <div className="text-sm text-muted-foreground mt-1">
+                          Rating: {tee.rating} • Slope: {tee.slope} • {tee.total_yardage} yards
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                )}
-              </div>
-              <Trophy className="h-5 w-5 text-muted-foreground" />
+                </DialogContent>
+              </Dialog>
             </div>
-          </button>
-        </div>
 
-        <div className="space-y-3">
-          <Label>Default Women's Tee</Label>
-          <button className="w-full p-4 rounded-xl border-2 hover:border-primary transition-colors text-left">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-semibold">{data.course.teeBox || 'Select Tee'}</div>
-                {data.course.rating && (
-                  <div className="text-sm text-muted-foreground">
-                    {data.course.rating} / {data.course.slope}
+            <div className="space-y-3">
+              <Label>Default Women's Tee</Label>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <button className="w-full p-4 rounded-xl border-2 hover:border-primary transition-colors text-left">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-semibold">{data.course.womensTee || 'Select Tee'}</div>
+                        {data.course.womensRating && (
+                          <div className="text-sm text-muted-foreground">
+                            Rating: {data.course.womensRating} / Slope: {data.course.womensSlope}
+                          </div>
+                        )}
+                      </div>
+                      <Trophy className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                  </button>
+                </DialogTrigger>
+                <DialogContent>
+                  <div className="space-y-3">
+                    <h3 className="font-semibold">Select Women's Tee</h3>
+                    {data.course.availableTees.map((tee: any) => (
+                      <div
+                        key={tee.id}
+                        className="p-4 border rounded-lg hover:bg-accent cursor-pointer transition-colors"
+                        onClick={() => {
+                          handleTeeSelect('women', tee);
+                        }}
+                      >
+                        <div className="font-semibold">{tee.tee_name}</div>
+                        <div className="text-sm text-muted-foreground mt-1">
+                          Rating: {tee.rating} • Slope: {tee.slope} • {tee.total_yardage} yards
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                )}
-              </div>
-              <Trophy className="h-5 w-5 text-muted-foreground" />
+                </DialogContent>
+              </Dialog>
             </div>
-          </button>
-        </div>
+          </>
+        )}
       </div>
 
       {showCourseSearch && (
         <Dialog open={showCourseSearch} onOpenChange={setShowCourseSearch}>
-          <DialogContent className="max-w-3xl h-[80vh]">
-            <EnhancedCourseSearch />
+          <DialogContent className="max-w-3xl h-[80vh] flex flex-col">
+            <EnhancedCourseSearch onCourseImported={handleCourseSelect} />
           </DialogContent>
         </Dialog>
       )}

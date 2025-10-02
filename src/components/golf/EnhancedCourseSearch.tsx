@@ -65,7 +65,11 @@ const EnhancedCourseSearch: React.FC<EnhancedCourseSearchProps> = ({ onCourseImp
     try {
       const { data, error } = await supabase
         .from('courses')
-        .select('*, hole_data:holes(*)')
+        .select(`
+          *,
+          hole_data:holes(*),
+          course_tees(*)
+        `)
         .order('name');
 
       if (error) throw error;
@@ -188,27 +192,50 @@ const EnhancedCourseSearch: React.FC<EnhancedCourseSearchProps> = ({ onCourseImp
   };
 
   return (
-    <div className="space-y-4">
-      {/* Show available local courses */}
-      {localCourses.length > 0 && !searchTerm && (
-        <div className="space-y-2">
-          <Label className="text-sm font-medium">Available Courses</Label>
-          <div className="grid gap-2">
+    <div className="space-y-4 h-full flex flex-col">
+      {/* Search input at top */}
+      <div className="flex-shrink-0">
+        <Input
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Search Course"
+          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+          className="h-12"
+        />
+        <Button onClick={handleSearch} disabled={isSearching} className="w-full mt-2" size="sm">
+          {isSearching ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Searching...
+            </>
+          ) : (
+            <>
+              <Search className="mr-2 h-4 w-4" />
+              Search
+            </>
+          )}
+        </Button>
+      </div>
+
+      {/* Available courses below search */}
+      <div className="flex-1 overflow-y-auto space-y-2">
+        {localCourses.length > 0 && !searchResults.length && (
+          <div className="space-y-2">
             {localCourses.map((course) => (
               <div
                 key={course.id}
-                className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
+                className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent cursor-pointer transition-colors"
                 onClick={() => {
                   onCourseImported?.(course);
                   toast.success(`${course.name} loaded successfully`);
                 }}
               >
                 <div className="flex-1">
-                  <h3 className="font-medium text-sm">{course.name}</h3>
-                  <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-                    <MapPin className="h-3 w-3" />
+                  <h3 className="font-semibold">{course.name}</h3>
+                  <div className="flex items-center space-x-2 text-sm text-muted-foreground mt-1">
+                    <MapPin className="h-4 w-4" />
                     <span>{course.location}</span>
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge variant="secondary" className="text-xs ml-2">
                       {typeof course.holes === 'number' ? course.holes : course.hole_data?.length || 18} holes
                     </Badge>
                   </div>
@@ -216,67 +243,32 @@ const EnhancedCourseSearch: React.FC<EnhancedCourseSearchProps> = ({ onCourseImp
               </div>
             ))}
           </div>
-        </div>
-      )}
+        )}
 
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm flex items-center space-x-2">
-            <Search className="h-4 w-4" />
-            <span>Search Courses</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div>
-            <Label htmlFor="course-name" className="text-xs">Course Name</Label>
-            <Input
-              id="course-name"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search for a course..."
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              className="h-9"
-            />
-          </div>
-          <Button onClick={handleSearch} disabled={isSearching} className="w-full h-9" size="sm">
-            {isSearching ? (
-              <>
-                <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-                Searching...
-              </>
-            ) : (
-              <>
-                <Search className="mr-2 h-3 w-3" />
-                Search
-              </>
-            )}
-          </Button>
-        </CardContent>
-      </Card>
-
-      {searchResults.length > 0 && (
-        <div className="space-y-2">
-          <Label className="text-sm font-medium">Search Results ({searchResults.length})</Label>
-          <div className="grid gap-2">
-            {searchResults.map((course) => (
-              <div
-                key={course.id}
-                className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
-                onClick={() => handleCourseSelect(course)}
-              >
-                <div className="flex-1">
-                  <h3 className="font-medium text-sm">{course.name}</h3>
-                  <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-                    <MapPin className="h-3 w-3" />
-                    <span>{course.city}, {course.state}</span>
-                    <Badge variant="secondary" className="text-xs">{course.holes} holes</Badge>
+        {searchResults.length > 0 && (
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Search Results ({searchResults.length})</Label>
+            <div className="space-y-2">
+              {searchResults.map((course) => (
+                <div
+                  key={course.id}
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent cursor-pointer transition-colors"
+                  onClick={() => handleCourseSelect(course)}
+                >
+                  <div className="flex-1">
+                    <h3 className="font-semibold">{course.name}</h3>
+                    <div className="flex items-center space-x-2 text-sm text-muted-foreground mt-1">
+                      <MapPin className="h-4 w-4" />
+                      <span>{course.city}, {course.state}</span>
+                      <Badge variant="secondary" className="text-xs ml-2">{course.holes} holes</Badge>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Course Details Dialog */}
       <Dialog open={!!selectedCourse} onOpenChange={() => setSelectedCourse(null)}>
