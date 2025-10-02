@@ -124,6 +124,17 @@ const InvitePlayersStep: React.FC<InvitePlayersStepProps> = ({ data, onDataChang
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto space-y-6 px-1 py-4 pb-24">
+        {/* Tournament Name */}
+        <div>
+          <h3 className="text-base font-semibold mb-3">Tournament Name</h3>
+          <Input
+            placeholder="Enter tournament name"
+            value={data.basicInfo.name}
+            onChange={(e) => onDataChange('basicInfo', { ...data.basicInfo, name: e.target.value })}
+            className="h-11"
+          />
+        </div>
+
         {/* Search */}
         <div>
           <div className="flex items-center justify-between mb-3">
