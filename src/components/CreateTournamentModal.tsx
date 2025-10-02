@@ -145,10 +145,17 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
 
   const handleNext = () => {
     if (!canProceed()) {
-      toast({
-        title: "Please complete required fields",
-        variant: "destructive"
-      });
+      if (currentStep === 0 && tournamentData.players.length < 2) {
+        toast({
+          title: "Add at least 2 players to continue",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Please complete required fields",
+          variant: "destructive"
+        });
+      }
       return;
     }
 
@@ -226,7 +233,7 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
   const canProceed = () => {
     switch (currentStep) {
       case 0:
-        return tournamentData.basicInfo.name.trim() && tournamentData.players.length > 0;
+        return tournamentData.basicInfo.name.trim() && tournamentData.players.length >= 2;
       case 1:
         return tournamentData.course.name.trim() && tournamentData.gameType.type;
       case 2:

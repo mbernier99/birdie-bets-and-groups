@@ -107,11 +107,6 @@ const InvitePlayersStep: React.FC<InvitePlayersStepProps> = ({ data, onDataChang
       return;
     }
 
-    // Check max players
-    if (data.players.length >= data.basicInfo.maxPlayers) {
-      toast({ title: 'Maximum players reached', variant: 'destructive' });
-      return;
-    }
 
     const newPlayer = {
       id: profile.id,
@@ -133,7 +128,6 @@ const InvitePlayersStep: React.FC<InvitePlayersStepProps> = ({ data, onDataChang
         <div>
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-base font-semibold">Search Players</h3>
-            <span className="text-sm text-muted-foreground">{data.players.length}/{data.basicInfo.maxPlayers}</span>
           </div>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -253,6 +247,9 @@ const InvitePlayersStep: React.FC<InvitePlayersStepProps> = ({ data, onDataChang
 
       {/* Fixed Next Button */}
       <div className="sticky bottom-0 left-0 right-0 p-4 bg-background border-t mt-auto">
+        <div className="text-center text-sm text-muted-foreground mb-3">
+          {data.players.length} {data.players.length === 1 ? 'player' : 'players'} added
+        </div>
         <Button
           onClick={onNext}
           size="lg"
