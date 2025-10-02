@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface GameConfig {
   [key: string]: any;
@@ -19,7 +20,7 @@ interface GameConfig {
 interface ConfigField {
   key: string;
   label: string;
-  type: 'number' | 'toggle' | 'select';
+  type: 'number' | 'toggle' | 'select' | 'player-multiselect';
   defaultValue: any;
   options?: { value: any; label: string }[];
   min?: number;
@@ -34,6 +35,7 @@ interface GameConfigDrawerProps {
   config: GameConfig;
   onSave: (config: GameConfig) => void;
   fields: ConfigField[];
+  players?: Array<{ id: string; name: string; handicapIndex?: number }>;
 }
 
 const GameConfigDrawer: React.FC<GameConfigDrawerProps> = ({
@@ -43,6 +45,7 @@ const GameConfigDrawer: React.FC<GameConfigDrawerProps> = ({
   config,
   onSave,
   fields,
+  players = [],
 }) => {
   const [localConfig, setLocalConfig] = React.useState<GameConfig>(config);
 
@@ -106,6 +109,62 @@ const GameConfigDrawer: React.FC<GameConfigDrawerProps> = ({
                       {option.label}
                     </Button>
                   ))}
+                </div>
+              )}
+
+              {field.type === 'player-multiselect' && (
+                <div className="space-y-2 max-h-64 overflow-y-auto border rounded-lg p-3">
+                  {players.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No players added yet. Add players in the first step.</p>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-2 pb-2 border-b">
+                        <Checkbox
+                          id={`${field.key}-all`}
+                          checked={
+                            (localConfig[field.key] ?? field.defaultValue)?.length === players.length
+                          }
+                          onCheckedChange={(checked) => {
+                            updateField(
+                              field.key,
+                              checked ? players.map(p => p.id) : []
+                            );
+                          }}
+                        />
+                        <Label htmlFor={`${field.key}-all`} className="font-semibold cursor-pointer">
+                          Select All
+                        </Label>
+                      </div>
+                      {players.map((player) => {
+                        const selectedPlayers = (localConfig[field.key] ?? field.defaultValue) || [];
+                        const isChecked = selectedPlayers.includes(player.id);
+                        
+                        return (
+                          <div key={player.id} className="flex items-center gap-2">
+                            <Checkbox
+                              id={`${field.key}-${player.id}`}
+                              checked={isChecked}
+                              onCheckedChange={(checked) => {
+                                const currentSelected = (localConfig[field.key] ?? field.defaultValue) || [];
+                                const newSelected = checked
+                                  ? [...currentSelected, player.id]
+                                  : currentSelected.filter((id: string) => id !== player.id);
+                                updateField(field.key, newSelected);
+                              }}
+                            />
+                            <Label htmlFor={`${field.key}-${player.id}`} className="cursor-pointer flex-1">
+                              {player.name}
+                              {player.handicapIndex !== undefined && (
+                                <span className="text-xs text-muted-foreground ml-2">
+                                  (HCP: {player.handicapIndex})
+                                </span>
+                              )}
+                            </Label>
+                          </div>
+                        );
+                      })}
+                    </>
+                  )}
                 </div>
               )}
             </div>

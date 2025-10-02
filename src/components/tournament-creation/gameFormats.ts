@@ -32,10 +32,10 @@ export const traditionalFormats: GameFormat[] = [
 ];
 
 export const sideGames = [
-  { id: 'skins', name: 'Skins', description: 'Beat the field, earn a skin' },
-  { id: 'snake', name: 'Snake', description: '3 putt holds the bag of snakes' },
-  { id: 'wolf', name: 'Wolf', description: 'Tee off last, pick your partner' },
-  { id: 'wolf-turd', name: 'Wolf Turd', description: 'Wolf hits first and must play with the worst shot' },
+  { id: 'skins', name: 'Skins', description: 'Beat the field, earn a skin', allowMultiple: true },
+  { id: 'snake', name: 'Snake', description: '3 putt holds the bag of snakes', allowMultiple: true },
+  { id: 'wolf', name: 'Wolf', description: 'Tee off last, pick your partner', allowMultiple: false },
+  { id: 'wolf-turd', name: 'Wolf Turd', description: 'Wolf hits first and must play with the worst shot', allowMultiple: false },
 ];
 
 export const gameRules: Record<string, string[]> = {
@@ -93,7 +93,7 @@ export interface GameConfigFields {
   [key: string]: {
     key: string;
     label: string;
-    type: 'number' | 'toggle' | 'select';
+    type: 'number' | 'toggle' | 'select' | 'player-multiselect';
     defaultValue: any;
     options?: { value: any; label: string }[];
     min?: number;
@@ -143,6 +143,7 @@ export const gameConfigFields: GameConfigFields = {
     },
   ],
   skins: [
+    { key: 'eligiblePlayers', label: 'Eligible Players', type: 'player-multiselect', defaultValue: [] },
     { key: 'holeValue', label: 'Value Per Hole ($)', type: 'number', defaultValue: 5, min: 1, max: 100, step: 1 },
     { key: 'carryovers', label: 'Enable Carryovers', type: 'toggle', defaultValue: true },
     { key: 'carryoverMultiplier', label: 'Carryover Multiplier', type: 'number', defaultValue: 1, min: 1, max: 5, step: 0.5 },
@@ -181,6 +182,7 @@ export const gameConfigFields: GameConfigFields = {
     { key: 'payoutMultiplier', label: 'Payout Per Point ($)', type: 'number', defaultValue: 1, min: 0.5, max: 10, step: 0.5 },
   ],
   snake: [
+    { key: 'eligiblePlayers', label: 'Eligible Players', type: 'player-multiselect', defaultValue: [] },
     { key: 'potAmount', label: 'Total Pot ($)', type: 'number', defaultValue: 20, min: 5, max: 500, step: 5 },
     { key: 'escalating', label: 'Escalating Pot', type: 'toggle', defaultValue: false },
     { 

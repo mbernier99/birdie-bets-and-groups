@@ -23,7 +23,12 @@ const GameSettingsStep: React.FC<GameSettingsStepProps> = ({ data, onDataChange 
   const [showMensTeeDialog, setShowMensTeeDialog] = useState(false);
   const [showWomensTeeDialog, setShowWomensTeeDialog] = useState(false);
   const [sideGamesExpanded, setSideGamesExpanded] = useState(false);
-  const [configDrawer, setConfigDrawer] = useState<{ isOpen: boolean; gameId: string; gameName: string } | null>(null);
+  const [configDrawer, setConfigDrawer] = useState<{ 
+    isOpen: boolean; 
+    gameId: string; 
+    baseId?: string;
+    gameName: string;
+  } | null>(null);
   const [rulesModal, setRulesModal] = useState<{ isOpen: boolean; gameId: string; gameName: string } | null>(null);
 
   // Initialize gameConfig if not exists
@@ -83,34 +88,62 @@ const GameSettingsStep: React.FC<GameSettingsStepProps> = ({ data, onDataChange 
     updateGameConfig({ primaryFormat: formatId });
   };
 
-  const handleSideGameToggle = (gameId: string) => {
-    const isActive = gameConfig.sideGames?.some((sg: any) => sg.id === gameId);
-    const game = sideGames.find(g => g.id === gameId);
+  const handleSideGameToggle = (gameId: string, instanceId?: string) => {
+    const fullId = instanceId || gameId;
+    const baseId = gameId.includes('-custom-') ? gameId.split('-custom-')[0] : gameId;
+    const isActive = gameConfig.sideGames?.some((sg: any) => sg.id === fullId);
+    const game = sideGames.find(g => g.id === baseId);
     
     if (isActive) {
       // Remove side game
       updateGameConfig({
-        sideGames: gameConfig.sideGames.filter((sg: any) => sg.id !== gameId),
+        sideGames: gameConfig.sideGames.filter((sg: any) => sg.id !== fullId),
       });
     } else {
       // Add side game with default config
-      const defaultConfig = gameConfigFields[gameId]?.reduce((acc, field) => {
+      const defaultConfig = gameConfigFields[baseId]?.reduce((acc, field) => {
         acc[field.key] = field.defaultValue;
         return acc;
       }, {} as any) || {};
 
       updateGameConfig({
-        sideGames: [...(gameConfig.sideGames || []), { id: gameId, name: game?.name, config: defaultConfig }],
+        sideGames: [...(gameConfig.sideGames || []), { 
+          id: fullId, 
+          baseId: baseId,
+          name: instanceId ? `${game?.name} (Custom)` : game?.name, 
+          config: defaultConfig 
+        }],
       });
 
       // Open config drawer
-      if (gameConfigFields[gameId] && game) {
-        setConfigDrawer({ isOpen: true, gameId, gameName: game.name });
+      if (gameConfigFields[baseId] && game) {
+        setConfigDrawer({ 
+          isOpen: true, 
+          gameId: fullId, 
+          baseId: baseId,
+          gameName: instanceId ? `${game.name} (Custom)` : game.name 
+        });
       }
     }
   };
 
+  const handleAddCustomGame = (baseGameId: string) => {
+    const game = sideGames.find(g => g.id === baseGameId);
+    if (!game) return;
+
+    const existingCustomGames = gameConfig.sideGames?.filter(
+      (sg: any) => sg.baseId === baseGameId || sg.id === baseGameId
+    ) || [];
+    const nextIndex = existingCustomGames.length + 1;
+    const customId = `${baseGameId}-custom-${nextIndex}`;
+
+    handleSideGameToggle(baseGameId, customId);
+  };
+
   const handleConfigSave = (gameId: string, config: any) => {
+    const sideGame = gameConfig.sideGames?.find((sg: any) => sg.id === gameId);
+    const baseId = sideGame?.baseId || gameId;
+    
     if (gameId === gameConfig.primaryFormat) {
       // Update primary format config
       updateGameConfig({
@@ -176,27 +209,43 @@ const GameSettingsStep: React.FC<GameSettingsStepProps> = ({ data, onDataChange 
             </CollapsibleTrigger>
             <CollapsibleContent className="pt-3 space-y-2">
               {sideGames.map((game: any) => {
-                const isActive = gameConfig.sideGames?.some((sg: any) => sg.id === game.id);
+                const isActive = gameConfig.sideGames?.some((sg: any) => 
+                  sg.id === game.id || sg.baseId === game.id
+                );
+                const canAddMultiple = game.allowMultiple;
+                
                 return (
-                  <button
-                    key={game.id}
-                    className={`w-full p-3 rounded-xl border-2 transition-all text-left active:scale-98 ${
-                      isActive 
-                        ? 'bg-secondary border-secondary' 
-                        : 'bg-card border-border hover:border-primary'
-                    }`}
-                    onClick={() => handleSideGameToggle(game.id)}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0 mt-0.5">
-                        {isActive ? '✓' : '+'}
+                  <div key={game.id} className="space-y-2">
+                    <button
+                      className={`w-full p-3 rounded-xl border-2 transition-all text-left active:scale-98 ${
+                        isActive 
+                          ? 'bg-secondary border-secondary' 
+                          : 'bg-card border-border hover:border-primary'
+                      }`}
+                      onClick={() => handleSideGameToggle(game.id)}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 mt-0.5">
+                          {isActive ? '✓' : '+'}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold text-base">{game.name}</div>
+                          <div className="text-xs text-muted-foreground mt-0.5">{game.description}</div>
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-base">{game.name}</div>
-                        <div className="text-xs text-muted-foreground mt-0.5">{game.description}</div>
-                      </div>
-                    </div>
-                  </button>
+                    </button>
+                    
+                    {canAddMultiple && isActive && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleAddCustomGame(game.id)}
+                        className="w-full text-xs h-8"
+                      >
+                        + Add Another {game.name} Game
+                      </Button>
+                    )}
+                  </div>
                 );
               })}
             </CollapsibleContent>
@@ -205,18 +254,26 @@ const GameSettingsStep: React.FC<GameSettingsStepProps> = ({ data, onDataChange 
           {/* Active Side Games Chips */}
           {gameConfig.sideGames && gameConfig.sideGames.length > 0 && (
             <div className="flex flex-wrap gap-2">
-              {gameConfig.sideGames.map((sg: any) => (
-                <SideGameChip
-                  key={sg.id}
-                  name={sg.name}
-                  onRemove={() => handleSideGameToggle(sg.id)}
-                  onClick={() => {
-                    if (gameConfigFields[sg.id]) {
-                      setConfigDrawer({ isOpen: true, gameId: sg.id, gameName: sg.name });
-                    }
-                  }}
-                />
-              ))}
+              {gameConfig.sideGames.map((sg: any) => {
+                const baseId = sg.baseId || sg.id;
+                return (
+                  <SideGameChip
+                    key={sg.id}
+                    name={sg.name}
+                    onRemove={() => handleSideGameToggle(baseId, sg.id !== baseId ? sg.id : undefined)}
+                    onClick={() => {
+                      if (gameConfigFields[baseId]) {
+                        setConfigDrawer({ 
+                          isOpen: true, 
+                          gameId: sg.id, 
+                          baseId: baseId,
+                          gameName: sg.name 
+                        });
+                      }
+                    }}
+                  />
+                );
+              })}
             </div>
           )}
         </div>
@@ -361,7 +418,12 @@ const GameSettingsStep: React.FC<GameSettingsStepProps> = ({ data, onDataChange 
               : gameConfig.sideGames?.find((sg: any) => sg.id === configDrawer.gameId)?.config || {}
           }
           onSave={(config) => handleConfigSave(configDrawer.gameId, config)}
-          fields={gameConfigFields[configDrawer.gameId] || []}
+          fields={gameConfigFields[configDrawer.baseId || configDrawer.gameId] || []}
+          players={data.players.map(p => ({ 
+            id: p.id, 
+            name: p.name, 
+            handicapIndex: p.handicapIndex 
+          }))}
         />
       )}
 
