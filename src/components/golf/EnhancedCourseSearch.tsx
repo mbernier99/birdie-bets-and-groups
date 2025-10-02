@@ -65,7 +65,7 @@ const EnhancedCourseSearch: React.FC<EnhancedCourseSearchProps> = ({ onCourseImp
     try {
       const { data, error } = await supabase
         .from('courses')
-        .select('*, holes(*)')
+        .select('*, hole_data:holes(*)')
         .order('name');
 
       if (error) throw error;
@@ -208,7 +208,9 @@ const EnhancedCourseSearch: React.FC<EnhancedCourseSearchProps> = ({ onCourseImp
                   <div className="flex items-center space-x-2 text-xs text-muted-foreground">
                     <MapPin className="h-3 w-3" />
                     <span>{course.location}</span>
-                    <Badge variant="secondary" className="text-xs">{course.holes} holes</Badge>
+                    <Badge variant="secondary" className="text-xs">
+                      {typeof course.holes === 'number' ? course.holes : course.hole_data?.length || 18} holes
+                    </Badge>
                   </div>
                 </div>
               </div>

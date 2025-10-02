@@ -57,9 +57,12 @@ const CourseSetupStep: React.FC<CourseSetupStepProps> = ({ data, onDataChange })
     // Transform imported course data to tournament format
     let holes;
     
+    // Get the holes array - check both hole_data (aliased) and holes (legacy)
+    const holesData = importedCourse.hole_data || importedCourse.holes;
+    
     // Check if holes is an array or needs to be converted
-    if (Array.isArray(importedCourse.holes) && importedCourse.holes.length > 0) {
-      holes = importedCourse.holes
+    if (Array.isArray(holesData) && holesData.length > 0) {
+      holes = holesData
         .sort((a: any, b: any) => (a.hole_number || a.number || 0) - (b.hole_number || b.number || 0))
         .map((hole: any, index: number) => ({
           number: hole.hole_number || hole.number || index + 1,
