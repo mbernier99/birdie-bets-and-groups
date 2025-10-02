@@ -71,7 +71,7 @@ export const validateStep = (stepIndex: number, data: TournamentData): { isValid
     case 0:
       return validateBasicInfo(data);
     case 1:
-      return validateCourseAndGame(data);
+      return validateCourseSetup(data);
     case 2:
       // Admin betting is optional
       return { isValid: true, errors: [] };
@@ -80,7 +80,7 @@ export const validateStep = (stepIndex: number, data: TournamentData): { isValid
       return { isValid: true, errors: [] };
     case 4:
       // Final review
-      return validateBasicInfo(data);
+      return validateCourseAndGame(data);
     default:
       return { isValid: true, errors: [] };
   }
