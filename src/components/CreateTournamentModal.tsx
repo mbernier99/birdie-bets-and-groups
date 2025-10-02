@@ -1,19 +1,11 @@
-
 import React, { useState, memo } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { useTournaments } from '@/hooks/useTournaments';
-import { validateStep } from '../utils/tournamentValidation';
-import FormatSelectionStep from './tournament-creation/FormatSelectionStep';
-import BasicInfoStep from './tournament-creation/BasicInfoStep';
-import CourseSetupStep from './tournament-creation/CourseSetupStep';
-import GameTypeStep from './tournament-creation/GameTypeStep';
-import TeamOrganizationStep from './tournament-creation/TeamOrganizationStep';
-import ReviewStep from './tournament-creation/ReviewStep';
+import InvitePlayersStep from './tournament-creation/InvitePlayersStep';
+import GameSettingsStep from './tournament-creation/GameSettingsStep';
+import BetsStep from './tournament-creation/BetsStep';
 
 interface CreateTournamentModalProps {
   isOpen: boolean;
@@ -24,7 +16,6 @@ export interface TournamentData {
   basicInfo: {
     name: string;
     maxPlayers: number;
-    groupId?: string;
   };
   course: {
     name: string;
@@ -41,7 +32,16 @@ export interface TournamentData {
   gameType: {
     type: string;
     format?: 'individual' | 'team';
-    rules: Record<string, any>;
+    rules: {
+      teamSize?: number;
+      scoresCounted?: number;
+      handicapPercentage?: number;
+      indexOnLow?: boolean;
+      automaticPress?: boolean;
+      pressDownBy?: number;
+      closeout?: boolean;
+      [key: string]: any;
+    };
   };
   players: Array<{
     id: string;
@@ -71,11 +71,6 @@ export interface TournamentData {
     payoutStructure: string;
     currency: string;
     skinValue?: number;
-    nassauBets?: {
-      front9: number;
-      back9: number;
-      overall: number;
-    };
   };
   sideBets: {
     enabled: boolean;
@@ -84,37 +79,19 @@ export interface TournamentData {
     liveEnabled: boolean;
     maxBetAmount: number;
     livePermissions: {
-      initiators: 'all-players' | 'admin-only' | 'verified-only';
-      settlement: 'auto' | 'admin-review' | 'gps-verified';
+      initiators: string;
+      settlement: string;
     };
-    sidePools: {
-      longestDrive?: {
-        enabled: boolean;
-        entryFee: number;
-        holes: string;
-      };
-      closestToPin?: {
-        enabled: boolean;
-        entryFee: number;
-        holes: string;
-      };
-      mostBirdies?: {
-        enabled: boolean;
-        entryFee: number;
-      };
-    };
+    sidePools: Record<string, any>;
   };
 }
 
 const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOpen, onClose }) => {
   const [currentStep, setCurrentStep] = useState(0);
-  const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const { toast } = useToast();
-  const isMobile = useIsMobile();
-  
-  // Standard par pattern for 18 holes (par 72)
+
   const standardPars = [4, 4, 3, 5, 4, 4, 3, 4, 5, 4, 3, 4, 5, 4, 4, 3, 5, 4];
-  
+
   const [tournamentData, setTournamentData] = useState<TournamentData>({
     basicInfo: {
       name: '',
@@ -160,58 +137,43 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
     }
   });
 
-  // Updated to 6 steps with format selection
   const steps = [
-    { title: 'Basic Info', component: BasicInfoStep },
-    { title: 'Course Setup', component: CourseSetupStep },
-    { title: 'Select Format', component: FormatSelectionStep },
-    { title: 'Select Game', component: GameTypeStep },
-    { title: 'Players & Teams', component: TeamOrganizationStep },
-    { title: 'Review', component: ReviewStep }
+    { title: 'Invite Players' },
+    { title: 'Game Settings' },
+    { title: 'Bets' },
   ];
 
   const handleNext = () => {
-    
-    // Validate current step
-    const validation = validateStep(currentStep, tournamentData);
-    
-    if (!validation.isValid) {
-      setValidationErrors(validation.errors);
+    if (!canProceed()) {
       toast({
         title: "Please complete required fields",
-        description: validation.errors.join(', '),
         variant: "destructive"
       });
       return;
     }
-    
-    // Clear validation errors and proceed
-    setValidationErrors([]);
+
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     }
   };
 
   const handlePrevious = () => {
-    setValidationErrors([]);
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
   };
 
-  const handleStepData = (stepKey: keyof TournamentData, data: any) => {
+  const handleDataChange = (key: keyof TournamentData, data: any) => {
     setTournamentData(prev => ({
       ...prev,
-      [stepKey]: data
+      [key]: data
     }));
   };
 
   const { createTournamentWithInvitations } = useTournaments();
 
-  const handleSaveTournament = async () => {
-    
+  const handleCreate = async () => {
     try {
-      // Extract players with valid emails for invitations
       const playersToInvite = tournamentData.players
         .filter(p => p.name.trim() && p.email.trim())
         .map(p => ({
@@ -232,196 +194,95 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
         settings: {
           course: tournamentData.course,
           teams: tournamentData.teams,
-          teeTimeGroups: tournamentData.teeTimeGroups,
-          pairings: tournamentData.pairings,
           wagering: tournamentData.wagering
         }
       }, playersToInvite);
-      
+
+      toast({
+        title: "Tournament created!",
+        description: "Players will receive their invitations"
+      });
+
       onClose();
+      setCurrentStep(0);
     } catch (error) {
       console.error('Error creating tournament:', error);
+      toast({
+        title: "Error creating tournament",
+        variant: "destructive"
+      });
     }
   };
 
   const mapGameTypeToDatabase = (gameType: string): 'stroke' | 'match' | 'team_match' | 'skins' | 'stableford' => {
-    switch (gameType.toLowerCase()) {
-      case 'stroke play':
-      case 'stroke':
-        return 'stroke';
-      case 'match play':
-      case 'match':
-        return 'match';
-      case 'team match play':
-      case 'team_match':
-        return 'team_match';
-      case 'skins':
-        return 'skins';
-      case 'stableford':
-        return 'stableford';
+    const lowerType = gameType.toLowerCase();
+    if (lowerType.includes('stroke')) return 'stroke';
+    if (lowerType.includes('match')) return 'match';
+    if (lowerType.includes('skins')) return 'skins';
+    if (lowerType.includes('stableford')) return 'stableford';
+    return 'stroke';
+  };
+
+  const canProceed = () => {
+    switch (currentStep) {
+      case 0:
+        return tournamentData.basicInfo.name.trim() && tournamentData.players.length > 0;
+      case 1:
+        return tournamentData.course.name.trim() && tournamentData.gameType.type;
+      case 2:
+        return true;
       default:
-        return 'stroke';
+        return false;
     }
   };
 
-  const CurrentStepComponent = steps[currentStep].component;
-
-  const StepProgress = () => {
-    if (isMobile) {
-      return (
-        <div className="flex-shrink-0 px-4 py-3 border-b bg-background">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handlePrevious}
-              disabled={currentStep === 0}
-              className="h-9 w-9 p-0"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
-            <span className="text-sm font-medium text-muted-foreground">
-              Step {currentStep + 1} of {steps.length}
-            </span>
-          </div>
-        </div>
-      );
+  const renderStep = () => {
+    switch (currentStep) {
+      case 0:
+        return <InvitePlayersStep data={tournamentData} onDataChange={handleDataChange} />;
+      case 1:
+        return <GameSettingsStep data={tournamentData} onDataChange={handleDataChange} />;
+      case 2:
+        return <BetsStep data={tournamentData} onDataChange={handleDataChange} />;
+      default:
+        return null;
     }
-
-    return (
-      <div className="flex-shrink-0 px-4 py-3 border-b bg-muted/30">
-        <div className="flex items-center justify-between overflow-x-auto">
-          {steps.map((step, index) => {
-            const validation = validateStep(index, tournamentData);
-            const isCompleted = index < currentStep || (index <= currentStep && validation.isValid);
-            
-            return (
-              <div key={index} className="flex items-center flex-shrink-0">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                  isCompleted ? 'bg-primary text-primary-foreground' : 
-                  index === currentStep ? 'bg-primary text-primary-foreground' :
-                  'bg-muted text-muted-foreground'
-                }`}>
-                  {index + 1}
-                </div>
-                <span className={`ml-2 text-sm truncate ${
-                  isCompleted ? 'text-primary' : 
-                  index === currentStep ? 'text-primary' :
-                  'text-muted-foreground'
-                }`}>
-                  {step.title}
-                </span>
-                {index < steps.length - 1 && (
-                  <div className={`w-8 h-0.5 mx-4 ${
-                    isCompleted ? 'bg-primary' : 'bg-muted'
-                  }`} />
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    );
   };
-
-  const NavigationButtons = () => {
-    const currentStepValidation = validateStep(currentStep, tournamentData);
-    const canProceed = currentStepValidation.isValid;
-    
-    return (
-      <div className="flex-shrink-0 p-4 border-t bg-white">
-        {/* Validation Errors */}
-        {validationErrors.length > 0 && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <div className="flex items-start space-x-2">
-              <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
-              <div className="text-sm text-red-700">
-                <div className="font-medium mb-1">Please complete the following:</div>
-                <ul className="list-disc list-inside space-y-1">
-                  {validationErrors.map((error, index) => (
-                    <li key={index}>{error}</li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        <div className="flex justify-between items-center">
-          <Button
-            variant="outline"
-            onClick={handlePrevious}
-            disabled={currentStep === 0}
-            className="flex items-center space-x-2"
-            size={isMobile ? "sm" : "default"}
-          >
-            <ChevronLeft className="h-4 w-4" />
-            <span>Previous</span>
-          </Button>
-
-
-          {currentStep < steps.length - 1 ? (
-            <Button
-              onClick={handleNext}
-              disabled={!canProceed}
-              className={`flex items-center space-x-2 ${
-                canProceed 
-                  ? 'bg-emerald-600 hover:bg-emerald-700' 
-                  : 'bg-gray-400 cursor-not-allowed'
-              }`}
-              size={isMobile ? "sm" : "default"}
-            >
-              <span>Next</span>
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          ) : (
-            <Button
-              onClick={handleSaveTournament}
-              className="bg-emerald-600 hover:bg-emerald-700"
-              size={isMobile ? "sm" : "default"}
-            >
-              Create Tournament
-            </Button>
-          )}
-        </div>
-      </div>
-    );
-  };
-
-  if (isMobile) {
-    return (
-      <Sheet open={isOpen} onOpenChange={onClose}>
-        <SheetContent side="bottom" className="h-[95vh] flex flex-col p-0">
-          <StepProgress />
-
-          <div className="flex-1 overflow-y-auto p-4 min-h-0">
-            <CurrentStepComponent
-              data={tournamentData}
-              onDataChange={handleStepData}
-              {...(currentStep === steps.length - 1 && { onSaveTournament: handleSaveTournament })}
-            />
-          </div>
-
-          <NavigationButtons />
-        </SheetContent>
-      </Sheet>
-    );
-  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-5xl h-[90vh] flex flex-col p-0 gap-0">
-        <StepProgress />
-
-        <div className="flex-1 overflow-y-auto px-6 py-6 min-h-0">
-          <CurrentStepComponent
-            data={tournamentData}
-            onDataChange={handleStepData}
-            {...(currentStep === steps.length - 1 && { onSaveTournament: handleSaveTournament })}
-          />
+      <DialogContent className="max-w-2xl h-[90vh] flex flex-col p-0">
+        <div className="flex-shrink-0 px-6 pt-6 pb-4 border-b">
+          <h2 className="text-2xl font-bold text-center">
+            {steps[currentStep]?.title || 'Create Tournament'}
+          </h2>
         </div>
 
-        <NavigationButtons />
+        <div className="flex-1 overflow-y-auto px-6">
+          {renderStep()}
+        </div>
+
+        <div className="flex-shrink-0 p-6 border-t space-y-3">
+          <Button 
+            onClick={currentStep < steps.length - 1 ? handleNext : handleCreate}
+            disabled={!canProceed()}
+            size="lg"
+            className="w-full h-14 text-lg font-semibold"
+          >
+            {currentStep < steps.length - 1 ? 'Next' : 'Create Tournament'}
+          </Button>
+
+          {currentStep > 0 && (
+            <Button 
+              variant="ghost" 
+              onClick={handlePrevious}
+              size="lg"
+              className="w-full h-12"
+            >
+              Back
+            </Button>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
