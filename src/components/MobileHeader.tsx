@@ -34,7 +34,7 @@ const MobileHeader = ({ title }: MobileHeaderProps) => {
           {user ? (
             <button
               onClick={() => signOut()}
-              className="flex items-center justify-center h-9 w-9 rounded-full bg-primary text-primary-foreground"
+              className="flex items-center justify-center h-8 w-8 rounded-full bg-emerald-700 text-white hover:bg-emerald-800 transition-colors"
               aria-label="Profile"
             >
               <User className="h-4 w-4" />
@@ -42,7 +42,7 @@ const MobileHeader = ({ title }: MobileHeaderProps) => {
           ) : (
             <Link 
               to="/auth"
-              className="flex items-center justify-center h-9 w-9 rounded-full bg-primary text-primary-foreground"
+              className="flex items-center justify-center h-8 w-8 rounded-full bg-emerald-700 text-white hover:bg-emerald-800 transition-colors"
               aria-label="Sign In"
             >
               <User className="h-4 w-4" />

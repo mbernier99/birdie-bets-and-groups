@@ -75,18 +75,18 @@ const Navbar = memo(() => {
               {user ? (
                 <button 
                   onClick={() => setProfileOpen(true)}
-                  className="flex items-center justify-center h-10 w-10 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                  className="flex items-center justify-center h-9 w-9 rounded-full bg-emerald-700 text-white hover:bg-emerald-800 transition-colors"
                   aria-label="Profile"
                 >
-                  <User className="h-5 w-5" />
+                  <User className="h-4 w-4" />
                 </button>
               ) : (
                 <Link 
                   to="/auth"
-                  className="flex items-center justify-center h-10 w-10 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                  className="flex items-center justify-center h-9 w-9 rounded-full bg-emerald-700 text-white hover:bg-emerald-800 transition-colors"
                   aria-label="Sign In"
                 >
-                  <User className="h-5 w-5" />
+                  <User className="h-4 w-4" />
                 </Link>
               )}
             </div>
