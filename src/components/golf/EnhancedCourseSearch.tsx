@@ -50,10 +50,30 @@ const EnhancedCourseSearch: React.FC<EnhancedCourseSearchProps> = ({ onCourseImp
   const [searchCity, setSearchCity] = useState('');
   const [searchState, setSearchState] = useState('');
   const [searchResults, setSearchResults] = useState<CourseSearchResult[]>([]);
+  const [localCourses, setLocalCourses] = useState<any[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<CourseDetails | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+
+  // Load local courses on mount
+  React.useEffect(() => {
+    loadLocalCourses();
+  }, []);
+
+  const loadLocalCourses = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('courses')
+        .select('*')
+        .order('name');
+
+      if (error) throw error;
+      setLocalCourses(data || []);
+    } catch (error) {
+      console.error('Error loading local courses:', error);
+    }
+  };
 
   const handleSearch = async () => {
     if (!searchTerm.trim()) {
@@ -63,27 +83,31 @@ const EnhancedCourseSearch: React.FC<EnhancedCourseSearchProps> = ({ onCourseImp
 
     setIsSearching(true);
     try {
-      const { data, error } = await supabase.functions.invoke('golf-course-search', {
-        body: {
-          action: 'search',
-          searchParams: {
-            name: searchTerm,
-            city: searchCity || undefined,
-            state: searchState || undefined,
-            limit: 10,
-          },
-        },
-      });
+      // First search local database
+      const { data: localResults, error: localError } = await supabase
+        .from('courses')
+        .select('*')
+        .ilike('name', `%${searchTerm}%`)
+        .order('name');
 
-      if (error) throw error;
+      if (localError) throw localError;
 
-      if (data.success) {
-        setSearchResults(data.data.courses || []);
-        if (data.data.courses?.length === 0) {
-          toast.info('No courses found matching your search criteria');
-        }
+      // Convert local courses to search result format
+      const formattedResults: CourseSearchResult[] = (localResults || []).map(course => ({
+        id: course.id,
+        name: course.name,
+        city: course.location?.split(',')[0]?.trim() || '',
+        state: course.location?.split(',')[1]?.trim() || '',
+        holes: course.holes || 18,
+        isLocal: true
+      }));
+
+      setSearchResults(formattedResults);
+
+      if (formattedResults.length === 0) {
+        toast.info('No courses found in database. Try the external API search.');
       } else {
-        throw new Error(data.error);
+        toast.success(`Found ${formattedResults.length} course${formattedResults.length !== 1 ? 's' : ''} in your database`);
       }
     } catch (error) {
       console.error('Search error:', error);
@@ -93,7 +117,19 @@ const EnhancedCourseSearch: React.FC<EnhancedCourseSearchProps> = ({ onCourseImp
     }
   };
 
-  const handleCourseSelect = async (course: CourseSearchResult) => {
+  const handleCourseSelect = async (course: CourseSearchResult & { isLocal?: boolean }) => {
+    // If it's a local course, use it directly
+    if (course.isLocal) {
+      const localCourse = localCourses.find(c => c.id === course.id);
+      if (localCourse) {
+        onCourseImported?.(localCourse);
+        toast.success(`${localCourse.name} loaded successfully`);
+        setSearchResults([]);
+        setSearchTerm('');
+        return;
+      }
+    }
+
     setIsLoadingDetails(true);
     try {
       const { data, error } = await supabase.functions.invoke('golf-course-search', {
@@ -152,60 +188,64 @@ const EnhancedCourseSearch: React.FC<EnhancedCourseSearchProps> = ({ onCourseImp
   };
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Search className="h-5 w-5" />
-            <span>Search Golf Courses</span>
-          </CardTitle>
-          <CardDescription>
-            Search thousands of golf courses and import their scorecards
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="course-name">Course Name *</Label>
-              <Input
-                id="course-name"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Pine Valley Golf Club"
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="city">City (Optional)</Label>
-              <Input
-                id="city"
-                value={searchCity}
-                onChange={(e) => setSearchCity(e.target.value)}
-                placeholder="Augusta"
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="state">State (Optional)</Label>
-              <Input
-                id="state"
-                value={searchState}
-                onChange={(e) => setSearchState(e.target.value)}
-                placeholder="GA"
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              />
-            </div>
+    <div className="space-y-4">
+      {/* Show available local courses */}
+      {localCourses.length > 0 && !searchTerm && (
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">Available Courses</Label>
+          <div className="grid gap-2">
+            {localCourses.map((course) => (
+              <div
+                key={course.id}
+                className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
+                onClick={() => {
+                  onCourseImported?.(course);
+                  toast.success(`${course.name} loaded successfully`);
+                }}
+              >
+                <div className="flex-1">
+                  <h3 className="font-medium text-sm">{course.name}</h3>
+                  <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+                    <MapPin className="h-3 w-3" />
+                    <span>{course.location}</span>
+                    <Badge variant="secondary" className="text-xs">{course.holes} holes</Badge>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-          <Button onClick={handleSearch} disabled={isSearching} className="w-full">
+        </div>
+      )}
+
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center space-x-2">
+            <Search className="h-4 w-4" />
+            <span>Search Courses</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div>
+            <Label htmlFor="course-name" className="text-xs">Course Name</Label>
+            <Input
+              id="course-name"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search for a course..."
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              className="h-9"
+            />
+          </div>
+          <Button onClick={handleSearch} disabled={isSearching} className="w-full h-9" size="sm">
             {isSearching ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 h-3 w-3 animate-spin" />
                 Searching...
               </>
             ) : (
               <>
-                <Search className="mr-2 h-4 w-4" />
-                Search Courses
+                <Search className="mr-2 h-3 w-3" />
+                Search
               </>
             )}
           </Button>
@@ -213,48 +253,27 @@ const EnhancedCourseSearch: React.FC<EnhancedCourseSearchProps> = ({ onCourseImp
       </Card>
 
       {searchResults.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Search Results</CardTitle>
-            <CardDescription>
-              Found {searchResults.length} course{searchResults.length !== 1 ? 's' : ''}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4">
-              {searchResults.map((course) => (
-                <div
-                  key={course.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 cursor-pointer"
-                  onClick={() => handleCourseSelect(course)}
-                >
-                  <div className="flex-1">
-                    <h3 className="font-semibold">{course.name}</h3>
-                    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                      <MapPin className="h-3 w-3" />
-                      <span>{course.city}, {course.state}</span>
-                      <Badge variant="secondary">{course.holes} holes</Badge>
-                      {course.rating && (
-                        <div className="flex items-center space-x-1">
-                          <Star className="h-3 w-3" />
-                          <span>{course.rating}</span>
-                        </div>
-                      )}
-                    </div>
-                    {course.description && (
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {course.description}
-                      </p>
-                    )}
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">Search Results ({searchResults.length})</Label>
+          <div className="grid gap-2">
+            {searchResults.map((course) => (
+              <div
+                key={course.id}
+                className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
+                onClick={() => handleCourseSelect(course)}
+              >
+                <div className="flex-1">
+                  <h3 className="font-medium text-sm">{course.name}</h3>
+                  <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+                    <MapPin className="h-3 w-3" />
+                    <span>{course.city}, {course.state}</span>
+                    <Badge variant="secondary" className="text-xs">{course.holes} holes</Badge>
                   </div>
-                  <Button variant="outline" size="sm">
-                    View Details
-                  </Button>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
 
       {/* Course Details Dialog */}
