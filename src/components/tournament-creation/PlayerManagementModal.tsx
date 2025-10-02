@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { BulkPlayerImport } from './BulkPlayerImport';
 import { LoadFromRosterTab } from './LoadFromRosterTab';
+import { SaveGroupDialog } from './SaveGroupDialog';
 import {
   Plus, 
   Users, 
@@ -22,6 +23,8 @@ import {
 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useToast } from '@/hooks/use-toast';
+import { usePlayerGroups } from '@/hooks/usePlayerGroups';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Player {
   id: string;
@@ -246,7 +249,10 @@ const PlayerManagementModal: React.FC<PlayerManagementModalProps> = ({
 }) => {
   const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { saveGroup } = usePlayerGroups(user?.id);
 
   const handleAddPlayer = (player: Player) => {
     if (players.length >= maxPlayers) {
@@ -287,6 +293,31 @@ const PlayerManagementModal: React.FC<PlayerManagementModalProps> = ({
       title: "All Players Removed",
       description: "Player list has been cleared",
     });
+  };
+
+  const handleDone = () => {
+    if (players.length > 0 && user) {
+      setShowSaveDialog(true);
+    } else {
+      setIsOpen(false);
+    }
+  };
+
+  const handleSaveGroup = async (name: string, description?: string) => {
+    const playerIds = players
+      .map(p => p.id)
+      .filter(id => id.startsWith('player-') === false); // Only save real profile IDs
+    
+    const playerHandicaps = players.reduce((acc, p) => {
+      if (!p.id.startsWith('player-')) {
+        acc[p.id] = p.handicapIndex;
+      }
+      return acc;
+    }, {} as Record<string, number>);
+
+    if (playerIds.length > 0) {
+      await saveGroup(name, playerIds, playerHandicaps, description);
+    }
   };
 
   const playersWithNames = players.filter(p => p.name.trim());
@@ -450,13 +481,20 @@ const PlayerManagementModal: React.FC<PlayerManagementModalProps> = ({
 
       <div className="flex gap-2 pt-3 md:pt-4 border-t sticky bottom-0 bg-background pb-2">
         <Button 
-          onClick={() => setIsOpen(false)} 
+          onClick={handleDone} 
           variant="outline" 
           className="flex-1"
         >
           Done
         </Button>
       </div>
+
+      <SaveGroupDialog
+        open={showSaveDialog}
+        onOpenChange={setShowSaveDialog}
+        onSave={handleSaveGroup}
+        playerCount={players.length}
+      />
     </div>
   );
 

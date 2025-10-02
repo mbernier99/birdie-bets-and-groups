@@ -138,6 +138,45 @@ export type Database = {
         }
         Relationships: []
       }
+      group_members: {
+        Row: {
+          added_at: string
+          group_id: string
+          handicap: number | null
+          id: string
+          profile_id: string
+        }
+        Insert: {
+          added_at?: string
+          group_id: string
+          handicap?: number | null
+          id?: string
+          profile_id: string
+        }
+        Update: {
+          added_at?: string
+          group_id?: string
+          handicap?: number | null
+          id?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "player_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_members_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hole_scores: {
         Row: {
           created_at: string
@@ -283,6 +322,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      player_groups: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       press_bets: {
         Row: {

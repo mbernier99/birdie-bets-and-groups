@@ -5,8 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Loader2, Search, UserPlus } from 'lucide-react';
+import { Loader2, Search, UserPlus, Users, Trash2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { usePlayerGroups } from '@/hooks/usePlayerGroups';
+import { Separator } from '@/components/ui/separator';
 
 interface Profile {
   id: string;
@@ -40,6 +43,8 @@ export const LoadFromRosterTab: React.FC<LoadFromRosterTabProps> = ({
   const [filteredProfiles, setFilteredProfiles] = useState<Profile[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const { user } = useAuth();
+  const { groups, loading: groupsLoading, deleteGroup } = usePlayerGroups(user?.id);
 
   useEffect(() => {
     fetchProfiles();
@@ -98,7 +103,7 @@ export const LoadFromRosterTab: React.FC<LoadFromRosterTabProps> = ({
     const selectedProfiles = profiles.filter((p) => selectedIds.has(p.id));
     
     const players: Player[] = selectedProfiles.map((profile) => ({
-      id: crypto.randomUUID(),
+      id: profile.id, // Use the profile ID directly
       name: profile.nickname || `${profile.first_name} ${profile.last_name}`,
       email: '', // Email will be looked up server-side using userId
       handicapIndex: profile.handicap || 0,
@@ -112,6 +117,28 @@ export const LoadFromRosterTab: React.FC<LoadFromRosterTabProps> = ({
     toast({
       title: 'Players added',
       description: `Added ${players.length} player(s) to the tournament`,
+    });
+  };
+
+  const handleLoadGroup = (groupId: string) => {
+    const group = groups.find(g => g.id === groupId);
+    if (!group) return;
+
+    const players: Player[] = group.group_members.map((member) => ({
+      id: member.profile_id,
+      name: member.profile?.nickname || 
+            `${member.profile?.first_name || ''} ${member.profile?.last_name || ''}`.trim(),
+      email: member.profile?.email || '',
+      handicapIndex: member.handicap || 0,
+      status: 'invited',
+      userId: member.profile_id,
+    }));
+
+    onAddPlayers(players);
+    
+    toast({
+      title: 'Group loaded',
+      description: `Loaded ${players.length} player(s) from "${group.name}"`,
     });
   };
 
@@ -134,14 +161,70 @@ export const LoadFromRosterTab: React.FC<LoadFromRosterTabProps> = ({
 
   return (
     <div className="space-y-4">
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Search players by name or nickname..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-9"
-        />
+      {/* Saved Groups Section */}
+      {groups.length > 0 && (
+        <>
+          <div className="space-y-3">
+            <h4 className="text-sm font-medium text-muted-foreground">Saved Groups</h4>
+            <div className="grid gap-2">
+              {groups.map((group) => (
+                <Card 
+                  key={group.id}
+                  className="hover:shadow-md transition-all"
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3 flex-1">
+                        <div className="p-2 bg-golf-green/10 rounded-full">
+                          <Users className="h-5 w-5 text-golf-green" />
+                        </div>
+                        <div className="flex-1">
+                          <h5 className="font-semibold text-sm">{group.name}</h5>
+                          <p className="text-xs text-muted-foreground">
+                            {group.group_members.length} player(s)
+                            {group.description && ` • ${group.description}`}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => handleLoadGroup(group.id)}
+                        >
+                          Load Group
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => deleteGroup(group.id)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+          
+          <Separator className="my-4" />
+        </>
+      )}
+
+      {/* Individual Players Section */}
+      <div className="space-y-3">
+        <h4 className="text-sm font-medium text-muted-foreground">Individual Players</h4>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search players by name or nickname..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
+          />
+        </div>
       </div>
 
       {filteredProfiles.length === 0 ? (
