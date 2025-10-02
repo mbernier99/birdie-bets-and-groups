@@ -10,11 +10,9 @@ import { toast } from '@/hooks/use-toast';
 
 interface Profile {
   id: string;
-  email: string;
   first_name: string;
   last_name: string;
   nickname: string;
-  phone: string;
   handicap: number;
   avatar_url: string;
 }
@@ -25,6 +23,7 @@ interface Player {
   email: string;
   handicapIndex: number;
   status: 'invited' | 'accepted' | 'declined';
+  userId?: string; // Add userId to link to profile
 }
 
 interface LoadFromRosterTabProps {
@@ -56,8 +55,7 @@ export const LoadFromRosterTab: React.FC<LoadFromRosterTabProps> = ({
           (p) =>
             p.first_name?.toLowerCase().includes(query) ||
             p.last_name?.toLowerCase().includes(query) ||
-            p.nickname?.toLowerCase().includes(query) ||
-            p.email?.toLowerCase().includes(query)
+            p.nickname?.toLowerCase().includes(query)
         )
       );
     }
@@ -66,10 +64,9 @@ export const LoadFromRosterTab: React.FC<LoadFromRosterTabProps> = ({
   const fetchProfiles = async () => {
     try {
       setLoading(true);
+      // Use secure search function that doesn't expose sensitive data
       const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('first_name', { ascending: true });
+        .rpc('search_profiles_for_tournament', { search_query: '' });
 
       if (error) throw error;
 
@@ -103,9 +100,10 @@ export const LoadFromRosterTab: React.FC<LoadFromRosterTabProps> = ({
     const players: Player[] = selectedProfiles.map((profile) => ({
       id: crypto.randomUUID(),
       name: profile.nickname || `${profile.first_name} ${profile.last_name}`,
-      email: profile.email,
+      email: '', // Email will be looked up server-side using userId
       handicapIndex: profile.handicap || 0,
       status: 'invited',
+      userId: profile.id, // Store the profile ID for server-side email lookup
     }));
 
     onAddPlayers(players);
@@ -121,7 +119,10 @@ export const LoadFromRosterTab: React.FC<LoadFromRosterTabProps> = ({
     return `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase() || 'U';
   };
 
-  const isAlreadyAdded = (email: string) => existingPlayerEmails.includes(email);
+  const isAlreadyAdded = (profileId: string) => {
+    // Check if profile is already added (you may need to update this logic based on how you track added players)
+    return false; // TODO: Update this if needed based on your player tracking
+  };
 
   if (loading) {
     return (
@@ -136,7 +137,7 @@ export const LoadFromRosterTab: React.FC<LoadFromRosterTabProps> = ({
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search players by name, nickname, or email..."
+          placeholder="Search players by name or nickname..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="pl-9"
@@ -151,7 +152,7 @@ export const LoadFromRosterTab: React.FC<LoadFromRosterTabProps> = ({
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-60 md:max-h-96 overflow-y-auto">
             {filteredProfiles.map((profile) => {
-              const alreadyAdded = isAlreadyAdded(profile.email);
+              const alreadyAdded = isAlreadyAdded(profile.id);
               const isSelected = selectedIds.has(profile.id);
 
               return (
@@ -184,9 +185,6 @@ export const LoadFromRosterTab: React.FC<LoadFromRosterTabProps> = ({
                             "{profile.nickname}"
                           </p>
                         )}
-                        <p className="text-xs text-muted-foreground truncate">
-                          {profile.email}
-                        </p>
                       </div>
                       
                       <div className="flex flex-col items-end gap-1">

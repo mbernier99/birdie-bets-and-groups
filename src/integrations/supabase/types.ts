@@ -767,6 +767,17 @@ export type Database = {
         Args: { profile_row: Database["public"]["Tables"]["profiles"]["Row"] }
         Returns: string
       }
+      search_profiles_for_tournament: {
+        Args: { search_query?: string }
+        Returns: {
+          avatar_url: string
+          first_name: string
+          handicap: number
+          id: string
+          last_name: string
+          nickname: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

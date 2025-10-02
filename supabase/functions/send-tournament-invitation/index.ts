@@ -1,7 +1,20 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+
+// Create a Supabase client with the service role key for secure database access
+const supabaseAdmin = createClient(
+  Deno.env.get('SUPABASE_URL') ?? '',
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
+);
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -17,7 +30,8 @@ interface LegacyTournamentInvitationRequest {
   hostEmail: string;
   invitees: Array<{
     name: string;
-    email: string;
+    email?: string;
+    userId?: string; // Allow userId instead of email for secure lookups
     handicapIndex: number;
   }>;
   tournamentDetails?: {
@@ -114,7 +128,27 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send individual emails to each player
     for (const invitee of invitees) {
-      if (!invitee.email || !invitee.name) {
+      // If userId is provided, look up the email securely from the database
+      let email = invitee.email;
+      
+      if (!email && invitee.userId) {
+        try {
+          const { data: profile, error } = await supabaseAdmin
+            .from('profiles')
+            .select('email')
+            .eq('id', invitee.userId)
+            .single();
+          
+          if (!error && profile) {
+            email = profile.email;
+          }
+        } catch (lookupError) {
+          console.error(`Failed to lookup email for userId ${invitee.userId}:`, lookupError);
+        }
+      }
+      
+      if (!email || !invitee.name) {
+        console.warn(`Skipping invitee ${invitee.name} - no email available`);
         continue; // Skip invitees without email or name
       }
 
@@ -126,7 +160,7 @@ const handler = async (req: Request): Promise<Response> => {
 
         const emailResponse = await resend.emails.send({
           from: "Golf Tournament <onboarding@resend.dev>",
-          to: [invitee.email],
+          to: [email],
           subject,
           html: isParticipantAdded 
             ? generateParticipantAddedEmail({
@@ -149,18 +183,18 @@ const handler = async (req: Request): Promise<Response> => {
         });
 
         results.push({
-          email: invitee.email,
+          email: email,
           name: invitee.name,
           success: true,
           messageId: emailResponse.data?.id,
           type: notificationType
         });
 
-        console.log(`${isParticipantAdded ? 'Notification' : 'Invitation'} sent to ${invitee.email}:`, emailResponse);
+        console.log(`${isParticipantAdded ? 'Notification' : 'Invitation'} sent to ${email}:`, emailResponse);
       } catch (error) {
-        console.error(`Error sending email to ${invitee.email}:`, error);
+        console.error(`Error sending email to ${email}:`, error);
         results.push({
-          email: invitee.email,
+          email: email,
           name: invitee.name,
           success: false,
           error: error.message,

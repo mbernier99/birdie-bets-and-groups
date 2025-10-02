@@ -8,7 +8,8 @@ interface InvitationRequest {
   tournamentId: string;
   players: Array<{
     name: string;
-    email: string;
+    email?: string;
+    userId?: string; // Support userId for roster players
     handicapIndex: number;
   }>;
   tournamentDetails?: {
@@ -41,13 +42,15 @@ export const useTournamentInvitations = () => {
       throw new Error('Must be authenticated to send invitations');
     }
 
-    // Filter players with valid emails
-    const playersWithEmails = players.filter(p => p.email && p.email.trim() && p.name && p.name.trim());
+    // Filter players with valid emails or userIds
+    const playersWithContact = players.filter(p => 
+      (p.email && p.email.trim()) || p.userId
+    ).filter(p => p.name && p.name.trim());
     
-    if (playersWithEmails.length === 0) {
+    if (playersWithContact.length === 0) {
       toast({
         title: "No invitations to send",
-        description: "No players with valid email addresses found.",
+        description: "No players with valid contact information found.",
         variant: "destructive"
       });
       return [];
@@ -76,7 +79,7 @@ export const useTournamentInvitations = () => {
           tournamentId,
           hostName,
           hostEmail,
-          invitees: playersWithEmails,
+          invitees: playersWithContact,
           tournamentDetails
         }
       });
