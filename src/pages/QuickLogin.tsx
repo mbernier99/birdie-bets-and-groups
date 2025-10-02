@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
-import { Loader2, Trophy } from 'lucide-react';
+import { Loader2, Trophy, MapPin, Calendar } from 'lucide-react';
 
 interface Player {
   email: string;
@@ -32,8 +32,44 @@ const QuickLogin: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState<string | null>(null);
   const [creatingUsers, setCreatingUsers] = useState(false);
+  const [tournaments, setTournaments] = useState<any[]>([]);
+  const [selectedTournament, setSelectedTournament] = useState<string | null>(null);
+  const [loadingTournaments, setLoadingTournaments] = useState(true);
+
+  useEffect(() => {
+    fetchActiveTournaments();
+  }, []);
+
+  const fetchActiveTournaments = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('tournaments')
+        .select('*, courses(name, location)')
+        .in('status', ['active', 'live'])
+        .order('start_time', { ascending: true });
+
+      if (error) throw error;
+      setTournaments(data || []);
+      if (data && data.length > 0) {
+        setSelectedTournament(data[0].id);
+      }
+    } catch (error) {
+      console.error('Error fetching tournaments:', error);
+    } finally {
+      setLoadingTournaments(false);
+    }
+  };
 
   const handleQuickLogin = async (player: Player) => {
+    if (!selectedTournament) {
+      toast({
+        title: 'No tournament selected',
+        description: 'Please select a tournament first.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setLoading(player.email);
     
     try {
@@ -46,10 +82,10 @@ const QuickLogin: React.FC = () => {
 
       toast({
         title: `Welcome back, ${player.nickname}!`,
-        description: 'Successfully logged in',
+        description: 'Taking you to the tournament...',
       });
 
-      navigate('/');
+      navigate(`/tournaments/${selectedTournament}/live`);
     } catch (error: any) {
       console.error('Login error:', error);
       toast({
@@ -105,24 +141,83 @@ const QuickLogin: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-golf-green via-background to-golf-fairway/20 flex items-center justify-center p-4">
-      <div className="w-full max-w-5xl">
-        <Card className="border-2 border-golf-green/20 shadow-2xl">
-          <CardHeader className="text-center space-y-4 pb-8">
-            <div className="flex justify-center">
-              <div className="p-4 bg-golf-green/10 rounded-full">
-                <Trophy className="w-12 h-12 text-golf-green" />
-              </div>
-            </div>
-            <CardTitle className="text-4xl font-bold">Bandon Dunes Tournament</CardTitle>
-            <CardDescription className="text-lg">
-              Quick Login - Select Your Profile
-            </CardDescription>
-            <Badge variant="secondary" className="w-fit mx-auto">
-              Testing Mode - One-Click Access
-            </Badge>
-          </CardHeader>
+      <div className="w-full max-w-5xl space-y-6">
+        {loadingTournaments ? (
+          <Card className="border-2 border-golf-green/20">
+            <CardContent className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-golf-green" />
+            </CardContent>
+          </Card>
+        ) : tournaments.length === 0 ? (
+          <Card className="border-2 border-golf-green/20">
+            <CardHeader className="text-center">
+              <CardTitle>No Active Tournaments</CardTitle>
+              <CardDescription>There are no live tournaments at the moment.</CardDescription>
+            </CardHeader>
+          </Card>
+        ) : (
+          <>
+            <Card className="border-2 border-golf-green/20">
+              <CardHeader>
+                <CardTitle className="text-2xl">Active Tournaments</CardTitle>
+                <CardDescription>Select a tournament to join</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {tournaments.map((tournament) => (
+                  <div
+                    key={tournament.id}
+                    onClick={() => setSelectedTournament(tournament.id)}
+                    className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                      selectedTournament === tournament.id
+                        ? 'border-golf-green bg-golf-green/10'
+                        : 'border-border hover:border-golf-green/50'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1">
+                        <h3 className="font-semibold text-lg">{tournament.name}</h3>
+                        {tournament.courses && (
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <MapPin className="w-4 h-4" />
+                            <span>{tournament.courses.name}</span>
+                            {tournament.courses.location && (
+                              <span>• {tournament.courses.location}</span>
+                            )}
+                          </div>
+                        )}
+                        {tournament.start_time && (
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Calendar className="w-4 h-4" />
+                            <span>{new Date(tournament.start_time).toLocaleDateString()}</span>
+                          </div>
+                        )}
+                      </div>
+                      <Badge variant={tournament.status === 'live' ? 'default' : 'secondary'}>
+                        {tournament.status}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
 
-          <CardContent className="px-6 pb-8">
+            <Card className="border-2 border-golf-green/20 shadow-2xl">
+              <CardHeader className="text-center space-y-4">
+                <div className="flex justify-center">
+                  <div className="p-4 bg-golf-green/10 rounded-full">
+                    <Trophy className="w-12 h-12 text-golf-green" />
+                  </div>
+                </div>
+                <CardTitle className="text-3xl font-bold">Select Your Profile</CardTitle>
+                <CardDescription className="text-base">
+                  Choose your profile to join the tournament
+                </CardDescription>
+                <Badge variant="secondary" className="w-fit mx-auto">
+                  Testing Mode - One-Click Access
+                </Badge>
+              </CardHeader>
+
+              <CardContent className="px-6 pb-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {BANDON_PLAYERS.map((player) => (
                 <Button
@@ -184,8 +279,10 @@ const QuickLogin: React.FC = () => {
                 Back to Standard Login
               </Button>
             </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </>
+        )}
       </div>
     </div>
   );
