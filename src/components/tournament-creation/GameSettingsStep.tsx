@@ -59,12 +59,74 @@ const GameSettingsStep: React.FC<GameSettingsStepProps> = ({ data, onDataChange 
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto space-y-6 pb-4">
-        {/* Game type badge */}
-        <div>
-          <Badge variant="secondary" className="text-base px-4 py-2">
-            {isTeamGame ? 'Teams' : 'Individual'} • {data.gameType.type?.replace(/([A-Z])/g, ' $1').trim() || 'Select Game'}
-          </Badge>
+        {/* Game Type Selection */}
+        <div className="space-y-3">
+          <Label>Game Type</Label>
+          <div className="grid grid-cols-2 gap-3">
+            <Button
+              variant={data.gameType.type === 'Stroke Play' ? 'default' : 'outline'}
+              onClick={() => onDataChange('gameType', {
+                ...data.gameType,
+                type: 'Stroke Play',
+                format: 'individual'
+              })}
+              className="h-20 flex-col"
+            >
+              <Trophy className="h-6 w-6 mb-2" />
+              <span>Stroke Play</span>
+            </Button>
+            
+            <Button
+              variant={data.gameType.type === 'Match Play' ? 'default' : 'outline'}
+              onClick={() => onDataChange('gameType', {
+                ...data.gameType,
+                type: 'Match Play',
+                format: 'individual'
+              })}
+              className="h-20 flex-col"
+            >
+              <Users className="h-6 w-6 mb-2" />
+              <span>Match Play</span>
+            </Button>
+            
+            <Button
+              variant={data.gameType.type === 'Scramble' ? 'default' : 'outline'}
+              onClick={() => onDataChange('gameType', {
+                ...data.gameType,
+                type: 'Scramble',
+                format: 'team',
+                rules: { ...data.gameType.rules, teamSize: 2 }
+              })}
+              className="h-20 flex-col"
+            >
+              <Users className="h-6 w-6 mb-2" />
+              <span>Scramble</span>
+            </Button>
+            
+            <Button
+              variant={data.gameType.type === 'Best Ball' ? 'default' : 'outline'}
+              onClick={() => onDataChange('gameType', {
+                ...data.gameType,
+                type: 'Best Ball',
+                format: 'team',
+                rules: { ...data.gameType.rules, teamSize: 2 }
+              })}
+              className="h-20 flex-col"
+            >
+              <Trophy className="h-6 w-6 mb-2" />
+              <span>Best Ball</span>
+            </Button>
+          </div>
         </div>
+
+        {/* Show selected game type badge */}
+        {data.gameType.type && (
+          <div>
+            <Badge variant="secondary" className="text-base px-4 py-2">
+              {isTeamGame ? 'Teams' : 'Individual'} • {data.gameType.type}
+            </Badge>
+          </div>
+        )}
 
         {/* Course selection */}
         <div className="space-y-3">
