@@ -81,6 +81,11 @@ export interface TournamentData {
     payoutStructure: string;
     currency: string;
     skinValue?: number;
+    firstPlacePercentage?: number;
+    secondPlaceEnabled?: boolean;
+    secondPlacePercentage?: number;
+    thirdPlaceEnabled?: boolean;
+    thirdPlacePercentage?: number;
   };
   sideBets: {
     enabled: boolean;
