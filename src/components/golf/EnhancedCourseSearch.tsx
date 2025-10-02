@@ -65,7 +65,7 @@ const EnhancedCourseSearch: React.FC<EnhancedCourseSearchProps> = ({ onCourseImp
     try {
       const { data, error } = await supabase
         .from('courses')
-        .select('*')
+        .select('*, holes(*)')
         .order('name');
 
       if (error) throw error;

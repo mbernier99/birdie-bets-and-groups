@@ -55,17 +55,27 @@ const CourseSetupStep: React.FC<CourseSetupStepProps> = ({ data, onDataChange })
 
   const handleCourseImport = (importedCourse: any) => {
     // Transform imported course data to tournament format
-    const holes = importedCourse.holes?.map((hole: any, index: number) => ({
-      number: index + 1,
-      par: hole.par || 4,
-      yardage: hole.yardage || 350,
-      handicapIndex: hole.handicap || index + 1
-    })) || Array.from({ length: 18 }, (_, i) => ({
-      number: i + 1,
-      par: 4,
-      yardage: 350,
-      handicapIndex: i + 1
-    }));
+    let holes;
+    
+    // Check if holes is an array or needs to be converted
+    if (Array.isArray(importedCourse.holes) && importedCourse.holes.length > 0) {
+      holes = importedCourse.holes
+        .sort((a: any, b: any) => (a.hole_number || a.number || 0) - (b.hole_number || b.number || 0))
+        .map((hole: any, index: number) => ({
+          number: hole.hole_number || hole.number || index + 1,
+          par: hole.par || 4,
+          yardage: hole.yardage || 350,
+          handicapIndex: hole.handicap || hole.handicap_index || index + 1
+        }));
+    } else {
+      // Fallback to default 18 holes if no holes data
+      holes = Array.from({ length: 18 }, (_, i) => ({
+        number: i + 1,
+        par: 4,
+        yardage: 350,
+        handicapIndex: i + 1
+      }));
+    }
 
     onDataChange('course', {
       name: importedCourse.name,
