@@ -284,56 +284,30 @@ const BetsStep: React.FC<BetsStepProps> = ({ data, onDataChange }) => {
 
         {/* Presses */}
         <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <h3 className="text-xl font-semibold">Presses</h3>
-            <button className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-              <Info className="h-4 w-4 text-primary" />
-            </button>
-          </div>
+          <h3 className="text-xl font-semibold">Presses</h3>
           
-          <div className="rounded-xl border-2 p-4 space-y-4">
+          <div className="rounded-xl border-2 p-4">
             <div className="flex items-center justify-between">
-              <Label htmlFor="auto-press" className="text-base">Automatic Press</Label>
+              <div className="flex-1">
+                <Label htmlFor="allow-presses" className="text-base font-semibold">Allow Players to Press</Label>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Players can initiate a press when down by 2+ holes
+                </p>
+              </div>
               <Switch
-                id="auto-press"
-                checked={data.gameType.rules?.automaticPress || false}
-                onCheckedChange={(checked) => handleGameTypeRulesChange('automaticPress', checked)}
+                id="allow-presses"
+                checked={data.gameType.rules?.allowPresses || false}
+                onCheckedChange={(checked) => handleGameTypeRulesChange('allowPresses', checked)}
               />
             </div>
-
-            {data.gameType.rules?.automaticPress && (
-              <>
-                <div className="flex items-center justify-between pt-2 border-t">
-                  <Label className="text-base">Down By</Label>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="number"
-                      min="1"
-                      max="9"
-                      value={data.gameType.rules?.pressDownBy || 2}
-                      onChange={(e) => handleGameTypeRulesChange('pressDownBy', parseInt(e.target.value))}
-                      className="w-20 h-10 text-center"
-                    />
-                    <span className="text-muted-foreground">Holes</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between pt-2 border-t">
-                  <Label htmlFor="closeout" className="text-base">Closeout</Label>
-                  <Switch
-                    id="closeout"
-                    checked={data.gameType.rules?.closeout || false}
-                    onCheckedChange={(checked) => handleGameTypeRulesChange('closeout', checked)}
-                  />
-                </div>
-              </>
-            )}
           </div>
 
-          {data.gameType.rules?.automaticPress && (
-            <p className="text-sm text-muted-foreground">
-              <strong>Automatic press</strong> creates a double-or-nothing side bet when a player falls behind.
-            </p>
+          {data.gameType.rules?.allowPresses && (
+            <div className="rounded-lg bg-primary/5 p-4">
+              <p className="text-sm text-muted-foreground">
+                <strong>Press</strong> - Any player or team that is at least 2 holes down can challenge their opponent to a new side bet. This creates an additional match that runs alongside the original bet, giving players a chance to recover losses.
+              </p>
+            </div>
           )}
         </div>
       </div>
