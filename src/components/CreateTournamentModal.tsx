@@ -275,9 +275,32 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl h-[90vh] flex flex-col p-0">
         <div className="flex-shrink-0 px-6 pt-6 pb-4 border-b">
-          <h2 className="text-2xl font-bold text-center">
-            {steps[currentStep]?.title || 'Create Tournament'}
-          </h2>
+          <div className="relative flex items-center justify-center">
+            {currentStep > 0 && (
+              <button
+                onClick={handlePrevious}
+                className="absolute left-0 p-2 hover:bg-accent rounded-lg transition-colors active:scale-95"
+                aria-label="Go back"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="m15 18-6-6 6-6" />
+                </svg>
+              </button>
+            )}
+            <h2 className="text-2xl font-bold">
+              {steps[currentStep]?.title || 'Create Tournament'}
+            </h2>
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto px-6">
@@ -286,27 +309,14 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
 
         <div className="flex-shrink-0 p-6 border-t space-y-3">
           {currentStep !== 0 && (
-            <>
-              <Button 
-                onClick={currentStep < steps.length - 1 ? handleNext : handleCreate}
-                disabled={!canProceed()}
-                size="lg"
-                className="w-full h-14 text-lg font-semibold"
-              >
-                {currentStep < steps.length - 1 ? 'Next' : 'Create Tournament'}
-              </Button>
-
-              {currentStep > 0 && (
-                <Button 
-                  variant="ghost" 
-                  onClick={handlePrevious}
-                  size="lg"
-                  className="w-full h-12"
-                >
-                  Back
-                </Button>
-              )}
-            </>
+            <Button 
+              onClick={currentStep < steps.length - 1 ? handleNext : handleCreate}
+              disabled={!canProceed()}
+              size="lg"
+              className="w-full h-14 text-lg font-semibold"
+            >
+              {currentStep < steps.length - 1 ? 'Next' : 'Create Tournament'}
+            </Button>
           )}
         </div>
       </DialogContent>
