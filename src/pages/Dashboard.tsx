@@ -228,7 +228,7 @@ const Dashboard = () => {
   if (!user) {
     return (
       <div className="min-h-screen bg-background">
-        {!isMobile && <Navbar />}
+        <Navbar />
         <div className={isMobile ? "px-4" : "pt-16 px-4"}>
           <div className="text-center py-12">
             <h1 className="text-3xl font-bold mb-4">Welcome to BetLoopr</h1>
@@ -248,7 +248,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {!isMobile && <Navbar />}
+      <Navbar />
       
       <div className={isMobile ? "pb-20" : "pt-16"}>
         {renderHeroSection()}

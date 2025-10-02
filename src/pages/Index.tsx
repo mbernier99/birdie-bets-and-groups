@@ -73,7 +73,7 @@ const Index = memo(() => {
 
   return (
     <div className={`min-h-screen ${isMobile ? '' : 'bg-gradient-to-br from-emerald-50 via-white to-emerald-50'} pb-20 md:pb-0`}>
-      {!isMobile && <Navbar />}
+      <Navbar />
       
       {/* Background Image Section for Mobile */}
       <div className={`${isMobile ? 'bg-cover bg-center bg-no-repeat min-h-screen absolute inset-0' : ''}`} 
