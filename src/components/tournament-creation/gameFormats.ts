@@ -2,78 +2,66 @@ import { GameFormat } from './GameFormatCard';
 
 export const traditionalFormats: GameFormat[] = [
   {
-    id: 'stroke-play',
-    name: 'Stroke Play',
-    description: 'Lowest total score wins',
-    icon: 'trophy',
-  },
-  {
-    id: 'match-play',
-    name: 'Match Play',
-    description: 'Win holes head-to-head',
+    id: '2-man-best-ball',
+    name: '2 Man Best Ball',
+    description: 'Combined total',
     icon: 'users',
+    hasRules: true,
   },
   {
-    id: 'scramble',
-    name: 'Scramble',
-    description: 'Teams play best shot',
-    icon: 'shuffle',
-  },
-  {
-    id: 'best-ball',
-    name: 'Best Ball',
-    description: 'Best score per team',
+    id: '2-man-better-ball',
+    name: '2 Man Better Ball',
+    description: 'Best of 2',
     icon: 'star',
+    hasRules: true,
   },
   {
     id: 'nassau',
     name: 'Nassau',
-    description: 'Front 9, back 9, and total',
+    description: 'Match play front, back and overall plus optional presses',
     icon: 'grid',
     hasRules: true,
   },
   {
-    id: 'skins',
-    name: 'Skins',
-    description: 'Win holes outright',
-    icon: 'flame',
-    hasRules: true,
-  },
-  {
-    id: 'wolf',
-    name: 'Wolf',
-    description: 'Choose your partner or go alone',
-    icon: 'zap',
-    hasRules: true,
-  },
-  {
-    id: 'wolf-turd',
-    name: 'Wolf Turd',
-    description: 'Wolf with a twist',
-    icon: 'target',
-    hasRules: true,
-  },
-  {
-    id: 'snake',
-    name: 'Snake',
-    description: 'Last 3-putt holder loses',
-    icon: 'zap',
+    id: 'chapman',
+    name: 'Chapman',
+    description: 'Partners tee off, swap balls, hit second shots, pick a ball, play alt shot',
+    icon: 'shuffle',
     hasRules: true,
   },
 ];
 
 export const sideGames = [
-  { id: 'snake', name: 'Snake' },
-  { id: 'skins', name: 'Skins' },
-  { id: 'nassau', name: 'Nassau' },
+  { id: 'skins', name: 'Skins', description: 'Beat the field, earn a skin' },
+  { id: 'snake', name: 'Snake', description: '3 putt holds the bag of snakes' },
+  { id: 'wolf', name: 'Wolf', description: 'Tee off last, pick your partner' },
+  { id: 'wolf-turd', name: 'Wolf Turd', description: 'Wolf hits first and must play with the worst shot' },
 ];
 
 export const gameRules: Record<string, string[]> = {
+  '2-man-best-ball': [
+    'Two-player teams compete against each other.',
+    'Both players on each team play their own ball throughout the round.',
+    'The combined total of both players scores is used for each hole.',
+    'The team with the lowest combined score for the round wins.',
+  ],
+  '2-man-better-ball': [
+    'Two-player teams compete against each other.',
+    'Both players on each team play their own ball throughout the round.',
+    'Only the best score from each team counts on each hole.',
+    'The team with the lowest total using their best ball scores wins.',
+  ],
   nassau: [
-    'Nassau is three separate bets: front nine, back nine, and overall 18.',
-    'Each bet is won by the player or team with the lowest score for that segment.',
+    'Nassau is three separate match play bets: front nine, back nine, and overall 18.',
+    'Each bet is won by the player or team with the most holes won for that segment.',
     'Presses (additional bets) can be triggered automatically when down by 2 or more holes, or manually initiated.',
     'Presses create new bets that run alongside the original bets, allowing comebacks.',
+  ],
+  chapman: [
+    'Partners both tee off on each hole.',
+    'After tee shots, partners swap balls and hit their second shots.',
+    'The team selects which ball to continue playing.',
+    'Partners alternate shots with the selected ball until holed out.',
   ],
   skins: [
     'Each hole is worth a set amount (a "skin").',
@@ -88,10 +76,10 @@ export const gameRules: Record<string, string[]> = {
     'Partners score together. Lone Wolf scores are doubled. Points determine payouts.',
   ],
   'wolf-turd': [
-    'Similar to Wolf, but with an added penalty.',
-    'The player with the worst score on a hole becomes the "Turd."',
-    'The Turd loses points or pays a penalty to the other players.',
-    'Adds strategy and risk to Wolf gameplay.',
+    'Wolf hits first instead of last.',
+    'After all players tee off, Wolf must partner with the player who hit the worst tee shot.',
+    'The player with the worst score on a hole becomes the "Turd" and loses points.',
+    'Adds strategy and risk to Wolf gameplay with penalties.',
   ],
   snake: [
     'The "Snake" is passed to the last player who 3-putts.',
@@ -115,6 +103,14 @@ export interface GameConfigFields {
 }
 
 export const gameConfigFields: GameConfigFields = {
+  '2-man-best-ball': [
+    { key: 'betAmount', label: 'Bet Amount ($)', type: 'number', defaultValue: 20, min: 1, max: 1000, step: 5 },
+    { key: 'useHandicaps', label: 'Use Handicaps', type: 'toggle', defaultValue: true },
+  ],
+  '2-man-better-ball': [
+    { key: 'betAmount', label: 'Bet Amount ($)', type: 'number', defaultValue: 20, min: 1, max: 1000, step: 5 },
+    { key: 'useHandicaps', label: 'Use Handicaps', type: 'toggle', defaultValue: true },
+  ],
   nassau: [
     { key: 'frontBet', label: 'Front 9 Bet ($)', type: 'number', defaultValue: 10, min: 1, max: 1000, step: 5 },
     { key: 'backBet', label: 'Back 9 Bet ($)', type: 'number', defaultValue: 10, min: 1, max: 1000, step: 5 },
@@ -131,6 +127,20 @@ export const gameConfigFields: GameConfigFields = {
     },
     { key: 'pressDownBy', label: 'Auto Press When Down By', type: 'number', defaultValue: 2, min: 1, max: 5 },
     { key: 'pressCap', label: 'Max Presses', type: 'number', defaultValue: 3, min: 0, max: 10 },
+  ],
+  chapman: [
+    { key: 'betAmount', label: 'Bet Amount ($)', type: 'number', defaultValue: 20, min: 1, max: 1000, step: 5 },
+    { key: 'useHandicaps', label: 'Use Handicaps', type: 'toggle', defaultValue: true },
+    {
+      key: 'format',
+      label: 'Format',
+      type: 'select',
+      defaultValue: 'stroke',
+      options: [
+        { value: 'stroke', label: 'Stroke Play' },
+        { value: 'match', label: 'Match Play' },
+      ]
+    },
   ],
   skins: [
     { key: 'holeValue', label: 'Value Per Hole ($)', type: 'number', defaultValue: 5, min: 1, max: 100, step: 1 },
@@ -183,38 +193,5 @@ export const gameConfigFields: GameConfigFields = {
         { value: 'running', label: 'Running Total' },
       ]
     },
-  ],
-  'bingo-bango-bongo': [
-    { key: 'bingoValue', label: 'Bingo (First on Green) $', type: 'number', defaultValue: 1, min: 1, max: 20 },
-    { key: 'bangoValue', label: 'Bango (Closest to Pin) $', type: 'number', defaultValue: 1, min: 1, max: 20 },
-    { key: 'bongoValue', label: 'Bongo (First in Hole) $', type: 'number', defaultValue: 1, min: 1, max: 20 },
-  ],
-  quota: [
-    { key: 'baseQuota', label: 'Base Quota Points', type: 'number', defaultValue: 36, min: 18, max: 72 },
-    { key: 'eaglePoints', label: 'Eagle Points', type: 'number', defaultValue: 8, min: 4, max: 20 },
-    { key: 'birdiePoints', label: 'Birdie Points', type: 'number', defaultValue: 4, min: 2, max: 10 },
-    { key: 'parPoints', label: 'Par Points', type: 'number', defaultValue: 2, min: 0, max: 5 },
-  ],
-  sixes: [
-    { key: 'teamSize', label: 'Team Size', type: 'number', defaultValue: 2, min: 2, max: 4 },
-    { key: 'rotationHoles', label: 'Rotate Partners Every X Holes', type: 'number', defaultValue: 6, min: 3, max: 9 },
-    { key: 'betPerRotation', label: 'Bet Per Rotation ($)', type: 'number', defaultValue: 10, min: 1, max: 100, step: 5 },
-  ],
-  chicago: [
-    { key: 'quotaBase', label: 'Quota Base', type: 'number', defaultValue: 39, min: 18, max: 72 },
-    { key: 'entryFee', label: 'Entry Fee ($)', type: 'number', defaultValue: 5, min: 1, max: 50 },
-  ],
-  rabbit: [
-    { key: 'rabbitValue', label: 'Rabbit Value ($)', type: 'number', defaultValue: 10, min: 1, max: 100, step: 5 },
-    { key: 'holes', label: 'Holes to Win', type: 'number', defaultValue: 6, min: 3, max: 9 },
-  ],
-  hammer: [
-    { key: 'startingValue', label: 'Starting Hammer Value ($)', type: 'number', defaultValue: 5, min: 1, max: 50 },
-    { key: 'multiplier', label: 'Hammer Multiplier', type: 'number', defaultValue: 2, min: 1.5, max: 5, step: 0.5 },
-  ],
-  vegas: [
-    { key: 'teamSize', label: 'Team Size', type: 'number', defaultValue: 2, min: 2, max: 2 },
-    { key: 'pointValue', label: 'Point Value ($)', type: 'number', defaultValue: 1, min: 0.1, max: 10, step: 0.1 },
-    { key: 'flipOption', label: 'Allow Score Flipping', type: 'toggle', defaultValue: true },
   ],
 };

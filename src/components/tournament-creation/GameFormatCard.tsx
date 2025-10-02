@@ -35,11 +35,11 @@ const GameFormatCard: React.FC<GameFormatCardProps> = ({ format, isSelected, onS
     <button
       onClick={onSelect}
       className={cn(
-        "relative flex-shrink-0 w-40 h-44 p-4 rounded-2xl border-2 transition-all snap-center",
+        "relative flex-shrink-0 w-44 p-4 rounded-2xl border-2 transition-all snap-center",
         "flex flex-col items-center justify-center gap-3 active:scale-95 touch-manipulation",
         isSelected 
-          ? "bg-primary text-primary-foreground border-primary shadow-lg scale-105" 
-          : "bg-card border-border hover:border-primary/50"
+          ? "bg-primary text-primary-foreground border-primary shadow-lg scale-105 min-h-52" 
+          : "bg-card border-border hover:border-primary/50 h-44"
       )}
     >
       {format.hasRules && onShowRules && (
@@ -58,11 +58,14 @@ const GameFormatCard: React.FC<GameFormatCardProps> = ({ format, isSelected, onS
       )}
       
       <Icon className="h-10 w-10" />
-      <div className="text-center">
+      <div className="text-center px-2">
         <div className="font-semibold text-sm">{format.name}</div>
-        {isSelected && (
-          <div className="text-xs opacity-90 mt-1 line-clamp-2">{format.description}</div>
-        )}
+        <div className={cn(
+          "text-xs mt-1",
+          isSelected ? "opacity-90 line-clamp-3" : "opacity-70 line-clamp-2"
+        )}>
+          {format.description}
+        </div>
       </div>
     </button>
   );

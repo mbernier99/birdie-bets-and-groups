@@ -180,18 +180,28 @@ const GameSettingsStep: React.FC<GameSettingsStepProps> = ({ data, onDataChange 
               </Button>
             </CollapsibleTrigger>
             <CollapsibleContent className="pt-3 space-y-2">
-              {sideGames.map((game) => {
+              {sideGames.map((game: any) => {
                 const isActive = gameConfig.sideGames?.some((sg: any) => sg.id === game.id);
                 return (
-                  <Button
+                  <button
                     key={game.id}
-                    variant={isActive ? 'secondary' : 'ghost'}
-                    className="w-full justify-start h-12 text-base"
+                    className={`w-full p-3 rounded-xl border-2 transition-all text-left active:scale-98 ${
+                      isActive 
+                        ? 'bg-secondary border-secondary' 
+                        : 'bg-card border-border hover:border-primary'
+                    }`}
                     onClick={() => handleSideGameToggle(game.id)}
                   >
-                    {isActive ? '✓ ' : ''}
-                    {game.name}
-                  </Button>
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 mt-0.5">
+                        {isActive ? '✓' : '+'}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-base">{game.name}</div>
+                        <div className="text-xs text-muted-foreground mt-0.5">{game.description}</div>
+                      </div>
+                    </div>
+                  </button>
                 );
               })}
             </CollapsibleContent>
