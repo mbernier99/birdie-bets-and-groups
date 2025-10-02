@@ -81,11 +81,6 @@ const GameSettingsStep: React.FC<GameSettingsStepProps> = ({ data, onDataChange 
     if (!format) return;
 
     updateGameConfig({ primaryFormat: formatId });
-
-    // Open config drawer if format has configuration
-    if (gameConfigFields[formatId]) {
-      setConfigDrawer({ isOpen: true, gameId: formatId, gameName: format.name });
-    }
   };
 
   const handleSideGameToggle = (gameId: string) => {
