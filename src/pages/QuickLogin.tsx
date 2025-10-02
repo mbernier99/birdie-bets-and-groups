@@ -31,6 +31,7 @@ const BANDON_PLAYERS: Player[] = [
 const QuickLogin: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState<string | null>(null);
+  const [creatingUsers, setCreatingUsers] = useState(false);
 
   const handleQuickLogin = async (player: Player) => {
     setLoading(player.email);
@@ -58,6 +59,43 @@ const QuickLogin: React.FC = () => {
       });
     } finally {
       setLoading(null);
+    }
+  };
+
+  const handleCreateTestUsers = async () => {
+    setCreatingUsers(true);
+    
+    try {
+      const response = await fetch(
+        'https://oxwauckpccujkwfagogf.supabase.co/functions/v1/create-test-users',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im94d2F1Y2twY2N1amt3ZmFnb2dmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI3NjI2NDgsImV4cCI6MjA2ODMzODY0OH0.lmKlbq0mu51-NtuWPEE3zCCPB93_FmCiKqaD_E8oI8E',
+          },
+        }
+      );
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast({
+          title: 'Test Users Created!',
+          description: `Created ${result.results.created.length} users. ${result.results.alreadyExists.length} already existed.`,
+        });
+      } else {
+        throw new Error(result.error || 'Failed to create users');
+      }
+    } catch (error: any) {
+      console.error('Error creating test users:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to create test users',
+        variant: 'destructive',
+      });
+    } finally {
+      setCreatingUsers(false);
     }
   };
 
@@ -122,7 +160,22 @@ const QuickLogin: React.FC = () => {
               ))}
             </div>
 
-            <div className="mt-8 text-center space-y-2">
+            <div className="mt-8 text-center space-y-4">
+              <div className="p-4 bg-muted/50 rounded-lg space-y-3">
+                <p className="text-sm font-medium">Don't have test accounts yet?</p>
+                <Button
+                  onClick={handleCreateTestUsers}
+                  disabled={creatingUsers || loading !== null}
+                  className="w-full max-w-xs"
+                >
+                  {creatingUsers && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Create All Test Users
+                </Button>
+                <p className="text-xs text-muted-foreground">
+                  This will create all 8 test accounts with password: <code className="bg-background px-2 py-1 rounded">BandonTest2025!</code>
+                </p>
+              </div>
+              
               <Button
                 variant="ghost"
                 onClick={() => navigate('/auth')}
@@ -130,9 +183,6 @@ const QuickLogin: React.FC = () => {
               >
                 Back to Standard Login
               </Button>
-              <p className="text-sm text-muted-foreground">
-                Test password for all accounts: <code className="bg-muted px-2 py-1 rounded">BandonTest2025!</code>
-              </p>
             </div>
           </CardContent>
         </Card>

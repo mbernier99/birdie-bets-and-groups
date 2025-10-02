@@ -1,0 +1,128 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.52.0';
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+interface TestUser {
+  email: string;
+  firstName: string;
+  lastName: string;
+  nickname: string;
+  handicap: number;
+}
+
+const TEST_USERS: TestUser[] = [
+  { email: 'leecrocker@gmail.com', firstName: 'Lee', lastName: 'Crocker', nickname: 'SussPro', handicap: 18 },
+  { email: 'erwhalen@yahoo.com', firstName: 'Erin', lastName: 'Whalen', nickname: 'WhaleBone', handicap: 15 },
+  { email: 'drew.tornga@gmail.com', firstName: 'Drew', lastName: 'Tornga', nickname: 'Tornganese', handicap: 22 },
+  { email: 'saldivarhector@hotmail.com', firstName: 'Hector', lastName: 'Saldivar', nickname: 'El Presidente', handicap: 13 },
+  { email: 'mbernier@gmail.com', firstName: 'Matt', lastName: 'Bernier', nickname: 'Berniator', handicap: 12 },
+  { email: 'scogo82@hotmail.com', firstName: 'Scott', lastName: 'Gannon', nickname: 'JamBand', handicap: 17 },
+  { email: 'tom.connaghan@bandongolf.temp', firstName: 'Tom', lastName: 'Connaghan', nickname: 'ConMan', handicap: 14 },
+  { email: 'matt.traiman@gmail.com', firstName: 'Matt', lastName: 'Traimain', nickname: 'TraiDog', handicap: 18 },
+];
+
+Deno.serve(async (req) => {
+  // Handle CORS
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
+  }
+
+  try {
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      }
+    );
+
+    const results = {
+      created: [] as string[],
+      alreadyExists: [] as string[],
+      errors: [] as { email: string; error: string }[],
+    };
+
+    // Create each test user
+    for (const user of TEST_USERS) {
+      try {
+        // Check if user already exists
+        const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
+        const userExists = existingUsers?.users?.some(u => u.email === user.email);
+
+        if (userExists) {
+          results.alreadyExists.push(user.email);
+          console.log(`User ${user.email} already exists, skipping...`);
+          continue;
+        }
+
+        // Create the user
+        const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+          email: user.email,
+          password: 'BandonTest2025!',
+          email_confirm: true, // Auto-confirm email
+          user_metadata: {
+            first_name: user.firstName,
+            last_name: user.lastName,
+          },
+        });
+
+        if (authError) {
+          results.errors.push({ email: user.email, error: authError.message });
+          console.error(`Error creating user ${user.email}:`, authError);
+          continue;
+        }
+
+        if (authData.user) {
+          // Update the profile with additional data
+          const { error: profileError } = await supabaseAdmin
+            .from('profiles')
+            .update({
+              nickname: user.nickname,
+              handicap: user.handicap,
+            })
+            .eq('id', authData.user.id);
+
+          if (profileError) {
+            console.error(`Error updating profile for ${user.email}:`, profileError);
+          }
+
+          results.created.push(user.email);
+          console.log(`Successfully created user: ${user.email}`);
+        }
+      } catch (error: any) {
+        results.errors.push({ email: user.email, error: error.message });
+        console.error(`Error processing user ${user.email}:`, error);
+      }
+    }
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: `Created ${results.created.length} users, ${results.alreadyExists.length} already existed, ${results.errors.length} errors`,
+        results,
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      }
+    );
+  } catch (error: any) {
+    console.error('Edge function error:', error);
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: error.message,
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500,
+      }
+    );
+  }
+});
