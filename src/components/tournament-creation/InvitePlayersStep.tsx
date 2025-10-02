@@ -19,6 +19,7 @@ const InvitePlayersStep: React.FC<InvitePlayersStepProps> = ({ data, onDataChang
   const [isPlayerModalOpen, setIsPlayerModalOpen] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [recentPlayers, setRecentPlayers] = useState<any[]>([]);
 
   const inviteCode = 'NBULA2'; // TODO: Generate unique code
 
@@ -33,10 +34,7 @@ const InvitePlayersStep: React.FC<InvitePlayersStepProps> = ({ data, onDataChang
       setIsSearching(true);
       try {
         const { data: profiles, error } = await supabase
-          .from('profiles')
-          .select('id, first_name, last_name, nickname, email, handicap, avatar_url')
-          .or(`first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%,nickname.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`)
-          .limit(10);
+          .rpc('search_profiles_for_tournament', { search_query: searchQuery });
 
         if (error) throw error;
         setSearchResults(profiles || []);
@@ -51,6 +49,21 @@ const InvitePlayersStep: React.FC<InvitePlayersStepProps> = ({ data, onDataChang
     return () => clearTimeout(debounce);
   }, [searchQuery]);
 
+  // Fetch recent players on mount
+  useEffect(() => {
+    const loadRecent = async () => {
+      try {
+        const { data: profiles, error } = await supabase
+          .rpc('search_profiles_for_tournament', { search_query: '' });
+        if (error) throw error;
+        setRecentPlayers((profiles || []).slice(0, 10));
+      } catch (e) {
+        console.error('Error loading recent players', e);
+      }
+    };
+    loadRecent();
+  }, []);
+
   const handleShareLink = async () => {
     const shareUrl = `${window.location.origin}/tournament-invite/${inviteCode}`;
     if (navigator.share) {
@@ -60,7 +73,8 @@ const InvitePlayersStep: React.FC<InvitePlayersStepProps> = ({ data, onDataChang
           url: shareUrl,
         });
       } catch (err) {
-        console.error('Error sharing:', err);
+        await navigator.clipboard.writeText(shareUrl);
+        toast({ title: 'Link copied to clipboard' });
       }
     } else {
       navigator.clipboard.writeText(shareUrl);
@@ -87,7 +101,7 @@ const InvitePlayersStep: React.FC<InvitePlayersStepProps> = ({ data, onDataChang
     const displayName = profile.nickname || `${profile.first_name} ${profile.last_name}`.trim() || profile.email;
     
     // Check if player already added
-    if (data.players.some(p => p.email === profile.email)) {
+    if (data.players.some(p => p.id === profile.id)) {
       toast({ title: 'Player already added', variant: 'destructive' });
       return;
     }
@@ -101,7 +115,7 @@ const InvitePlayersStep: React.FC<InvitePlayersStepProps> = ({ data, onDataChang
     const newPlayer = {
       id: profile.id,
       name: displayName,
-      email: profile.email,
+      email: profile.email || '',
       handicapIndex: profile.handicap || 0,
       status: 'invited' as const
     };
@@ -182,8 +196,10 @@ const InvitePlayersStep: React.FC<InvitePlayersStepProps> = ({ data, onDataChang
                         </Avatar>
                         <div className="flex-1 min-w-0">
                           <div className="font-medium truncate">{displayName}</div>
-                          <div className="text-xs text-muted-foreground truncate">{profile.email}</div>
-                          {profile.handicap && (
+                          {profile.email && (
+                            <div className="text-xs text-muted-foreground truncate">{profile.email}</div>
+                          )}
+                          {typeof profile.handicap === 'number' && (
                             <div className="text-xs text-muted-foreground">HCP: {profile.handicap}</div>
                           )}
                         </div>
@@ -203,6 +219,37 @@ const InvitePlayersStep: React.FC<InvitePlayersStepProps> = ({ data, onDataChang
             </div>
           )}
         </div>
+
+        {searchQuery.trim().length < 2 && recentPlayers.length > 0 && (
+          <div className="mt-4">
+            <h3 className="text-base font-semibold mb-3">Suggested</h3>
+            <div className="space-y-2">
+              {recentPlayers.map((profile) => {
+                const displayName = profile.nickname || `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+                const isAdded = data.players.some(p => p.id === profile.id);
+                return (
+                  <div key={profile.id} className="flex items-center justify-between p-3 rounded-lg border bg-card">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <Avatar className="h-10 w-10 flex-shrink-0">
+                        <AvatarImage src={profile.avatar_url} />
+                        <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium truncate">{displayName}</div>
+                        {typeof profile.handicap === 'number' && (
+                          <div className="text-xs text-muted-foreground">HCP: {profile.handicap}</div>
+                        )}
+                      </div>
+                    </div>
+                    <Button size="sm" onClick={() => addPlayerFromSearch(profile)} disabled={isAdded}>
+                      {isAdded ? 'Added' : 'Add'}
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Current players */}
         {data.players.length > 0 && (
