@@ -84,9 +84,9 @@ const Index = memo(() => {
       <div className="relative z-10">
         
         {/* Hero Section */}
-        <div className={`mx-4 sm:mx-6 lg:mx-8 ${isMobile ? 'pt-4' : 'mt-20'}`}>
+        <div className={`mx-4 sm:mx-6 lg:mx-8 ${isMobile ? '' : 'mt-20'}`}>
           <div className={`${isMobile ? '' : 'bg-gradient-to-r from-emerald-600 to-emerald-700'} ${isMobile ? 'text-white' : 'text-white'} relative overflow-hidden ${isMobile ? '' : 'rounded-2xl'}`}>
-            <div className={`max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 ${isMobile ? 'py-12' : 'py-20'} relative z-10`}>
+            <div className={`max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 ${isMobile ? 'pt-6 pb-12' : 'py-20'} relative z-10`}>
               <div className="text-center">
                 {/* Bandon Dunes Logo */}
                 <div className={`flex justify-center ${isMobile ? 'mb-6' : 'mb-8'}`}>
