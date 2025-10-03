@@ -28,8 +28,8 @@ const MobileHeader = ({ title }: MobileHeaderProps) => {
             alt="LOOPR Logo" 
             className="object-contain bg-white/90 rounded-lg p-1"
             style={{
-              height: '41.4px',
-              width: '41.4px'
+              height: '50px',
+              width: '50px'
             }}
           />
         </Link>
@@ -46,26 +46,28 @@ const MobileHeader = ({ title }: MobileHeaderProps) => {
           {user ? (
             <button
               onClick={() => signOut()}
-              className={`flex items-center justify-center h-8 w-8 rounded-full transition-colors drop-shadow-lg ${
+              className={`flex items-center justify-center rounded-full transition-colors drop-shadow-lg ${
                 isHomePage 
                   ? 'bg-white/20 backdrop-blur-sm text-white border border-white/30 hover:bg-white/30' 
                   : 'bg-emerald-700 text-white hover:bg-emerald-800'
               }`}
+              style={{ height: '38px', width: '38px' }}
               aria-label="Profile"
             >
-              <User className="h-4 w-4" />
+              <User className="h-5 w-5" />
             </button>
           ) : (
             <Link 
               to="/auth"
-              className={`flex items-center justify-center h-8 w-8 rounded-full transition-colors drop-shadow-lg ${
+              className={`flex items-center justify-center rounded-full transition-colors drop-shadow-lg ${
                 isHomePage 
                   ? 'bg-white/20 backdrop-blur-sm text-white border border-white/30 hover:bg-white/30' 
                   : 'bg-emerald-700 text-white hover:bg-emerald-800'
               }`}
+              style={{ height: '38px', width: '38px' }}
               aria-label="Sign In"
             >
-              <User className="h-4 w-4" />
+              <User className="h-5 w-5" />
             </Link>
           )}
         </div>
