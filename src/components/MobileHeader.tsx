@@ -26,11 +26,10 @@ const MobileHeader = ({ title }: MobileHeaderProps) => {
           <img 
             src="/lovable-uploads/loopr-logo-new.png" 
             alt="LOOPR Logo" 
-            className="object-contain"
+            className="object-contain bg-white/90 rounded-lg p-1"
             style={{
               height: '41.4px',
-              width: '41.4px',
-              ...(isHomePage ? { filter: 'brightness(0) invert(1)' } : {})
+              width: '41.4px'
             }}
           />
         </Link>
