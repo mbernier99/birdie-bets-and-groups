@@ -97,7 +97,7 @@ const Index = memo(() => {
                   BetLoopr
                 </h1>
                 
-                <p className={`text-xl md:text-2xl ${isMobile ? 'text-white font-semibold drop-shadow-lg' : 'text-emerald-100'} mb-12 max-w-3xl mx-auto relative z-20`}>
+                <p className={`text-xl md:text-2xl ${isMobile ? 'text-white font-bold bg-emerald-600/40 backdrop-blur-sm border border-emerald-400/30 px-6 py-4 rounded-full' : 'text-emerald-100'} mb-12 max-w-3xl mx-auto relative z-20`}>
                   {user ? 'Manage Golf tournaments, wagers, side bets and more' : 'Live Bets, Tournament & Golf Game Management'}
                 </p>
                 
