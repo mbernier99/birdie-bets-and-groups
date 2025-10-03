@@ -24,10 +24,14 @@ const MobileHeader = ({ title }: MobileHeaderProps) => {
         {/* Left side - LOOPR Logo */}
         <Link to="/" className="flex-shrink-0 drop-shadow-lg">
           <img 
-            src="/lovable-uploads/loopr-logo.png" 
+            src="/lovable-uploads/loopr-logo-new.png" 
             alt="LOOPR Logo" 
-            className="h-9 w-9 object-contain"
-            style={isHomePage ? { filter: 'brightness(0) invert(1)' } : {}}
+            className="object-contain"
+            style={{
+              height: '41.4px',
+              width: '41.4px',
+              ...(isHomePage ? { filter: 'brightness(0) invert(1)' } : {})
+            }}
           />
         </Link>
 

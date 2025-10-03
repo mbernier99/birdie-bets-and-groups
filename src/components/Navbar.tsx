@@ -28,9 +28,10 @@ const Navbar = memo(() => {
             <div className="flex items-center space-x-8">
               <Link to="/" className="flex-shrink-0">
                 <img 
-                  src="/lovable-uploads/loopr-logo.png" 
+                  src="/lovable-uploads/loopr-logo-new.png" 
                   alt="LOOPR Logo" 
-                  className="h-10 w-10 object-contain"
+                  style={{ height: '46px', width: '46px' }}
+                  className="object-contain"
                 />
               </Link>
               <Link 
