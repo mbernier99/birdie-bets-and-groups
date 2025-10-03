@@ -77,7 +77,7 @@ const Index = memo(() => {
 
   return (
     <div className={`min-h-screen ${isMobile ? 'bg-cover bg-center bg-no-repeat' : 'bg-gradient-to-br from-emerald-50 via-white to-emerald-50'} pb-20 md:pb-0`}
-         style={isMobile ? { backgroundImage: 'url(/lovable-uploads/6673b7a5-3ea3-4a09-a631-48b032cc2620.png)' } : {}}>
+         style={isMobile ? { backgroundImage: 'url(/lovable-uploads/mobile-hero-background.jpg)' } : {}}>
       <Navbar />
       
       {/* Content Wrapper */}
