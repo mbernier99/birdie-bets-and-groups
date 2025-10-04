@@ -6,6 +6,10 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import PressInitiationModal from './press/PressInitiationModal';
+import BettingStatusCard from './BettingStatusCard';
+import ActivePressBets from './ActivePressBets';
+import type { PressRequest, CourseHole } from '@/types/press';
 
 interface LiveScorecardProps {
   tournamentId: string;
@@ -29,20 +33,26 @@ const LiveScorecard: React.FC<LiveScorecardProps> = ({
   const [saving, setSaving] = useState(false);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [myPosition, setMyPosition] = useState<number | null>(null);
+  const [pressBets, setPressBets] = useState<any[]>([]);
+  const [showPressModal, setShowPressModal] = useState(false);
+  const [showSideBetModal, setShowSideBetModal] = useState(false);
+  const [selectedPlayer, setSelectedPlayer] = useState<{ id: string; name: string; currentHole: number } | null>(null);
+  const [profiles, setProfiles] = useState<Map<string, any>>(new Map());
 
   const currentHoleData = courseHoles.find(h => h.number === currentHole) || courseHoles[0];
   const currentScore = scores[currentHole];
   const frontNine = courseHoles.slice(0, 9);
   const backNine = courseHoles.slice(9, 18);
 
-  // Fetch current scores
+  // Fetch current scores and bets
   useEffect(() => {
     if (!roundId) return;
     fetchScores();
     fetchLeaderboard();
+    fetchPressBets();
 
     // Real-time score updates
-    const channel = supabase
+    const scoresChannel = supabase
       .channel(`round-${roundId}-scores`)
       .on(
         'postgres_changes',
@@ -59,10 +69,28 @@ const LiveScorecard: React.FC<LiveScorecardProps> = ({
       )
       .subscribe();
 
+    // Real-time press bet updates
+    const betsChannel = supabase
+      .channel(`tournament-${tournamentId}-bets`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'press_bets',
+          filter: `tournament_id=eq.${tournamentId}`
+        },
+        () => {
+          fetchPressBets();
+        }
+      )
+      .subscribe();
+
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(scoresChannel);
+      supabase.removeChannel(betsChannel);
     };
-  }, [roundId]);
+  }, [roundId, tournamentId]);
 
   const fetchScores = async () => {
     if (!roundId) return;
@@ -99,6 +127,7 @@ const LiveScorecard: React.FC<LiveScorecardProps> = ({
       .in('id', userIds);
 
     const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
+    setProfiles(profileMap);
 
     // Calculate scores for each player
     const leaderboardData = await Promise.all(
@@ -154,6 +183,113 @@ const LiveScorecard: React.FC<LiveScorecardProps> = ({
     // Find my position
     const myPos = sorted.findIndex(p => p.userId === user?.id);
     setMyPosition(myPos >= 0 ? myPos + 1 : null);
+  };
+
+  const fetchPressBets = async () => {
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('press_bets')
+      .select('*')
+      .eq('tournament_id', tournamentId)
+      .or(`initiator_id.eq.${user.id},target_id.eq.${user.id}`)
+      .order('created_at', { ascending: false });
+
+    if (!error && data) {
+      setPressBets(data);
+    }
+  };
+
+  const handleInitiatePress = (player: { id: string; name: string; currentHole: number }) => {
+    setSelectedPlayer(player);
+    setShowPressModal(true);
+  };
+
+  const handleSubmitPress = async (request: PressRequest) => {
+    if (!user || !selectedPlayer) return;
+
+    try {
+      const { error } = await supabase
+        .from('press_bets')
+        .insert({
+          tournament_id: tournamentId,
+          initiator_id: user.id,
+          target_id: request.targetId,
+          amount: request.amount,
+          bet_type: request.gameType,
+          description: request.winCondition,
+          hole_number: request.startHole,
+          status: 'pending',
+          expires_at: new Date(Date.now() + 5 * 60 * 1000).toISOString() // 5 min expiry
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Press sent!",
+        description: `${selectedPlayer.name} has 5 minutes to respond`
+      });
+
+      setShowPressModal(false);
+      setSelectedPlayer(null);
+      fetchPressBets();
+    } catch (error: any) {
+      toast({
+        title: "Error sending press",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleAcceptBet = async (betId: string) => {
+    try {
+      const { error } = await supabase
+        .from('press_bets')
+        .update({ 
+          status: 'active',
+          completed_at: null
+        })
+        .eq('id', betId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Bet accepted!",
+        description: "Good luck!"
+      });
+
+      fetchPressBets();
+    } catch (error: any) {
+      toast({
+        title: "Error accepting bet",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDeclineBet = async (betId: string) => {
+    try {
+      const { error } = await supabase
+        .from('press_bets')
+        .update({ status: 'declined' })
+        .eq('id', betId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Bet declined"
+      });
+
+      fetchPressBets();
+    } catch (error: any) {
+      toast({
+        title: "Error declining bet",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
   };
 
   const saveScore = async (hole: number, strokes: number) => {
@@ -317,20 +453,75 @@ const LiveScorecard: React.FC<LiveScorecardProps> = ({
           </div>
         </div>
 
+        {/* Betting Status */}
+        {user && pressBets.length > 0 && (
+          <div className="mb-6">
+            <BettingStatusCard pressBets={pressBets} userId={user.id} />
+          </div>
+        )}
+
+        {/* Active Press Bets */}
+        {user && pressBets.length > 0 && (
+          <div className="mb-6">
+            <ActivePressBets
+              pressBets={pressBets}
+              userId={user.id}
+              onAccept={handleAcceptBet}
+              onDecline={handleDeclineBet}
+              profiles={profiles}
+            />
+          </div>
+        )}
+
         {/* Quick Actions */}
         <div className="mb-6">
           <div className="text-sm font-medium text-muted-foreground mb-3">Quick Actions</div>
           <div className="grid grid-cols-2 gap-3">
             <Button
               variant="outline"
-              className="h-14 flex items-center justify-center gap-2 hover:bg-emerald-50"
+              className="h-14 flex items-center justify-center gap-2 hover:bg-emerald-50 active:scale-95 transition-transform"
+              onClick={() => {
+                // Get eligible players from leaderboard
+                const eligible = leaderboard.filter(p => p.userId !== user?.id && p.thru > 0);
+                if (eligible.length > 0) {
+                  const player = eligible[0];
+                  handleInitiatePress({
+                    id: player.userId,
+                    name: player.name,
+                    currentHole: player.thru
+                  });
+                } else {
+                  toast({
+                    title: "No eligible players",
+                    description: "Wait for others to start playing",
+                    variant: "destructive"
+                  });
+                }
+              }}
             >
               <DollarSign className="h-5 w-5" />
               <span>Press</span>
             </Button>
             <Button
               variant="outline"
-              className="h-14 flex items-center justify-center gap-2 hover:bg-blue-50"
+              className="h-14 flex items-center justify-center gap-2 hover:bg-blue-50 active:scale-95 transition-transform"
+              onClick={() => {
+                const eligible = leaderboard.filter(p => p.userId !== user?.id && p.thru > 0);
+                if (eligible.length > 0) {
+                  const player = eligible[0];
+                  handleInitiatePress({
+                    id: player.userId,
+                    name: player.name,
+                    currentHole: player.thru
+                  });
+                } else {
+                  toast({
+                    title: "No eligible players",
+                    description: "Wait for others to start playing",
+                    variant: "destructive"
+                  });
+                }
+              }}
             >
               <Plus className="h-5 w-5" />
               <span>Side Bet</span>
@@ -439,6 +630,26 @@ const LiveScorecard: React.FC<LiveScorecardProps> = ({
           </div>
         )}
       </div>
+
+      {/* Press Initiation Modal */}
+      {selectedPlayer && (
+        <PressInitiationModal
+          isOpen={showPressModal}
+          onClose={() => {
+            setShowPressModal(false);
+            setSelectedPlayer(null);
+          }}
+          targetPlayer={selectedPlayer}
+          currentHole={currentHole}
+          courseHoles={courseHoles.map(h => ({
+            number: h.number,
+            par: h.par,
+            yardage: h.yardage,
+            handicapIndex: h.handicapIndex
+          }))}
+          onSubmit={handleSubmitPress}
+        />
+      )}
     </div>
   );
 };
