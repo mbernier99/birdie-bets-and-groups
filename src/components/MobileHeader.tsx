@@ -48,7 +48,7 @@ const MobileHeader = ({ title }: MobileHeaderProps) => {
               onClick={() => signOut()}
               className={`flex items-center justify-center rounded-full transition-colors drop-shadow-lg ${
                 isHomePage 
-                  ? 'bg-white/20 backdrop-blur-sm text-white border border-white/30 hover:bg-white/30' 
+                  ? 'bg-white/20 backdrop-blur-sm text-white border-2 border-emerald-600 hover:bg-white/30' 
                   : 'bg-emerald-700 text-white hover:bg-emerald-800'
               }`}
               style={{ height: '38px', width: '38px' }}
@@ -61,7 +61,7 @@ const MobileHeader = ({ title }: MobileHeaderProps) => {
               to="/auth"
               className={`flex items-center justify-center rounded-full transition-colors drop-shadow-lg ${
                 isHomePage 
-                  ? 'bg-white/20 backdrop-blur-sm text-white border border-white/30 hover:bg-white/30' 
+                  ? 'bg-white/20 backdrop-blur-sm text-white border-2 border-emerald-600 hover:bg-white/30' 
                   : 'bg-emerald-700 text-white hover:bg-emerald-800'
               }`}
               style={{ height: '38px', width: '38px' }}
