@@ -1,48 +1,130 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Trophy, Users, Target, Clock, ArrowLeft, Settings } from 'lucide-react';
+import { Trophy, Users, Target, Clock, ArrowLeft, Settings, Play } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
 import MobileNavigation from '../components/MobileNavigation';
 import MobileHeader from '../components/MobileHeader';
+import LiveScorecard from '../components/LiveScorecard';
 import Leaderboard from '../components/Leaderboard';
-import MatchPlayView from '../components/MatchPlayView';
-import TeamLeaderboard from '../components/TeamLeaderboard';
 import LiveTournamentTracker from '../components/LiveTournamentTracker';
 
 const LiveTournament = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [tournament, setTournament] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState('leaderboard');
+  const [activeTab, setActiveTab] = useState('scorecard');
+  const [myRoundId, setMyRoundId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Load tournament data
-    const savedTournaments = JSON.parse(localStorage.getItem('savedTournaments') || '[]');
-    const foundTournament = savedTournaments.find((t: any) => t.id === id);
-    
-    if (foundTournament) {
-      setTournament(foundTournament);
-    } else {
-      // Demo tournament data
-      setTournament({
-        id: id,
-        basicInfo: { name: 'Sunday Singles Championship', maxPlayers: 16 },
-        gameType: { type: 'Match Play' },
-        wagering: { entryFee: 15, currency: '$' },
-        players: [
-          { id: '1', name: 'John Doe', handicap: 12, score: -2 },
-          { id: '2', name: 'Jane Smith', handicap: 8, score: -1 },
-          { id: '3', name: 'Mike Johnson', handicap: 15, score: 1 }
-        ],
-        status: 'live',
-        currentHole: 7
+    if (!id) return;
+    fetchTournament();
+    checkOrCreateRound();
+  }, [id, user]);
+
+  const fetchTournament = async () => {
+    if (!id) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('tournaments')
+        .select('*, courses(*)')
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+      setTournament(data);
+    } catch (error: any) {
+      console.error('Error loading tournament:', error);
+      toast({
+        title: "Error loading tournament",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const checkOrCreateRound = async () => {
+    if (!id || !user) return;
+
+    try {
+      // Check if user has a round for this tournament
+      const { data: existingTournamentRound } = await supabase
+        .from('tournament_rounds')
+        .select('round_id')
+        .eq('tournament_id', id)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (existingTournamentRound) {
+        setMyRoundId(existingTournamentRound.round_id);
+        return;
+      }
+
+      // Create a new round for this user
+      const { data: newRound, error: roundError } = await supabase
+        .from('rounds')
+        .insert({
+          user_id: user.id,
+          course_id: tournament?.course_id || null,
+          started_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (roundError) throw roundError;
+
+      // Link round to tournament
+      const { error: linkError } = await supabase
+        .from('tournament_rounds')
+        .insert({
+          tournament_id: id,
+          round_id: newRound.id,
+          user_id: user.id
+        });
+
+      if (linkError) throw linkError;
+
+      setMyRoundId(newRound.id);
+      
+      toast({
+        title: "Round started!",
+        description: "Good luck out there"
+      });
+    } catch (error: any) {
+      console.error('Error creating round:', error);
+      toast({
+        title: "Error starting round",
+        description: error.message,
+        variant: "destructive"
       });
     }
-  }, [id]);
+  };
 
   const handleBackToLobby = () => {
     navigate(`/tournament/${id}/lobby`);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 pb-20 md:pb-0">
+        <MobileHeader />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading tournament...</p>
+          </div>
+        </div>
+        <MobileNavigation />
+      </div>
+    );
+  }
 
   if (!tournament) {
     return (
@@ -51,13 +133,19 @@ const LiveTournament = () => {
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <h2 className="text-2xl font-semibold text-gray-900 mb-2">Tournament Not Found</h2>
-            <p className="text-gray-600">The tournament you're looking for doesn't exist.</p>
+            <p className="text-gray-600 mb-4">The tournament you're looking for doesn't exist.</p>
+            <Button onClick={() => navigate('/tournaments')}>
+              Back to Tournaments
+            </Button>
           </div>
         </div>
         <MobileNavigation />
       </div>
     );
   }
+
+  const settings = tournament.settings || {};
+  const courseHoles = tournament.courses?.holes;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 pb-20 md:pb-0">
@@ -81,19 +169,19 @@ const LiveTournament = () => {
           
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">{tournament.basicInfo.name}</h1>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">{tournament.name}</h1>
               <div className="flex flex-wrap gap-4 text-sm text-gray-600">
                 <span className="flex items-center space-x-1">
                   <Users className="h-4 w-4" />
-                  <span>{tournament.players.length} Players</span>
+                  <span>Live</span>
                 </span>
                 <span className="flex items-center space-x-1">
                   <Trophy className="h-4 w-4" />
-                  <span>{tournament.gameType.type}</span>
+                  <span>{tournament.game_type}</span>
                 </span>
                 <span className="flex items-center space-x-1">
                   <Target className="h-4 w-4" />
-                  <span>Hole {tournament.currentHole || 1}</span>
+                  <span>In Progress</span>
                 </span>
               </div>
             </div>
@@ -110,6 +198,16 @@ const LiveTournament = () => {
         <div className="mb-6">
           <div className="border-b border-gray-200">
             <nav className="-mb-px flex space-x-8">
+              <button
+                onClick={() => setActiveTab('scorecard')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                  activeTab === 'scorecard'
+                    ? 'border-emerald-500 text-emerald-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Scorecard
+              </button>
               <button
                 onClick={() => setActiveTab('leaderboard')}
                 className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
@@ -130,48 +228,21 @@ const LiveTournament = () => {
               >
                 Live Betting
               </button>
-              {tournament.gameType.type === 'Match Play' && (
-                <button
-                  onClick={() => setActiveTab('matches')}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                    activeTab === 'matches'
-                      ? 'border-emerald-500 text-emerald-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  Matches
-                </button>
-              )}
-              {tournament.gameType.type?.includes('Team') && (
-                <button
-                  onClick={() => setActiveTab('teams')}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                    activeTab === 'teams'
-                      ? 'border-emerald-500 text-emerald-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  Teams
-                </button>
-              )}
             </nav>
           </div>
         </div>
 
         {/* Tab Content */}
         <div className={activeTab === 'betting' ? '' : 'bg-white rounded-lg shadow-sm border border-emerald-100'}>
+          {activeTab === 'scorecard' && id && (
+            <LiveScorecard 
+              tournamentId={id}
+              roundId={myRoundId || undefined}
+              courseHoles={courseHoles}
+            />
+          )}
           {activeTab === 'leaderboard' && <Leaderboard />}
           {activeTab === 'betting' && <LiveTournamentTracker />}
-          {activeTab === 'matches' && (
-            <div className="p-6 text-center text-gray-500">
-              <p>Match data will be loaded when Supabase is connected</p>
-            </div>
-          )}
-          {activeTab === 'teams' && (
-            <div className="p-6 text-center text-gray-500">
-              <p>Team data will be loaded when Supabase is connected</p>
-            </div>
-          )}
         </div>
       </div>
 
