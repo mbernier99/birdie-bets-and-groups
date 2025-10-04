@@ -1,6 +1,7 @@
 import React, { useState, memo } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useTournaments } from '@/hooks/useTournaments';
 import InvitePlayersStep from './tournament-creation/InvitePlayersStep';
@@ -104,6 +105,7 @@ export interface TournamentData {
 const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOpen, onClose }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const standardPars = [4, 4, 3, 5, 4, 4, 3, 4, 5, 4, 3, 4, 5, 4, 4, 3, 5, 4];
 
@@ -213,10 +215,10 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
           handicapIndex: p.handicapIndex
         }));
 
-      await createTournamentWithInvitations({
+      const tournament = await createTournamentWithInvitations({
         name: tournamentData.basicInfo.name,
         description: `${tournamentData.gameType.type} tournament`,
-        status: 'draft',
+        status: 'lobby',
         game_type: mapGameTypeToDatabase(tournamentData.gameType.type),
         entry_fee: tournamentData.wagering.entryFee,
         prize_pool: tournamentData.wagering.entryFee * tournamentData.basicInfo.maxPlayers,
@@ -231,11 +233,14 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
 
       toast({
         title: "Tournament created!",
-        description: "Players will receive their invitations"
+        description: "Opening tournament lobby..."
       });
 
       onClose();
       setCurrentStep(0);
+      
+      // Navigate to tournament lobby
+      navigate(`/tournament/${tournament.id}/lobby`);
     } catch (error) {
       console.error('Error creating tournament:', error);
       toast({
