@@ -165,6 +165,9 @@ const GameSettingsStep: React.FC<GameSettingsStepProps> = ({ data, onDataChange 
     }
   };
 
+  // Filter out side games that are already selected as primary format
+  const availableSideGames = sideGames.filter(game => game.id !== gameConfig.primaryFormat);
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto space-y-6 pb-4">
@@ -208,7 +211,7 @@ const GameSettingsStep: React.FC<GameSettingsStepProps> = ({ data, onDataChange 
               </Button>
             </CollapsibleTrigger>
             <CollapsibleContent className="pt-3 space-y-2">
-              {sideGames.map((game: any) => {
+              {availableSideGames.map((game: any) => {
                 const isActive = gameConfig.sideGames?.some((sg: any) => 
                   sg.id === game.id || sg.baseId === game.id
                 );

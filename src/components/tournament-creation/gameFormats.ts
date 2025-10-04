@@ -16,6 +16,20 @@ export const traditionalFormats: GameFormat[] = [
     hasRules: true,
   },
   {
+    id: 'match-play',
+    name: 'Match Play',
+    description: 'Win holes head-to-head',
+    icon: 'target',
+    hasRules: true,
+  },
+  {
+    id: 'scramble',
+    name: 'Scramble',
+    description: 'Best shot, everyone plays from there',
+    icon: 'users',
+    hasRules: true,
+  },
+  {
     id: 'nassau',
     name: 'Nassau',
     description: 'Match play front, back and overall plus optional presses',
@@ -27,6 +41,34 @@ export const traditionalFormats: GameFormat[] = [
     name: 'Chapman',
     description: 'Partners tee off, swap balls, hit second shots, pick a ball, play alt shot',
     icon: 'shuffle',
+    hasRules: true,
+  },
+  {
+    id: 'skins',
+    name: 'Skins',
+    description: 'Beat the field, earn a skin',
+    icon: 'flame',
+    hasRules: true,
+  },
+  {
+    id: 'snake',
+    name: 'Snake',
+    description: '3 putt holds the bag of snakes',
+    icon: 'zap',
+    hasRules: true,
+  },
+  {
+    id: 'wolf',
+    name: 'Wolf',
+    description: 'Tee off last, pick your partner',
+    icon: 'star',
+    hasRules: true,
+  },
+  {
+    id: 'wolf-turd',
+    name: 'Wolf Turd',
+    description: 'Wolf hits first and must play with the worst shot',
+    icon: 'star',
     hasRules: true,
   },
 ];
@@ -62,6 +104,18 @@ export const gameRules: Record<string, string[]> = {
     'After tee shots, partners swap balls and hit their second shots.',
     'The team selects which ball to continue playing.',
     'Partners alternate shots with the selected ball until holed out.',
+  ],
+  'match-play': [
+    'Play is hole-by-hole competition.',
+    'The player or team with the lowest score on a hole wins that hole.',
+    'Match is won when one side leads by more holes than remain to play.',
+    'Can be played individually or in teams using best ball scoring.',
+  ],
+  scramble: [
+    'All team members tee off on each hole.',
+    'The team selects the best shot and all players hit their next shot from that spot.',
+    'This process continues until the ball is holed.',
+    'Typically played with 2-4 person teams, great for mixed skill levels.',
   ],
   skins: [
     'Each hole is worth a set amount (a "skin").',
@@ -140,6 +194,34 @@ export const gameConfigFields: GameConfigFields = {
         { value: 'stroke', label: 'Stroke Play' },
         { value: 'match', label: 'Match Play' },
       ]
+    },
+  ],
+  'match-play': [
+    { key: 'betAmount', label: 'Bet Amount ($)', type: 'number', defaultValue: 20, min: 1, max: 1000, step: 5 },
+    { key: 'useHandicaps', label: 'Use Handicaps', type: 'toggle', defaultValue: true },
+    {
+      key: 'teamFormat',
+      label: 'Team Format',
+      type: 'select',
+      defaultValue: 'individual',
+      options: [
+        { value: 'individual', label: 'Individual' },
+        { value: 'best-ball', label: 'Best Ball Teams' },
+      ]
+    },
+    { key: 'holes', label: 'Number of Holes', type: 'number', defaultValue: 18, min: 9, max: 18, step: 9 },
+  ],
+  scramble: [
+    { key: 'betAmount', label: 'Bet Amount ($)', type: 'number', defaultValue: 20, min: 1, max: 1000, step: 5 },
+    { key: 'useHandicaps', label: 'Use Team Handicaps', type: 'toggle', defaultValue: true },
+    { key: 'teamSize', label: 'Team Size', type: 'number', defaultValue: 2, min: 2, max: 4 },
+    {
+      key: 'driverLimit',
+      label: 'Driver Limit Per Player',
+      type: 'number',
+      defaultValue: 0,
+      min: 0,
+      max: 18,
     },
   ],
   skins: [
