@@ -67,3 +67,26 @@ export const validateGHINNumber = (ghinNumber: string): boolean => {
 export const formatHandicapIndex = (handicapIndex: number): string => {
   return handicapIndex >= 0 ? `+${handicapIndex.toFixed(1)}` : handicapIndex.toFixed(1);
 };
+
+/**
+ * Apply handicap to a score proportionally based on holes played
+ * @param grossScore - The total strokes
+ * @param handicap - The player's handicap
+ * @param holesPlayed - Number of holes completed
+ * @param totalHoles - Total holes in the round (default 18)
+ * @returns Adjusted score with handicap applied
+ */
+export const applyHandicapToScore = (
+  grossScore: number,
+  handicap: number,
+  holesPlayed: number,
+  totalHoles: number = 18
+): number => {
+  if (holesPlayed === 0) return grossScore;
+  
+  // Calculate proportional handicap based on holes played
+  const proportionalHandicap = Math.round((handicap * holesPlayed) / totalHoles);
+  
+  // Return net score (gross - handicap)
+  return grossScore - proportionalHandicap;
+};

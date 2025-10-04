@@ -9,7 +9,9 @@ import { toast } from '@/hooks/use-toast';
 import PressInitiationModal from './press/PressInitiationModal';
 import BettingStatusCard from './BettingStatusCard';
 import ActivePressBets from './ActivePressBets';
+import PlayerSelectionModal from './PlayerSelectionModal';
 import type { PressRequest, CourseHole } from '@/types/press';
+import { autoResolveBets } from '@/utils/betResolution';
 
 interface LiveScorecardProps {
   tournamentId: string;
@@ -35,7 +37,8 @@ const LiveScorecard: React.FC<LiveScorecardProps> = ({
   const [myPosition, setMyPosition] = useState<number | null>(null);
   const [pressBets, setPressBets] = useState<any[]>([]);
   const [showPressModal, setShowPressModal] = useState(false);
-  const [showSideBetModal, setShowSideBetModal] = useState(false);
+  const [showPlayerSelection, setShowPlayerSelection] = useState(false);
+  const [betInitiationType, setBetInitiationType] = useState<'press' | 'side-bet'>('press');
   const [selectedPlayer, setSelectedPlayer] = useState<{ id: string; name: string; currentHole: number } | null>(null);
   const [profiles, setProfiles] = useState<Map<string, any>>(new Map());
 
@@ -200,7 +203,12 @@ const LiveScorecard: React.FC<LiveScorecardProps> = ({
     }
   };
 
-  const handleInitiatePress = (player: { id: string; name: string; currentHole: number }) => {
+  const handleOpenPlayerSelection = (type: 'press' | 'side-bet') => {
+    setBetInitiationType(type);
+    setShowPlayerSelection(true);
+  };
+
+  const handleSelectPlayer = (player: { id: string; name: string; currentHole: number }) => {
     setSelectedPlayer(player);
     setShowPressModal(true);
   };
@@ -323,6 +331,19 @@ const LiveScorecard: React.FC<LiveScorecardProps> = ({
       // Auto-advance to next hole
       if (hole < 18) {
         setTimeout(() => setCurrentHole(hole + 1), 300);
+      }
+
+      // Auto-resolve bets after score entry
+      if (tournamentId) {
+        autoResolveBets(tournamentId).then(count => {
+          if (count > 0) {
+            toast({
+              title: "Bets resolved!",
+              description: `${count} bet${count > 1 ? 's' : ''} settled`,
+            });
+            fetchPressBets();
+          }
+        });
       }
 
     } catch (error: any) {
@@ -480,24 +501,7 @@ const LiveScorecard: React.FC<LiveScorecardProps> = ({
             <Button
               variant="outline"
               className="h-14 flex items-center justify-center gap-2 hover:bg-emerald-50 active:scale-95 transition-transform"
-              onClick={() => {
-                // Get eligible players from leaderboard
-                const eligible = leaderboard.filter(p => p.userId !== user?.id && p.thru > 0);
-                if (eligible.length > 0) {
-                  const player = eligible[0];
-                  handleInitiatePress({
-                    id: player.userId,
-                    name: player.name,
-                    currentHole: player.thru
-                  });
-                } else {
-                  toast({
-                    title: "No eligible players",
-                    description: "Wait for others to start playing",
-                    variant: "destructive"
-                  });
-                }
-              }}
+              onClick={() => handleOpenPlayerSelection('press')}
             >
               <DollarSign className="h-5 w-5" />
               <span>Press</span>
@@ -505,23 +509,7 @@ const LiveScorecard: React.FC<LiveScorecardProps> = ({
             <Button
               variant="outline"
               className="h-14 flex items-center justify-center gap-2 hover:bg-blue-50 active:scale-95 transition-transform"
-              onClick={() => {
-                const eligible = leaderboard.filter(p => p.userId !== user?.id && p.thru > 0);
-                if (eligible.length > 0) {
-                  const player = eligible[0];
-                  handleInitiatePress({
-                    id: player.userId,
-                    name: player.name,
-                    currentHole: player.thru
-                  });
-                } else {
-                  toast({
-                    title: "No eligible players",
-                    description: "Wait for others to start playing",
-                    variant: "destructive"
-                  });
-                }
-              }}
+              onClick={() => handleOpenPlayerSelection('side-bet')}
             >
               <Plus className="h-5 w-5" />
               <span>Side Bet</span>
@@ -630,6 +618,22 @@ const LiveScorecard: React.FC<LiveScorecardProps> = ({
           </div>
         )}
       </div>
+
+      {/* Player Selection Modal */}
+      <PlayerSelectionModal
+        isOpen={showPlayerSelection}
+        onClose={() => setShowPlayerSelection(false)}
+        players={leaderboard.filter(p => p.userId !== user?.id).map(p => ({
+          id: p.userId,
+          name: p.name,
+          handicap: profiles.get(p.userId)?.handicap,
+          currentHole: Math.min(p.thru + 1, 18),
+          thru: p.thru,
+          toPar: p.toPar
+        }))}
+        onSelectPlayer={handleSelectPlayer}
+        title={betInitiationType === 'press' ? 'Select Player for Press' : 'Select Player for Side Bet'}
+      />
 
       {/* Press Initiation Modal */}
       {selectedPlayer && (
