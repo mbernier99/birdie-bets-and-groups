@@ -85,9 +85,9 @@ const Index = memo(() => {
       <div className="relative z-10">
         
         {/* Hero Section */}
-        <div className={`mx-4 sm:mx-6 lg:mx-8 ${isMobile ? '' : 'mt-20'}`}>
-          <div className={`${isMobile ? '' : 'bg-emerald-900/60 backdrop-blur-sm'} ${isMobile ? 'text-white' : 'text-white'} relative overflow-hidden ${isMobile ? '' : 'rounded-2xl'}`}>
-            <div className={`max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 ${isMobile ? 'pt-6 pb-12' : 'py-20'} relative z-10`}>
+        <div className={`${isMobile ? 'mx-4 sm:mx-6 lg:mx-8' : 'flex items-center justify-center min-h-[80vh]'}`}>
+          <div className={`${isMobile ? '' : 'bg-emerald-900/60 backdrop-blur-sm max-w-5xl mx-auto'} ${isMobile ? 'text-white' : 'text-white'} relative overflow-hidden ${isMobile ? '' : 'rounded-2xl'}`}>
+            <div className={`max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 ${isMobile ? 'pt-6 pb-12' : 'py-16'} relative z-10`}>
               <div className="text-center">
                 {/* Logo */}
                 <div className={`flex justify-center ${isMobile ? 'mb-6' : 'mb-8'}`}>
