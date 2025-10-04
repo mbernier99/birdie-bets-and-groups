@@ -93,7 +93,7 @@ const Index = memo(() => {
                   {isMobile ? (
                     <img src="/lovable-uploads/bandon-dunes-logo.png" alt="Bandon Dunes Logo" className="object-contain h-32 w-auto" />
                   ) : (
-                    <img src="/lovable-uploads/loopr-logo-new.png" alt="LOOPR Logo" className="object-contain h-28 w-auto" />
+                    <img src="/lovable-uploads/loopr-logo-green.png" alt="LOOPR Logo" className="object-contain h-40 w-auto" />
                   )}
                 </div>
                 
