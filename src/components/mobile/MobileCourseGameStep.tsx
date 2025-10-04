@@ -203,15 +203,20 @@ const MobileCourseGameStep: React.FC<MobileCourseGameStepProps> = ({ data, onDat
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div>
-                <Label className="text-xs">Entry Fee</Label>
-                <Input
-                  type="number"
-                  value={data.wagering.entryFee}
-                  onChange={(e) => handleWageringChange('entryFee', parseFloat(e.target.value))}
-                  className="h-8"
-                />
-              </div>
+                <div>
+                  <Label className="text-xs">Entry Fee</Label>
+                  <Input
+                    type="number"
+                    value={data.wagering.entryFee === 0 ? '' : data.wagering.entryFee}
+                    onChange={(e) => {
+                      const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                      if (!isNaN(value)) {
+                        handleWageringChange('entryFee', value);
+                      }
+                    }}
+                    className="h-8"
+                  />
+                </div>
               <div>
                 <Label className="text-xs">Payout Structure</Label>
                 <Select 

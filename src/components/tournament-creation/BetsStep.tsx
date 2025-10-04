@@ -53,8 +53,13 @@ const BetsStep: React.FC<BetsStepProps> = ({ data, onDataChange }) => {
                   type="number"
                   min="0"
                   step="1"
-                  value={data.wagering.entryFee}
-                  onChange={(e) => handleWageringChange('entryFee', parseFloat(e.target.value) || 0)}
+                  value={data.wagering.entryFee === 0 ? '' : data.wagering.entryFee}
+                  onChange={(e) => {
+                    const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                    if (!isNaN(value)) {
+                      handleWageringChange('entryFee', value);
+                    }
+                  }}
                   className="h-12 text-lg"
                   placeholder="0"
                 />
@@ -116,7 +121,28 @@ const BetsStep: React.FC<BetsStepProps> = ({ data, onDataChange }) => {
                       max="100"
                       step="5"
                       value={data.wagering.firstPlacePercentage || 100}
-                      onChange={(e) => handleWageringChange('firstPlacePercentage', parseFloat(e.target.value) || 100)}
+                      onChange={(e) => {
+                        const value = parseFloat(e.target.value) || 0;
+                        handleWageringChange('firstPlacePercentage', value);
+                        
+                        // Auto-adjust other percentages if needed
+                        const secondPct = data.wagering.secondPlaceEnabled ? (data.wagering.secondPlacePercentage || 0) : 0;
+                        const thirdPct = data.wagering.thirdPlaceEnabled ? (data.wagering.thirdPlacePercentage || 0) : 0;
+                        const remaining = 100 - value;
+                        
+                        if (data.wagering.secondPlaceEnabled && !data.wagering.thirdPlaceEnabled && remaining !== secondPct) {
+                          handleWageringChange('secondPlacePercentage', remaining);
+                        } else if (!data.wagering.secondPlaceEnabled && data.wagering.thirdPlaceEnabled && remaining !== thirdPct) {
+                          handleWageringChange('thirdPlacePercentage', remaining);
+                        } else if (data.wagering.secondPlaceEnabled && data.wagering.thirdPlaceEnabled) {
+                          // Distribute remaining proportionally
+                          const total = secondPct + thirdPct;
+                          if (total > 0) {
+                            handleWageringChange('secondPlacePercentage', Math.round((secondPct / total) * remaining));
+                            handleWageringChange('thirdPlacePercentage', Math.round((thirdPct / total) * remaining));
+                          }
+                        }
+                      }}
                       className="h-12 text-lg"
                     />
                     <span className="text-lg">%</span>
@@ -163,7 +189,14 @@ const BetsStep: React.FC<BetsStepProps> = ({ data, onDataChange }) => {
                         max="100"
                         step="5"
                         value={data.wagering.secondPlacePercentage || 30}
-                        onChange={(e) => handleWageringChange('secondPlacePercentage', parseFloat(e.target.value) || 30)}
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value) || 0;
+                          handleWageringChange('secondPlacePercentage', value);
+                          
+                          // Auto-adjust first place percentage
+                          const thirdPct = data.wagering.thirdPlaceEnabled ? (data.wagering.thirdPlacePercentage || 0) : 0;
+                          handleWageringChange('firstPlacePercentage', 100 - value - thirdPct);
+                        }}
                         className="h-12 text-lg"
                       />
                       <span className="text-lg">%</span>
@@ -220,7 +253,14 @@ const BetsStep: React.FC<BetsStepProps> = ({ data, onDataChange }) => {
                         max="100"
                         step="5"
                         value={data.wagering.thirdPlacePercentage || 20}
-                        onChange={(e) => handleWageringChange('thirdPlacePercentage', parseFloat(e.target.value) || 20)}
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value) || 0;
+                          handleWageringChange('thirdPlacePercentage', value);
+                          
+                          // Auto-adjust first place percentage
+                          const secondPct = data.wagering.secondPlaceEnabled ? (data.wagering.secondPlacePercentage || 0) : 0;
+                          handleWageringChange('firstPlacePercentage', 100 - value - secondPct);
+                        }}
                         className="h-12 text-lg"
                       />
                       <span className="text-lg">%</span>

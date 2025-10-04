@@ -31,8 +31,13 @@ const WageringStep: React.FC<WageringStepProps> = ({ data, onDataChange }) => {
             type="number"
             min="0"
             step="0.01"
-            value={data.wagering.entryFee}
-            onChange={(e) => handleWageringChange('entryFee', parseFloat(e.target.value) || 0)}
+            value={data.wagering.entryFee === 0 ? '' : data.wagering.entryFee}
+            onChange={(e) => {
+              const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
+              if (!isNaN(value)) {
+                handleWageringChange('entryFee', value);
+              }
+            }}
             placeholder="0.00"
           />
           <p className="text-sm text-gray-500">Set to 0 for free tournaments</p>
