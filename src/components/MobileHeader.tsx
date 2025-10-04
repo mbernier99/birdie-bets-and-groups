@@ -24,7 +24,7 @@ const MobileHeader = ({ title }: MobileHeaderProps) => {
         {/* Left side - LOOPR Logo */}
         <Link to="/" className="flex-shrink-0 drop-shadow-lg">
           <img 
-            src="/lovable-uploads/loopr-logo-new.png" 
+            src="/lovable-uploads/loopr-logo-white.png" 
             alt="LOOPR Logo" 
             className="object-contain"
             style={{
