@@ -19,6 +19,14 @@ const BetsStep: React.FC<BetsStepProps> = ({ data, onDataChange }) => {
     });
   };
 
+  // Batch update helper to avoid stale state on multiple rapid updates
+  const updateWagering = (updates: Partial<typeof data.wagering>) => {
+    onDataChange('wagering', {
+      ...data.wagering,
+      ...updates,
+    });
+  };
+
   const handleGameTypeRulesChange = (field: string, value: any) => {
     onDataChange('gameType', {
       ...data.gameType,
@@ -112,28 +120,33 @@ const BetsStep: React.FC<BetsStepProps> = ({ data, onDataChange }) => {
                       min="0"
                       max="100"
                       step="5"
-                      value={data.wagering.firstPlacePercentage || 100}
+                      value={data.wagering.firstPlacePercentage ?? 100}
                       onChange={(e) => {
-                        const value = parseFloat(e.target.value) || 0;
-                        handleWageringChange('firstPlacePercentage', value);
-                        
-                        // Auto-adjust other percentages if needed
-                        const secondPct = data.wagering.secondPlaceEnabled ? (data.wagering.secondPlacePercentage || 0) : 0;
-                        const thirdPct = data.wagering.thirdPlaceEnabled ? (data.wagering.thirdPlacePercentage || 0) : 0;
-                        const remaining = 100 - value;
-                        
-                        if (data.wagering.secondPlaceEnabled && !data.wagering.thirdPlaceEnabled && remaining !== secondPct) {
-                          handleWageringChange('secondPlacePercentage', remaining);
-                        } else if (!data.wagering.secondPlaceEnabled && data.wagering.thirdPlaceEnabled && remaining !== thirdPct) {
-                          handleWageringChange('thirdPlacePercentage', remaining);
-                        } else if (data.wagering.secondPlaceEnabled && data.wagering.thirdPlaceEnabled) {
-                          // Distribute remaining proportionally
-                          const total = secondPct + thirdPct;
-                          if (total > 0) {
-                            handleWageringChange('secondPlacePercentage', Math.round((secondPct / total) * remaining));
-                            handleWageringChange('thirdPlacePercentage', Math.round((thirdPct / total) * remaining));
-                          }
+                        const value = Number.isNaN(parseFloat(e.target.value)) ? 0 : parseFloat(e.target.value);
+                        const secondEnabled = !!data.wagering.secondPlaceEnabled;
+                        const thirdEnabled = !!data.wagering.thirdPlaceEnabled;
+                        const currentSecond = secondEnabled ? (data.wagering.secondPlacePercentage || 0) : 0;
+                        const currentThird = thirdEnabled ? (data.wagering.thirdPlacePercentage || 0) : 0;
+
+                        const remaining = Math.max(0, 100 - Math.max(0, Math.min(100, value)));
+
+                        let newSecond = currentSecond;
+                        let newThird = currentThird;
+                        if (secondEnabled && !thirdEnabled) {
+                          newSecond = remaining;
+                        } else if (!secondEnabled && thirdEnabled) {
+                          newThird = remaining;
+                        } else if (secondEnabled && thirdEnabled) {
+                          const total = currentSecond + currentThird || 1;
+                          newSecond = Math.round((currentSecond / total) * remaining);
+                          newThird = Math.max(0, remaining - newSecond);
                         }
+
+                        updateWagering({
+                          firstPlacePercentage: Math.max(0, Math.min(100, value)),
+                          ...(secondEnabled ? { secondPlacePercentage: newSecond } : {}),
+                          ...(thirdEnabled ? { thirdPlacePercentage: newThird } : {}),
+                        });
                       }}
                       className="h-12 text-lg"
                     />
@@ -156,14 +169,15 @@ const BetsStep: React.FC<BetsStepProps> = ({ data, onDataChange }) => {
                 <Switch
                   checked={data.wagering.secondPlaceEnabled || false}
                   onCheckedChange={(checked) => {
-                    handleWageringChange('secondPlaceEnabled', checked);
-                    if (checked && !data.wagering.secondPlacePercentage) {
-                      handleWageringChange('secondPlacePercentage', 30);
-                      handleWageringChange('firstPlacePercentage', 70);
-                    } else if (!checked) {
-                      handleWageringChange('firstPlacePercentage', 
-                        100 - (data.wagering.thirdPlaceEnabled ? (data.wagering.thirdPlacePercentage || 0) : 0)
-                      );
+                    if (checked) {
+                      const secondPct = data.wagering.secondPlacePercentage ?? 30;
+                      const thirdPct = data.wagering.thirdPlaceEnabled ? (data.wagering.thirdPlacePercentage || 0) : 0;
+                      const firstPct = Math.max(0, 100 - secondPct - thirdPct);
+                      updateWagering({ secondPlaceEnabled: true, secondPlacePercentage: secondPct, firstPlacePercentage: firstPct });
+                    } else {
+                      const thirdPct = data.wagering.thirdPlaceEnabled ? (data.wagering.thirdPlacePercentage || 0) : 0;
+                      const firstPct = Math.max(0, 100 - thirdPct);
+                      updateWagering({ secondPlaceEnabled: false, secondPlacePercentage: 0, firstPlacePercentage: firstPct });
                     }
                   }}
                 />
@@ -180,14 +194,13 @@ const BetsStep: React.FC<BetsStepProps> = ({ data, onDataChange }) => {
                         min="0"
                         max="100"
                         step="5"
-                        value={data.wagering.secondPlacePercentage || 30}
+                        value={data.wagering.secondPlacePercentage ?? 30}
                         onChange={(e) => {
-                          const value = parseFloat(e.target.value) || 0;
-                          handleWageringChange('secondPlacePercentage', value);
-                          
-                          // Auto-adjust first place percentage
+                          const value = Number.isNaN(parseFloat(e.target.value)) ? 0 : parseFloat(e.target.value);
+                          const v = Math.max(0, Math.min(100, value));
                           const thirdPct = data.wagering.thirdPlaceEnabled ? (data.wagering.thirdPlacePercentage || 0) : 0;
-                          handleWageringChange('firstPlacePercentage', 100 - value - thirdPct);
+                          const firstPct = Math.max(0, 100 - v - thirdPct);
+                          updateWagering({ secondPlacePercentage: v, firstPlacePercentage: firstPct });
                         }}
                         className="h-12 text-lg"
                       />
@@ -211,23 +224,17 @@ const BetsStep: React.FC<BetsStepProps> = ({ data, onDataChange }) => {
                 <Switch
                   checked={data.wagering.thirdPlaceEnabled || false}
                   onCheckedChange={(checked) => {
-                    handleWageringChange('thirdPlaceEnabled', checked);
-                    if (checked && !data.wagering.thirdPlacePercentage) {
-                      handleWageringChange('thirdPlacePercentage', 20);
-                      if (!data.wagering.secondPlaceEnabled) {
-                        handleWageringChange('firstPlacePercentage', 80);
+                    const secondEnabled = !!data.wagering.secondPlaceEnabled;
+                    if (checked) {
+                      const thirdPct = data.wagering.thirdPlacePercentage ?? 20;
+                      if (!secondEnabled) {
+                        updateWagering({ thirdPlaceEnabled: true, thirdPlacePercentage: thirdPct, firstPlacePercentage: Math.max(0, 100 - thirdPct) });
                       } else {
-                        handleWageringChange('firstPlacePercentage', 50);
-                        handleWageringChange('secondPlacePercentage', 30);
+                        updateWagering({ thirdPlaceEnabled: true, thirdPlacePercentage: thirdPct, firstPlacePercentage: 50, secondPlacePercentage: Math.max(0, 100 - 50 - thirdPct) });
                       }
-                    } else if (!checked) {
-                      // When disabling 3rd place, redistribute percentages
-                      if (!data.wagering.secondPlaceEnabled) {
-                        handleWageringChange('firstPlacePercentage', 100);
-                      } else {
-                        handleWageringChange('firstPlacePercentage', 70);
-                        handleWageringChange('secondPlacePercentage', 30);
-                      }
+                    } else {
+                      const secondPct = secondEnabled ? (data.wagering.secondPlacePercentage || 0) : 0;
+                      updateWagering({ thirdPlaceEnabled: false, thirdPlacePercentage: 0, firstPlacePercentage: Math.max(0, 100 - secondPct) });
                     }
                   }}
                 />
@@ -244,14 +251,13 @@ const BetsStep: React.FC<BetsStepProps> = ({ data, onDataChange }) => {
                         min="0"
                         max="100"
                         step="5"
-                        value={data.wagering.thirdPlacePercentage || 20}
+                         value={data.wagering.thirdPlacePercentage ?? 20}
                         onChange={(e) => {
-                          const value = parseFloat(e.target.value) || 0;
-                          handleWageringChange('thirdPlacePercentage', value);
-                          
-                          // Auto-adjust first place percentage
+                          const value = Number.isNaN(parseFloat(e.target.value)) ? 0 : parseFloat(e.target.value);
+                          const v = Math.max(0, Math.min(100, value));
                           const secondPct = data.wagering.secondPlaceEnabled ? (data.wagering.secondPlacePercentage || 0) : 0;
-                          handleWageringChange('firstPlacePercentage', 100 - value - secondPct);
+                          const firstPct = Math.max(0, 100 - v - secondPct);
+                          updateWagering({ thirdPlacePercentage: v, firstPlacePercentage: firstPct });
                         }}
                         className="h-12 text-lg"
                       />
