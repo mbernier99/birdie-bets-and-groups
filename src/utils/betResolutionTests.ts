@@ -131,6 +131,66 @@ export const betResolutionTestScenarios: TestScenario[] = [
     startHole: 1,
     expectedWinner: 'Frank', // Even with handicap
     courseSlope: 113
+  },
+
+  // Edge Case - Scratch Golfer vs High Handicap
+  {
+    name: 'Scratch vs High Handicap',
+    description: 'Zero handicap vs 24 handicap player',
+    player1: {
+      name: 'Pro',
+      handicap: 0,
+      scores: [4, 5, 3, 6, 4, 5, 4, 3, 5, 4, 4, 5, 6, 4, 5, 3, 6, 4] // Total: 80
+    },
+    player2: {
+      name: 'Beginner',
+      handicap: 24,
+      scores: [6, 7, 5, 8, 6, 7, 6, 5, 7, 6, 6, 7, 8, 6, 7, 5, 8, 6] // Total: 116
+    },
+    betType: 'total-strokes',
+    startHole: 1,
+    expectedWinner: 'Pro', // 80 vs 116-24=92
+    courseSlope: 113
+  },
+
+  // Edge Case - Partial Round
+  {
+    name: 'Partial Round - 6 Holes',
+    description: 'Bet on first 6 holes with handicap',
+    player1: {
+      name: 'Sarah',
+      handicap: 12,
+      scores: [5, 6, 4, 5, 4, 6] // Total: 30
+    },
+    player2: {
+      name: 'Tim',
+      handicap: 8,
+      scores: [4, 5, 5, 6, 5, 5] // Total: 30
+    },
+    betType: 'this-hole', // Testing first hole only
+    startHole: 1,
+    expectedWinner: 'Tim', // 4 vs 5
+    courseSlope: 113
+  },
+
+  // Edge Case - Large Handicap Difference
+  {
+    name: 'Large Handicap Gap',
+    description: '5 handicap vs 20 handicap over 9 holes',
+    player1: {
+      name: 'LowHandicap',
+      handicap: 5,
+      scores: [4, 5, 3, 4, 5, 4, 5, 3, 5] // Total: 38
+    },
+    player2: {
+      name: 'HighHandicap',
+      handicap: 20,
+      scores: [6, 7, 5, 6, 7, 6, 7, 5, 7] // Total: 56
+    },
+    betType: 'remaining-holes',
+    startHole: 1,
+    expectedWinner: 'LowHandicap', // 38-3=35 vs 56-10=46
+    courseSlope: 113
   }
 ];
 
