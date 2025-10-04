@@ -99,14 +99,6 @@ const BetsStep: React.FC<BetsStepProps> = ({ data, onDataChange }) => {
           <div className="space-y-4">
             <h3 className="text-xl font-semibold">Prize Distribution</h3>
             
-            {totalPercentage !== 100 && (
-              <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-3">
-                <p className="text-sm text-destructive font-medium">
-                  Total must equal 100% (currently {totalPercentage}%)
-                </p>
-              </div>
-            )}
-
             {/* First Place */}
             <div className="rounded-xl border-2 p-4 space-y-3">
               <div className="font-semibold text-lg">1st Place</div>

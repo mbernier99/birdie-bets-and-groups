@@ -165,6 +165,15 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
           title: "Add at least 2 players to continue",
           variant: "destructive"
         });
+      } else if (currentStep === 2 && tournamentData.wagering.entryFee > 0) {
+        const totalPercentage = (tournamentData.wagering.firstPlacePercentage || 100) + 
+          (tournamentData.wagering.secondPlaceEnabled ? (tournamentData.wagering.secondPlacePercentage || 0) : 0) +
+          (tournamentData.wagering.thirdPlaceEnabled ? (tournamentData.wagering.thirdPlacePercentage || 0) : 0);
+        toast({
+          title: "Prize distribution must total 100%",
+          description: `Current total: ${totalPercentage}%`,
+          variant: "destructive"
+        });
       } else {
         toast({
           title: "Please complete required fields",
@@ -252,6 +261,13 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
       case 1:
         return tournamentData.course.name.trim() && tournamentData.gameType.type;
       case 2:
+        // Validate prize distribution percentages if entry fee is set
+        if (tournamentData.wagering.entryFee > 0) {
+          const totalPercentage = (tournamentData.wagering.firstPlacePercentage || 100) + 
+            (tournamentData.wagering.secondPlaceEnabled ? (tournamentData.wagering.secondPlacePercentage || 0) : 0) +
+            (tournamentData.wagering.thirdPlaceEnabled ? (tournamentData.wagering.thirdPlacePercentage || 0) : 0);
+          return totalPercentage === 100;
+        }
         return true;
       default:
         return false;
