@@ -76,17 +76,17 @@ const Index = memo(() => {
   const activeTournaments = user ? tournaments.filter(t => t.status === 'draft' || t.status === 'lobby' || t.status === 'live') : [];
 
   return (
-    <div className={`min-h-screen ${isMobile ? 'bg-contain bg-top bg-no-repeat' : 'bg-cover bg-center bg-fixed'} pb-20 md:pb-0 relative`}
-         style={isMobile ? { backgroundImage: 'url(/lovable-uploads/mobile-hero-background.jpg)' } : { backgroundImage: 'url(/lovable-uploads/desktop-hero-background.jpg)' }}>
-      {!isMobile && <div className="absolute inset-0 bg-white/30 backdrop-blur-[2px]" />}
+    <div className={`min-h-screen ${isMobile ? 'bg-contain bg-top bg-no-repeat' : ''} pb-20 md:pb-0`}
+         style={isMobile ? { backgroundImage: 'url(/lovable-uploads/mobile-hero-background.jpg)' } : {}}>
       <Navbar />
       
       {/* Content Wrapper */}
       <div className="relative z-10">
         
         {/* Hero Section */}
-        <div className={`${isMobile ? 'mx-4 sm:mx-6 lg:mx-8' : 'flex items-center justify-center min-h-[80vh]'}`}>
-          <div className={`${isMobile ? '' : 'bg-emerald-900/60 max-w-5xl mx-auto'} ${isMobile ? 'text-white' : 'text-white'} relative overflow-hidden ${isMobile ? '' : 'rounded-2xl'}`}>
+        <div className={`${isMobile ? 'mx-4 sm:mx-6 lg:mx-8' : 'flex items-center justify-center min-h-[80vh] bg-cover bg-center'}`}
+             style={!isMobile ? { backgroundImage: 'url(/lovable-uploads/desktop-hero-background.jpg)' } : {}}>
+          <div className={`${isMobile ? '' : 'bg-emerald-900/70 max-w-5xl mx-auto shadow-2xl'} ${isMobile ? 'text-white' : 'text-white'} relative overflow-hidden ${isMobile ? '' : 'rounded-2xl'}`}>
             <div className={`max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 ${isMobile ? 'pt-6 pb-12' : 'py-16'} relative z-10`}>
               <div className="text-center">
                 {/* Logo */}
@@ -244,9 +244,9 @@ const Index = memo(() => {
         )}
       </div>
       
-      {/* Desktop: Lower Content Sections */}
+        {/* Desktop: Lower Content Sections */}
       {!isMobile && user ? (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 bg-gradient-to-br from-emerald-50 via-white to-emerald-50">
           {isNewUser ? (
             <WelcomeTutorialSection 
               onCreateTournament={handleCreateTournament} 
@@ -269,10 +269,10 @@ const Index = memo(() => {
           </div>
         </div>
       ) : !isMobile && !user ? (
-        <>
+        <div className="bg-gradient-to-br from-emerald-50 via-white to-emerald-50">
           <HowItWorksSection />
           <FAQSection />
-        </>
+        </div>
       ) : null}
 
       {/* Modals */}
