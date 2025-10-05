@@ -9,7 +9,7 @@ export interface Press {
   startHole: number;
   gameType: 'total-strokes' | 'head-to-head' | 'this-hole' | 'remaining-holes' | 'closest-to-pin' | 'longest-drive' | 'first-to-green' | 'course-position';
   winCondition: string;
-  status: 'pending' | 'accepted' | 'declined' | 'expired' | 'active' | 'completed';
+  status: 'pending' | 'accepted' | 'declined' | 'expired' | 'active' | 'completed' | 'pushed';
   initiatedAt: number;
   respondedAt?: number;
   completedAt?: number;

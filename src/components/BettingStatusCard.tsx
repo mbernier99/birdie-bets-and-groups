@@ -23,6 +23,8 @@ const BettingStatusCard: React.FC<BettingStatusCardProps> = ({ pressBets, userId
         } else if (bet.initiator_id === userId || bet.target_id === userId) {
           totalOwed += amount;
         }
+      } else if (bet.status === 'pushed') {
+        // Pushed bets (ties) don't count toward won or owed
       } else if (bet.status === 'active' || bet.status === 'accepted') {
         activeBets++;
       }

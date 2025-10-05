@@ -17,7 +17,7 @@ const PressLedger: React.FC<PressLedgerProps> = ({
   currentUserId,
   players
 }) => {
-  const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'pending'>('all');
+  const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'pending' | 'pushed'>('all');
 
   const getPlayerName = (playerId: string) => {
     return players.find(p => p.id === playerId)?.name || 'Unknown';
@@ -28,6 +28,7 @@ const PressLedger: React.FC<PressLedgerProps> = ({
     if (filter === 'active') return press.status === 'accepted' || press.status === 'active';
     if (filter === 'completed') return press.status === 'completed';
     if (filter === 'pending') return press.status === 'pending';
+    if (filter === 'pushed') return press.status === 'pushed';
     return true;
   });
 
@@ -43,6 +44,7 @@ const PressLedger: React.FC<PressLedgerProps> = ({
       case 'expired': return 'bg-gray-100 text-gray-800';
       case 'active': return 'bg-blue-100 text-blue-800';
       case 'completed': return 'bg-purple-100 text-purple-800';
+      case 'pushed': return 'bg-gray-100 text-gray-600';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -74,6 +76,7 @@ const PressLedger: React.FC<PressLedgerProps> = ({
               <SelectItem value="active">Active</SelectItem>
               <SelectItem value="completed">Completed</SelectItem>
               <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="pushed">Pushed (Tie)</SelectItem>
             </SelectContent>
           </Select>
         </CardTitle>
