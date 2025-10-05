@@ -569,6 +569,156 @@ export type Database = {
           },
         ]
       }
+      side_game_results: {
+        Row: {
+          amount: number
+          created_at: string
+          game_type: string
+          hole_number: number
+          id: string
+          metadata: Json | null
+          tournament_id: string
+          updated_at: string
+          winner_id: string | null
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          game_type: string
+          hole_number: number
+          id?: string
+          metadata?: Json | null
+          tournament_id: string
+          updated_at?: string
+          winner_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          game_type?: string
+          hole_number?: number
+          id?: string
+          metadata?: Json | null
+          tournament_id?: string
+          updated_at?: string
+          winner_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "side_game_results_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "side_game_results_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      skins_tracking: {
+        Row: {
+          created_at: string
+          hole_number: number
+          id: string
+          is_carried_over: boolean | null
+          pot_amount: number
+          tournament_id: string
+          winner_id: string | null
+          winning_score: number | null
+        }
+        Insert: {
+          created_at?: string
+          hole_number: number
+          id?: string
+          is_carried_over?: boolean | null
+          pot_amount?: number
+          tournament_id: string
+          winner_id?: string | null
+          winning_score?: number | null
+        }
+        Update: {
+          created_at?: string
+          hole_number?: number
+          id?: string
+          is_carried_over?: boolean | null
+          pot_amount?: number
+          tournament_id?: string
+          winner_id?: string | null
+          winning_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skins_tracking_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "skins_tracking_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      snake_tracking: {
+        Row: {
+          amount: number
+          created_at: string
+          current_holder_id: string | null
+          id: string
+          is_final: boolean | null
+          last_hole_updated: number | null
+          snake_type: string
+          tournament_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          current_holder_id?: string | null
+          id?: string
+          is_final?: boolean | null
+          last_hole_updated?: number | null
+          snake_type: string
+          tournament_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          current_holder_id?: string | null
+          id?: string
+          is_final?: boolean | null
+          last_hole_updated?: number | null
+          snake_type?: string
+          tournament_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "snake_tracking_current_holder_id_fkey"
+            columns: ["current_holder_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "snake_tracking_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_messages: {
         Row: {
           created_at: string
@@ -816,6 +966,64 @@ export type Database = {
             columns: ["course_id"]
             isOneToOne: false
             referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wolf_game_state: {
+        Row: {
+          amount: number
+          created_at: string
+          hole_number: number
+          hole_result: string | null
+          id: string
+          is_lone_wolf: boolean | null
+          partner_id: string | null
+          tournament_id: string
+          wolf_player_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          hole_number: number
+          hole_result?: string | null
+          id?: string
+          is_lone_wolf?: boolean | null
+          partner_id?: string | null
+          tournament_id: string
+          wolf_player_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          hole_number?: number
+          hole_result?: string | null
+          id?: string
+          is_lone_wolf?: boolean | null
+          partner_id?: string | null
+          tournament_id?: string
+          wolf_player_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wolf_game_state_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wolf_game_state_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wolf_game_state_wolf_player_id_fkey"
+            columns: ["wolf_player_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
