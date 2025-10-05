@@ -335,11 +335,12 @@ const LiveScorecard: React.FC<LiveScorecardProps> = ({
 
       // Auto-resolve bets after score entry
       if (tournamentId) {
-        autoResolveBets(tournamentId).then(count => {
-          if (count > 0) {
+        autoResolveBets(tournamentId).then(result => {
+          const totalResolved = result.resolvedCount + result.pushedCount;
+          if (totalResolved > 0) {
             toast({
               title: "Bets resolved!",
-              description: `${count} bet${count > 1 ? 's' : ''} settled`,
+              description: `${result.resolvedCount} won, ${result.pushedCount} pushed`,
             });
             fetchPressBets();
           }

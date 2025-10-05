@@ -102,11 +102,7 @@ const App = () => (
                   <Route path="/rules" element={<GolfRules />} />
                   <Route path="/game-formats" element={<GameFormats />} />
                   <Route path="/betting-info" element={<BettingInfo />} />
-                  <Route path="/testing" element={
-                    <ProtectedRoute>
-                      <TestingQA />
-                    </ProtectedRoute>
-                  } />
+                  <Route path="/testing" element={<TestingQA />} />
                   {/* Public tournament invite (no auth required) */}
                   <Route path="/tournament/invite/:tournamentId" element={<TournamentInvite />} />
                   <Route path="/tournament/:id/lobby" element={

@@ -82,7 +82,7 @@ const calculateAdjustedScores = async (
 /**
  * Resolves a "this-hole" bet
  */
-const resolveThisHoleBet = async (params: BetResolutionParams): Promise<string | null> => {
+const resolveThisHoleBet = async (params: BetResolutionParams): Promise<string | null | 'tie'> => {
   const initiatorScore = await calculateAdjustedScores(
     params.initiatorId,
     params.tournamentId,
@@ -108,13 +108,13 @@ const resolveThisHoleBet = async (params: BetResolutionParams): Promise<string |
     return params.targetId;
   }
 
-  return null; // Tie - no winner
+  return 'tie'; // Tie - push the bet
 };
 
 /**
  * Resolves a "remaining-holes" bet
  */
-const resolveRemainingHolesBet = async (params: BetResolutionParams): Promise<string | null> => {
+const resolveRemainingHolesBet = async (params: BetResolutionParams): Promise<string | null | 'tie'> => {
   const initiatorScore = await calculateAdjustedScores(
     params.initiatorId,
     params.tournamentId,
@@ -141,13 +141,13 @@ const resolveRemainingHolesBet = async (params: BetResolutionParams): Promise<st
     return params.targetId;
   }
 
-  return null; // Tie
+  return 'tie'; // Tie - push the bet
 };
 
 /**
  * Resolves a "total-strokes" bet (entire round)
  */
-const resolveTotalStrokesBet = async (params: BetResolutionParams): Promise<string | null> => {
+const resolveTotalStrokesBet = async (params: BetResolutionParams): Promise<string | null | 'tie'> => {
   const initiatorScore = await calculateAdjustedScores(
     params.initiatorId,
     params.tournamentId
@@ -169,13 +169,13 @@ const resolveTotalStrokesBet = async (params: BetResolutionParams): Promise<stri
     return params.targetId;
   }
 
-  return null; // Tie
+  return 'tie'; // Tie - push the bet
 };
 
 /**
  * Resolves a "head-to-head" bet (match play style)
  */
-const resolveHeadToHeadBet = async (params: BetResolutionParams): Promise<string | null> => {
+const resolveHeadToHeadBet = async (params: BetResolutionParams): Promise<string | null | 'tie'> => {
   const initiatorScore = await calculateAdjustedScores(
     params.initiatorId,
     params.tournamentId,
@@ -201,7 +201,7 @@ const resolveHeadToHeadBet = async (params: BetResolutionParams): Promise<string
     return params.targetId;
   }
 
-  return null; // Tie
+  return 'tie'; // Tie - push the bet
 };
 
 /**
@@ -210,10 +210,11 @@ const resolveHeadToHeadBet = async (params: BetResolutionParams): Promise<string
 export const resolveBet = async (params: BetResolutionParams): Promise<{
   winnerId: string | null;
   canResolve: boolean;
+  isTie?: boolean;
   reason?: string;
 }> => {
   try {
-    let winnerId: string | null = null;
+    let winnerId: string | null | 'tie' = null;
 
     switch (params.betType) {
       case 'this-hole':
@@ -244,9 +245,19 @@ export const resolveBet = async (params: BetResolutionParams): Promise<{
         };
     }
 
+    // Handle ties
+    if (winnerId === 'tie') {
+      return {
+        winnerId: null,
+        canResolve: true,
+        isTie: true
+      };
+    }
+
     return {
       winnerId,
-      canResolve: true
+      canResolve: winnerId !== null,
+      isTie: false
     };
   } catch (error: any) {
     console.error('Error resolving bet:', error);
@@ -262,7 +273,11 @@ export const resolveBet = async (params: BetResolutionParams): Promise<{
  * Auto-resolve bets for a tournament
  * Call this periodically or after score entries
  */
-export const autoResolveBets = async (tournamentId: string): Promise<number> => {
+export const autoResolveBets = async (tournamentId: string): Promise<{
+  resolvedCount: number;
+  pushedCount: number;
+  details: string[];
+}> => {
   const { data: activeBets } = await supabase
     .from('press_bets')
     .select('*')
@@ -270,10 +285,12 @@ export const autoResolveBets = async (tournamentId: string): Promise<number> => 
     .eq('status', 'active');
 
   if (!activeBets || activeBets.length === 0) {
-    return 0;
+    return { resolvedCount: 0, pushedCount: 0, details: [] };
   }
 
   let resolvedCount = 0;
+  let pushedCount = 0;
+  const details: string[] = [];
 
   for (const bet of activeBets) {
     const result = await resolveBet({
@@ -285,20 +302,37 @@ export const autoResolveBets = async (tournamentId: string): Promise<number> => 
       tournamentId: bet.tournament_id
     });
 
-    if (result.canResolve && result.winnerId) {
-      // Update bet with winner
-      await supabase
-        .from('press_bets')
-        .update({
-          status: 'completed',
-          winner_id: result.winnerId,
-          completed_at: new Date().toISOString()
-        })
-        .eq('id', bet.id);
+    if (result.canResolve) {
+      if (result.isTie) {
+        // Handle tie - mark as pushed
+        await supabase
+          .from('press_bets')
+          .update({
+            status: 'pushed',
+            completed_at: new Date().toISOString()
+          })
+          .eq('id', bet.id);
 
-      resolvedCount++;
+        pushedCount++;
+        details.push(`Bet ${bet.id}: Pushed (tie)`);
+      } else if (result.winnerId) {
+        // Update bet with winner
+        await supabase
+          .from('press_bets')
+          .update({
+            status: 'completed',
+            winner_id: result.winnerId,
+            completed_at: new Date().toISOString()
+          })
+          .eq('id', bet.id);
+
+        resolvedCount++;
+        details.push(`Bet ${bet.id}: Winner ${result.winnerId}`);
+      }
+    } else {
+      details.push(`Bet ${bet.id}: Cannot resolve - ${result.reason || 'Incomplete scores'}`);
     }
   }
 
-  return resolvedCount;
+  return { resolvedCount, pushedCount, details };
 };
