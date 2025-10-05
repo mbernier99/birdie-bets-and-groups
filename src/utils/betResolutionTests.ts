@@ -109,7 +109,7 @@ export const betResolutionTestScenarios: TestScenario[] = [
     },
     betType: 'remaining-holes',
     startHole: 10,
-    expectedWinner: 'Dave', // With handicap: Charlie 41-5=36, Dave 42-3=39
+    expectedWinner: 'Charlie', // With handicap: Charlie 41-5=36, Dave 42-3=39
     courseSlope: 113
   },
 
