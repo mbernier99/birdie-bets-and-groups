@@ -1,11 +1,13 @@
 
 import React, { useState, useEffect, memo, useCallback } from 'react';
-import { Trophy, Plus, Calendar, Play, LogIn } from 'lucide-react';
+import { Trophy, Plus, Calendar, Play, LogIn, Mail } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useTournaments } from '@/hooks/useTournaments';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useToast } from '@/hooks/use-toast';
 import Navbar from '../components/Navbar';
 import MobileNavigation from '../components/MobileNavigation';
 import TournamentCard from '../components/TournamentCard';
@@ -23,6 +25,7 @@ const Index = memo(() => {
   const [isCreateTournamentModalOpen, setIsCreateTournamentModalOpen] = useState(false);
   const [isPlayNowModalOpen, setIsPlayNowModalOpen] = useState(false);
   const [isNewUser, setIsNewUser] = useState(true);
+  const [waitlistEmail, setWaitlistEmail] = useState('');
   const [userActivity, setUserActivity] = useState({
     hasPlayedTournaments: false,
     totalTournaments: 0,
@@ -34,6 +37,7 @@ const Index = memo(() => {
   const { tournaments, loading } = useTournaments();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { toast } = useToast();
 
   useEffect(() => {
     const loadUserActivity = async () => {
@@ -71,6 +75,18 @@ const Index = memo(() => {
   const handleViewRules = useCallback(() => {
     navigate('/rules');
   }, [navigate]);
+
+  const handleWaitlistSubmit = useCallback((e: React.FormEvent) => {
+    e.preventDefault();
+    if (waitlistEmail) {
+      // TODO: Connect to backend to store waitlist emails
+      toast({
+        title: "You're on the list!",
+        description: "We'll notify you when BetLoopr launches.",
+      });
+      setWaitlistEmail('');
+    }
+  }, [waitlistEmail, toast]);
 
   // Filter active tournaments for authenticated users
   const activeTournaments = user ? tournaments.filter(t => t.status === 'draft' || t.status === 'lobby' || t.status === 'live') : [];
@@ -120,6 +136,54 @@ const Index = memo(() => {
             </div>
           </div>
         </div>
+
+        {/* Coming Soon Section - Desktop and Tablet Only */}
+        {!isMobile && (
+          <div className="bg-gradient-to-br from-emerald-900 via-emerald-800 to-emerald-900 py-24">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+              <div className="inline-block mb-6 px-6 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
+                <span className="text-emerald-200 font-semibold text-sm uppercase tracking-wider">
+                  Coming Soon
+                </span>
+              </div>
+              
+              <h2 className="text-5xl md:text-6xl font-black font-orbitron mb-6 text-white">
+                Be First to Tee Off
+              </h2>
+              
+              <p className="text-xl md:text-2xl text-emerald-100 mb-12 max-w-2xl mx-auto">
+                Join the waitlist and get exclusive early access to revolutionize your golf tournament experience
+              </p>
+              
+              <form onSubmit={handleWaitlistSubmit} className="max-w-md mx-auto">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="relative flex-1">
+                    <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-emerald-600" />
+                    <Input
+                      type="email"
+                      placeholder="Enter your email"
+                      value={waitlistEmail}
+                      onChange={(e) => setWaitlistEmail(e.target.value)}
+                      required
+                      className="pl-12 h-14 text-lg bg-white border-2 border-white focus:border-emerald-300 focus:ring-emerald-300"
+                    />
+                  </div>
+                  <Button 
+                    type="submit"
+                    size="lg"
+                    className="h-14 px-8 bg-white text-emerald-700 hover:bg-emerald-50 font-semibold text-lg whitespace-nowrap"
+                  >
+                    Join Waitlist
+                  </Button>
+                </div>
+              </form>
+              
+              <p className="mt-6 text-emerald-200 text-sm">
+                🎉 Over 500 golfers already waiting • No spam, ever
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Feature Showcase - Always visible */}
         <FeatureShowcase />
