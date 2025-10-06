@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { useTournaments } from '@/hooks/useTournaments';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import Navbar from '../components/Navbar';
 import MobileNavigation from '../components/MobileNavigation';
 import TournamentCard from '../components/TournamentCard';
@@ -79,15 +80,48 @@ const Index = memo(() => {
     navigate('/rules');
   }, [navigate]);
 
-  const handleWaitlistSubmit = useCallback((e: React.FormEvent) => {
+  const handleWaitlistSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    if (waitlistEmail) {
-      // TODO: Connect to backend to store waitlist emails
-      toast({
-        title: "You're on the list!",
-        description: "We'll notify you when BetLoopr launches.",
-      });
+    if (!waitlistEmail) return;
+
+    try {
+      const { error } = await supabase
+        .from('waitlist_signups')
+        .insert({
+          email: waitlistEmail.toLowerCase().trim(),
+          source: 'homepage',
+          metadata: {
+            user_agent: navigator.userAgent,
+            timestamp: new Date().toISOString()
+          }
+        });
+
+      if (error) {
+        // Check for duplicate email error
+        if (error.code === '23505') {
+          toast({
+            title: "Already on the list!",
+            description: "This email is already registered for the waitlist.",
+            variant: "default",
+          });
+        } else {
+          throw error;
+        }
+      } else {
+        toast({
+          title: "You're on the list!",
+          description: "We'll notify you when BetLoopr launches.",
+        });
+      }
+      
       setWaitlistEmail('');
+    } catch (error) {
+      console.error('Waitlist signup error:', error);
+      toast({
+        title: "Oops!",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
     }
   }, [waitlistEmail, toast]);
 
