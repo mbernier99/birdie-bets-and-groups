@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, memo, useCallback } from 'react';
-import { Trophy, Plus, Calendar, Play, LogIn, Mail } from 'lucide-react';
+import { Trophy, Plus, Calendar, Play, LogIn, Mail, Smartphone, TrendingUp, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -122,15 +122,45 @@ const Index = memo(() => {
                   {user ? 'Manage Golf tournaments, wagers, side bets and more' : 'Live Bets, Tournament & Golf Game Management'}
                 </p>
                 
-                <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-20 mt-16">
-                  <button onClick={handleCreateTournament} className="bg-white text-emerald-600 px-8 py-4 rounded-lg font-semibold hover:bg-emerald-50 transition-colors flex items-center justify-center space-x-2">
-                    <Plus className="h-5 w-5" />
-                    <span>Create Tournament</span>
-                  </button>
-                  <button onClick={handlePlayNow} className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-emerald-600 transition-colors flex items-center justify-center space-x-2">
-                    <Play className="h-5 w-5" />
-                    <span>Play Now</span>
-                  </button>
+                {/* CTAs */}
+                <div className="flex flex-col items-center gap-6 relative z-20 mt-16">
+                  {isMobile ? (
+                    // Mobile: Show both buttons
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center w-full">
+                      <button onClick={handleCreateTournament} className="bg-white text-emerald-600 px-8 py-4 rounded-lg font-semibold hover:bg-emerald-50 transition-colors flex items-center justify-center space-x-2">
+                        <Plus className="h-5 w-5" />
+                        <span>Create Tournament</span>
+                      </button>
+                      <button onClick={handlePlayNow} className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-emerald-600 transition-colors flex items-center justify-center space-x-2">
+                        <Play className="h-5 w-5" />
+                        <span>Play Now</span>
+                      </button>
+                    </div>
+                  ) : (
+                    // Desktop/Tablet: Single CTA with feature pills
+                    <>
+                      <button onClick={handleCreateTournament} className="bg-white text-emerald-600 px-10 py-5 rounded-lg font-bold text-lg hover:bg-emerald-50 transition-colors flex items-center justify-center space-x-2 shadow-xl">
+                        <Plus className="h-6 w-6" />
+                        <span>Create Tournament</span>
+                      </button>
+                      
+                      {/* Feature Pills */}
+                      <div className="flex flex-wrap justify-center gap-4 mt-8 max-w-3xl">
+                        <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-6 py-3">
+                          <Smartphone className="h-5 w-5 text-emerald-300" />
+                          <span className="text-white font-semibold">Play on Mobile</span>
+                        </div>
+                        <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-6 py-3">
+                          <TrendingUp className="h-5 w-5 text-emerald-300" />
+                          <span className="text-white font-semibold">Track Live Scores</span>
+                        </div>
+                        <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-6 py-3">
+                          <Users className="h-5 w-5 text-emerald-300" />
+                          <span className="text-white font-semibold">Manage Wagers</span>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
