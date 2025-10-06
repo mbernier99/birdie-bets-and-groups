@@ -19,6 +19,8 @@ import EnhancedStatsSection from '../components/stats/EnhancedStatsSection';
 import FeatureShowcase from '../components/marketing/FeatureShowcase';
 import HowItWorksSection from '../components/marketing/HowItWorksSection';
 import FAQSection from '../components/marketing/FAQSection';
+import TournamentTypesSection from '../components/marketing/TournamentTypesSection';
+import BettingTypesSection from '../components/marketing/BettingTypesSection';
 import { isFirstTimeUser, detectUserActivity } from '../utils/userDetection';
 
 const Index = memo(() => {
@@ -217,6 +219,14 @@ const Index = memo(() => {
 
         {/* Feature Showcase - Always visible */}
         <FeatureShowcase />
+        
+        {/* Tournament Types - Desktop and Tablet Only */}
+        {!isMobile && (
+          <>
+            <TournamentTypesSection />
+            <BettingTypesSection />
+          </>
+        )}
 
         {/* Mobile: Quick Access Tiles */}
         {isMobile && user && (
