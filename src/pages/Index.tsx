@@ -21,6 +21,7 @@ import HowItWorksSection from '../components/marketing/HowItWorksSection';
 import FAQSection from '../components/marketing/FAQSection';
 import TournamentTypesSection from '../components/marketing/TournamentTypesSection';
 import BettingTypesSection from '../components/marketing/BettingTypesSection';
+import Footer from '../components/Footer';
 import { isFirstTimeUser, detectUserActivity } from '../utils/userDetection';
 
 const Index = memo(() => {
@@ -382,6 +383,9 @@ const Index = memo(() => {
       {/* Modals */}
       <CreateTournamentModal isOpen={isCreateTournamentModalOpen} onClose={handleCloseCreateTournamentModal} />
       <PlayNowModal isOpen={isPlayNowModalOpen} onClose={handleClosePlayNowModal} />
+      
+      {/* Footer */}
+      {!isMobile && <Footer />}
       
       {/* Mobile Navigation */}
       {isMobile && <MobileNavigation />}
