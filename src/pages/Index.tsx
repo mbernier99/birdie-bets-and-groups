@@ -129,7 +129,7 @@ const Index = memo(() => {
   const activeTournaments = user ? tournaments.filter(t => t.status === 'draft' || t.status === 'lobby' || t.status === 'live') : [];
 
   return (
-    <div className={`min-h-screen ${isMobile ? 'bg-contain bg-top bg-no-repeat' : ''} pb-20 md:pb-0`}
+    <div className={`min-h-screen ${isMobile ? 'bg-contain bg-top bg-no-repeat' : ''} pb-24 md:pb-0`}
          style={isMobile ? { backgroundImage: 'url(/lovable-uploads/mobile-hero-background.jpg)' } : {}}>
       <Navbar />
       
@@ -140,7 +140,7 @@ const Index = memo(() => {
         <div className={`${isMobile ? 'mx-4 sm:mx-6 lg:mx-8' : 'flex items-center justify-center min-h-[80vh] bg-cover bg-center'}`}
              style={!isMobile ? { backgroundImage: 'url(/lovable-uploads/desktop-hero-background.jpg)' } : {}}>
           <div className={`${isMobile ? '' : 'max-w-5xl mx-auto'} text-white relative overflow-hidden ${isMobile ? '' : 'rounded-2xl'}`}>
-            <div className={`max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 ${isMobile ? 'pt-2 pb-12' : 'py-16'} relative z-10`}>
+            <div className={`max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 ${isMobile ? 'pt-2 pb-6' : 'py-16'} relative z-10`}>
               <div className="text-center">
                 {/* Logo */}
                 <div className={`flex justify-center ${isMobile ? 'mb-2' : 'mb-8'}`}>
