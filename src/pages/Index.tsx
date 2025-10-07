@@ -141,41 +141,37 @@ const Index = memo(() => {
              style={!isMobile ? { backgroundImage: 'url(/lovable-uploads/desktop-hero-background.jpg)' } : {}}>
           <div className={`${isMobile ? '' : 'max-w-5xl mx-auto'} text-white relative overflow-hidden ${isMobile ? '' : 'rounded-2xl'}`}>
             <div className={`max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 ${isMobile ? 'pt-1 pb-8 min-h-screen flex flex-col' : 'py-16'} relative z-10`}>
-              <div className={`${isMobile ? 'flex-1 flex flex-col justify-start pt-2' : ''}`}>
-                {/* Logo */}
-                <div className={`flex justify-center ${isMobile ? 'mb-1' : 'mb-8'}`}>
-                  {isMobile ? (
-                    <img src="/lovable-uploads/bandon-dunes-logo.png" alt="Bandon Dunes Logo" className="object-contain h-20 w-auto" />
-                  ) : (
-                    <img src="/lovable-uploads/loopr-logo-green.png" alt="LOOPR Logo" className="object-contain h-40 w-auto" />
-                  )}
-                </div>
-                
-                <div className="text-center">
-                  <h1 className={`${isMobile ? 'text-5xl sm:text-6xl mb-4' : 'text-5xl sm:text-6xl md:text-7xl lg:text-9xl mb-8'} font-black font-orbitron tracking-wider w-full break-words bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 bg-clip-text text-transparent animate-pulse`}>
-                    BetLoopr
-                  </h1>
-                  
-                  <p className={`text-lg md:text-2xl ${isMobile ? 'text-white font-bold bg-emerald-600/40 backdrop-blur-sm border border-emerald-400/30 px-5 py-3 rounded-full' : 'text-emerald-100 mb-12'} max-w-3xl mx-auto relative z-20`}>
-                    {user ? 'Manage Golf tournaments, wagers, side bets and more' : 'Live Bets, Tournament & Golf Game Management'}
-                  </p>
-                </div>
+              {/* Logo */}
+              <div className={`flex justify-center ${isMobile ? 'mb-1' : 'mb-8'}`}>
+                {isMobile ? (
+                  <img src="/lovable-uploads/bandon-dunes-logo.png" alt="Bandon Dunes Logo" className="object-contain h-20 w-auto" />
+                ) : (
+                  <img src="/lovable-uploads/loopr-logo-green.png" alt="LOOPR Logo" className="object-contain h-40 w-auto" />
+                )}
+              </div>
+              
+              <div className="text-center">
+                <h1 className={`${isMobile ? 'text-5xl sm:text-6xl mb-4' : 'text-5xl sm:text-6xl md:text-7xl lg:text-9xl mb-8'} font-black font-orbitron tracking-wider w-full break-words bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 bg-clip-text text-transparent animate-pulse`}>
+                  BetLoopr
+                </h1>
               </div>
                 
               {/* CTAs */}
-              <div className={`flex flex-col items-center gap-6 relative z-20 ${isMobile ? 'mt-auto' : ''}`}>
+              <div className={`flex flex-col items-center gap-6 relative z-20 ${isMobile ? 'flex-1 justify-center' : ''}`}>
                 {isMobile ? (
                   // Mobile: Show both buttons
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center w-full">
-                    <button onClick={handleCreateTournament} className="bg-white text-emerald-600 px-7 py-3 rounded-lg font-semibold text-[0.9rem] hover:bg-emerald-50 transition-colors flex items-center justify-center space-x-2">
-                      <Plus className="h-[18px] w-[18px]" />
-                      <span>Create Tournament</span>
-                    </button>
-                    <button onClick={handlePlayNow} className="border-2 border-white text-white px-7 py-3 rounded-lg font-semibold text-[0.9rem] hover:bg-white hover:text-emerald-600 transition-colors flex items-center justify-center space-x-2">
-                      <Play className="h-[18px] w-[18px]" />
-                      <span>Play Now</span>
-                    </button>
-                  </div>
+                  <>
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center w-full">
+                      <button onClick={handleCreateTournament} className="bg-white text-emerald-600 px-7 py-3 rounded-lg font-semibold text-[0.9rem] hover:bg-emerald-50 transition-colors flex items-center justify-center space-x-2">
+                        <Plus className="h-[18px] w-[18px]" />
+                        <span>Create Tournament</span>
+                      </button>
+                      <button onClick={handlePlayNow} className="border-2 border-white text-white px-7 py-3 rounded-lg font-semibold text-[0.9rem] hover:bg-white hover:text-emerald-600 transition-colors flex items-center justify-center space-x-2">
+                        <Play className="h-[18px] w-[18px]" />
+                        <span>Play Now</span>
+                      </button>
+                    </div>
+                  </>
                 ) : (
                   // Desktop/Tablet: Single CTA with feature pills
                   <>
@@ -202,6 +198,24 @@ const Index = memo(() => {
                   </>
                 )}
               </div>
+              
+              {/* Text at bottom - Mobile only */}
+              {isMobile && (
+                <div className="text-center mt-auto">
+                  <p className="text-lg text-white font-bold bg-emerald-600/40 backdrop-blur-sm border border-emerald-400/30 px-5 py-3 rounded-full max-w-3xl mx-auto relative z-20">
+                    {user ? 'Manage Golf tournaments, wagers, side bets and more' : 'Live Bets, Tournament & Golf Game Management'}
+                  </p>
+                </div>
+              )}
+              
+              {/* Desktop text */}
+              {!isMobile && (
+                <div className="text-center">
+                  <p className="text-lg md:text-2xl text-emerald-100 mb-12 max-w-3xl mx-auto relative z-20">
+                    {user ? 'Manage Golf tournaments, wagers, side bets and more' : 'Live Bets, Tournament & Golf Game Management'}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>
