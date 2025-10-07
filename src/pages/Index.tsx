@@ -155,7 +155,7 @@ const Index = memo(() => {
                   BetLoopr
                 </h1>
                 
-                <p className={`text-xl md:text-2xl ${isMobile ? 'text-white font-bold bg-emerald-600/40 backdrop-blur-sm border border-emerald-400/30 px-6 py-4 rounded-full' : 'text-emerald-100'} mb-12 max-w-3xl mx-auto relative z-20`}>
+                <p className={`text-lg md:text-2xl ${isMobile ? 'text-white font-bold bg-emerald-600/40 backdrop-blur-sm border border-emerald-400/30 px-5 py-3 rounded-full' : 'text-emerald-100'} mb-12 max-w-3xl mx-auto relative z-20`}>
                   {user ? 'Manage Golf tournaments, wagers, side bets and more' : 'Live Bets, Tournament & Golf Game Management'}
                 </p>
                 
@@ -164,12 +164,12 @@ const Index = memo(() => {
                   {isMobile ? (
                     // Mobile: Show both buttons
                     <div className="flex flex-col sm:flex-row gap-4 justify-center w-full">
-                      <button onClick={handleCreateTournament} className="bg-white text-emerald-600 px-8 py-4 rounded-lg font-semibold hover:bg-emerald-50 transition-colors flex items-center justify-center space-x-2">
-                        <Plus className="h-5 w-5" />
+                      <button onClick={handleCreateTournament} className="bg-white text-emerald-600 px-7 py-3 rounded-lg font-semibold text-[0.9rem] hover:bg-emerald-50 transition-colors flex items-center justify-center space-x-2">
+                        <Plus className="h-[18px] w-[18px]" />
                         <span>Create Tournament</span>
                       </button>
-                      <button onClick={handlePlayNow} className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-emerald-600 transition-colors flex items-center justify-center space-x-2">
-                        <Play className="h-5 w-5" />
+                      <button onClick={handlePlayNow} className="border-2 border-white text-white px-7 py-3 rounded-lg font-semibold text-[0.9rem] hover:bg-white hover:text-emerald-600 transition-colors flex items-center justify-center space-x-2">
+                        <Play className="h-[18px] w-[18px]" />
                         <span>Play Now</span>
                       </button>
                     </div>
