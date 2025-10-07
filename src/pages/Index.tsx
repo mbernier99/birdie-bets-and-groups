@@ -140,12 +140,12 @@ const Index = memo(() => {
         <div className={`${isMobile ? 'mx-4 sm:mx-6 lg:mx-8' : 'flex items-center justify-center min-h-[80vh] bg-cover bg-center'}`}
              style={!isMobile ? { backgroundImage: 'url(/lovable-uploads/desktop-hero-background.jpg)' } : {}}>
           <div className={`${isMobile ? '' : 'max-w-5xl mx-auto'} text-white relative overflow-hidden ${isMobile ? '' : 'rounded-2xl'}`}>
-            <div className={`max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 ${isMobile ? 'pt-6 pb-12' : 'py-16'} relative z-10`}>
+            <div className={`max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 ${isMobile ? 'pt-2 pb-12' : 'py-16'} relative z-10`}>
               <div className="text-center">
                 {/* Logo */}
-                <div className={`flex justify-center ${isMobile ? 'mb-6' : 'mb-8'}`}>
+                <div className={`flex justify-center ${isMobile ? 'mb-2' : 'mb-8'}`}>
                   {isMobile ? (
-                    <img src="/lovable-uploads/bandon-dunes-logo.png" alt="Bandon Dunes Logo" className="object-contain h-32 w-auto" />
+                    <img src="/lovable-uploads/bandon-dunes-logo.png" alt="Bandon Dunes Logo" className="object-contain h-20 w-auto" />
                   ) : (
                     <img src="/lovable-uploads/loopr-logo-green.png" alt="LOOPR Logo" className="object-contain h-40 w-auto" />
                   )}
