@@ -143,15 +143,15 @@ const Index = memo(() => {
             <div className={`max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 ${isMobile ? 'pt-6 pb-12' : 'py-16'} relative z-10`}>
               <div className="text-center">
                 {/* Logo */}
-                <div className={`flex justify-center ${isMobile ? 'mb-4' : 'mb-8'}`}>
+                <div className={`flex justify-center ${isMobile ? 'mb-6' : 'mb-8'}`}>
                   {isMobile ? (
-                    <img src="/lovable-uploads/bandon-dunes-logo.png" alt="Bandon Dunes Logo" className="object-contain h-24 w-auto" />
+                    <img src="/lovable-uploads/bandon-dunes-logo.png" alt="Bandon Dunes Logo" className="object-contain h-32 w-auto" />
                   ) : (
                     <img src="/lovable-uploads/loopr-logo-green.png" alt="LOOPR Logo" className="object-contain h-40 w-auto" />
                   )}
                 </div>
                 
-                <h1 className={`${isMobile ? 'text-4xl mb-6' : 'text-5xl sm:text-6xl md:text-7xl lg:text-9xl mb-8'} font-black font-orbitron tracking-wider w-full break-words bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 bg-clip-text text-transparent animate-pulse`}>
+                <h1 className={`${isMobile ? 'text-4xl' : 'text-5xl sm:text-6xl md:text-7xl lg:text-9xl'} font-black font-orbitron mb-8 tracking-wider w-full break-words bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 bg-clip-text text-transparent animate-pulse`}>
                   BetLoopr
                 </h1>
                 
