@@ -140,30 +140,30 @@ const Index = memo(() => {
         <div className={`${isMobile ? 'mx-4 sm:mx-6 lg:mx-8' : 'flex items-center justify-center min-h-[80vh] bg-cover bg-center'}`}
              style={!isMobile ? { backgroundImage: 'url(/lovable-uploads/desktop-hero-background.jpg)' } : {}}>
           <div className={`${isMobile ? '' : 'max-w-5xl mx-auto'} text-white relative overflow-hidden ${isMobile ? '' : 'rounded-2xl'}`}>
-            <div className={`max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 ${isMobile ? 'pt-1 pb-4 min-h-screen flex flex-col justify-between' : 'py-16'} relative z-10`}>
-              <div className="text-center">
+            <div className={`max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 ${isMobile ? 'pt-1 pb-8 min-h-screen flex flex-col' : 'py-16'} relative z-10`}>
+              <div className={`${isMobile ? 'flex-1 flex flex-col justify-start pt-2' : ''}`}>
                 {/* Logo */}
-                <div className={`flex justify-center ${isMobile ? 'mb-1 mt-2' : 'mb-8'}`}>
+                <div className={`flex justify-center ${isMobile ? 'mb-1' : 'mb-8'}`}>
                   {isMobile ? (
                     <img src="/lovable-uploads/bandon-dunes-logo.png" alt="Bandon Dunes Logo" className="object-contain h-20 w-auto" />
                   ) : (
                     <img src="/lovable-uploads/loopr-logo-green.png" alt="LOOPR Logo" className="object-contain h-40 w-auto" />
                   )}
                 </div>
-              </div>
                 
-              <div className="text-center">
-                <h1 className={`${isMobile ? 'text-5xl sm:text-6xl mb-6' : 'text-5xl sm:text-6xl md:text-7xl lg:text-9xl mb-8'} font-black font-orbitron tracking-wider w-full break-words bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 bg-clip-text text-transparent animate-pulse`}>
-                  BetLoopr
-                </h1>
-                
-                <p className={`text-lg md:text-2xl ${isMobile ? 'text-white font-bold bg-emerald-600/40 backdrop-blur-sm border border-emerald-400/30 px-5 py-3 rounded-full mb-8' : 'text-emerald-100 mb-12'} max-w-3xl mx-auto relative z-20`}>
-                  {user ? 'Manage Golf tournaments, wagers, side bets and more' : 'Live Bets, Tournament & Golf Game Management'}
-                </p>
+                <div className="text-center">
+                  <h1 className={`${isMobile ? 'text-5xl sm:text-6xl mb-4' : 'text-5xl sm:text-6xl md:text-7xl lg:text-9xl mb-8'} font-black font-orbitron tracking-wider w-full break-words bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 bg-clip-text text-transparent animate-pulse`}>
+                    BetLoopr
+                  </h1>
+                  
+                  <p className={`text-lg md:text-2xl ${isMobile ? 'text-white font-bold bg-emerald-600/40 backdrop-blur-sm border border-emerald-400/30 px-5 py-3 rounded-full' : 'text-emerald-100 mb-12'} max-w-3xl mx-auto relative z-20`}>
+                    {user ? 'Manage Golf tournaments, wagers, side bets and more' : 'Live Bets, Tournament & Golf Game Management'}
+                  </p>
+                </div>
               </div>
                 
               {/* CTAs */}
-              <div className={`flex flex-col items-center gap-6 relative z-20 ${isMobile ? 'mb-4' : ''}`}>
+              <div className={`flex flex-col items-center gap-6 relative z-20 ${isMobile ? 'mt-auto' : ''}`}>
                 {isMobile ? (
                   // Mobile: Show both buttons
                   <div className="flex flex-col sm:flex-row gap-4 justify-center w-full">
