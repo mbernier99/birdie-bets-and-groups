@@ -129,7 +129,7 @@ const Index = memo(() => {
   const activeTournaments = user ? tournaments.filter(t => t.status === 'draft' || t.status === 'lobby' || t.status === 'live') : [];
 
   return (
-    <div className={`min-h-screen ${isMobile ? 'bg-contain bg-top bg-no-repeat' : ''} pb-20 md:pb-0`}
+    <div className={`min-h-screen ${isMobile ? 'bg-cover bg-center bg-no-repeat' : ''} pb-20 md:pb-0`}
          style={isMobile ? { backgroundImage: 'url(/lovable-uploads/mobile-hero-background.jpg)' } : {}}>
       <Navbar />
       
