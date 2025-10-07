@@ -151,25 +151,25 @@ const Index = memo(() => {
                   )}
                 </div>
                 
-                <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-9xl font-black font-orbitron mb-8 tracking-wider w-full break-words bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 bg-clip-text text-transparent animate-pulse">
+                <h1 className={`${isMobile ? 'text-4xl' : 'text-5xl sm:text-6xl md:text-7xl lg:text-9xl'} font-black font-orbitron mb-8 tracking-wider w-full break-words bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 bg-clip-text text-transparent animate-pulse`}>
                   BetLoopr
                 </h1>
                 
-                <p className={`text-xl md:text-2xl ${isMobile ? 'text-white font-bold bg-emerald-600/40 backdrop-blur-sm border border-emerald-400/30 px-6 py-4 rounded-full' : 'text-emerald-100'} mb-12 max-w-3xl mx-auto relative z-20`}>
+                <p className={`${isMobile ? 'text-base' : 'text-xl md:text-2xl'} ${isMobile ? 'text-white font-bold bg-emerald-600/40 backdrop-blur-sm border border-emerald-400/30 px-6 py-4 rounded-full' : 'text-emerald-100'} mb-12 max-w-3xl mx-auto relative z-20`}>
                   {user ? 'Manage Golf tournaments, wagers, side bets and more' : 'Live Bets, Tournament & Golf Game Management'}
                 </p>
                 
                 {/* CTAs */}
-                <div className="flex flex-col items-center gap-6 relative z-20 mt-16">
+                <div className={`flex flex-col items-center gap-6 relative z-20 ${isMobile ? 'mt-8' : 'mt-16'}`}>
                   {isMobile ? (
                     // Mobile: Show both buttons
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center w-full">
-                      <button onClick={handleCreateTournament} className="bg-white text-emerald-600 px-8 py-4 rounded-lg font-semibold hover:bg-emerald-50 transition-colors flex items-center justify-center space-x-2">
-                        <Plus className="h-5 w-5" />
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center w-full">
+                      <button onClick={handleCreateTournament} className="bg-white text-emerald-600 px-6 py-3 rounded-lg font-semibold hover:bg-emerald-50 transition-colors flex items-center justify-center space-x-2 text-sm">
+                        <Plus className="h-4 w-4" />
                         <span>Create Tournament</span>
                       </button>
-                      <button onClick={handlePlayNow} className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-emerald-600 transition-colors flex items-center justify-center space-x-2">
-                        <Play className="h-5 w-5" />
+                      <button onClick={handlePlayNow} className="border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-emerald-600 transition-colors flex items-center justify-center space-x-2 text-sm">
+                        <Play className="h-4 w-4" />
                         <span>Play Now</span>
                       </button>
                     </div>
