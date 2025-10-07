@@ -151,7 +151,7 @@ const Index = memo(() => {
                   )}
                 </div>
                 
-                <h1 className={`${isMobile ? 'text-4xl' : 'text-5xl sm:text-6xl md:text-7xl lg:text-9xl'} font-black font-orbitron ${isMobile ? 'mb-6' : 'mb-8'} tracking-wider w-full break-words bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 bg-clip-text text-transparent animate-pulse`}>
+                <h1 className={`${isMobile ? 'text-4xl mb-6' : 'text-5xl sm:text-6xl md:text-7xl lg:text-9xl mb-8'} font-black font-orbitron tracking-wider w-full break-words bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 bg-clip-text text-transparent animate-pulse`}>
                   BetLoopr
                 </h1>
                 
