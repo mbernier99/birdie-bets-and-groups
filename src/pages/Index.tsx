@@ -129,7 +129,7 @@ const Index = memo(() => {
   const activeTournaments = user ? tournaments.filter(t => t.status === 'draft' || t.status === 'lobby' || t.status === 'live') : [];
 
   return (
-    <div className={`min-h-screen ${isMobile ? 'bg-contain bg-top bg-no-repeat' : ''} pb-24 md:pb-0`}
+    <div className={`min-h-screen ${isMobile ? 'bg-contain bg-top bg-no-repeat' : ''} pb-32 md:pb-0`}
          style={isMobile ? { backgroundImage: 'url(/lovable-uploads/mobile-hero-background.jpg)' } : {}}>
       <Navbar />
       
@@ -140,65 +140,67 @@ const Index = memo(() => {
         <div className={`${isMobile ? 'mx-4 sm:mx-6 lg:mx-8' : 'flex items-center justify-center min-h-[80vh] bg-cover bg-center'}`}
              style={!isMobile ? { backgroundImage: 'url(/lovable-uploads/desktop-hero-background.jpg)' } : {}}>
           <div className={`${isMobile ? '' : 'max-w-5xl mx-auto'} text-white relative overflow-hidden ${isMobile ? '' : 'rounded-2xl'}`}>
-            <div className={`max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 ${isMobile ? 'pt-2 pb-6' : 'py-16'} relative z-10`}>
+            <div className={`max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 ${isMobile ? 'pt-1 pb-4 min-h-screen flex flex-col justify-between' : 'py-16'} relative z-10`}>
               <div className="text-center">
                 {/* Logo */}
-                <div className={`flex justify-center ${isMobile ? 'mb-2' : 'mb-8'}`}>
+                <div className={`flex justify-center ${isMobile ? 'mb-1 mt-2' : 'mb-8'}`}>
                   {isMobile ? (
                     <img src="/lovable-uploads/bandon-dunes-logo.png" alt="Bandon Dunes Logo" className="object-contain h-20 w-auto" />
                   ) : (
                     <img src="/lovable-uploads/loopr-logo-green.png" alt="LOOPR Logo" className="object-contain h-40 w-auto" />
                   )}
                 </div>
+              </div>
                 
-                <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-9xl font-black font-orbitron mb-8 tracking-wider w-full break-words bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 bg-clip-text text-transparent animate-pulse">
+              <div className="text-center">
+                <h1 className={`${isMobile ? 'text-5xl sm:text-6xl mb-6' : 'text-5xl sm:text-6xl md:text-7xl lg:text-9xl mb-8'} font-black font-orbitron tracking-wider w-full break-words bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 bg-clip-text text-transparent animate-pulse`}>
                   BetLoopr
                 </h1>
                 
-                <p className={`text-lg md:text-2xl ${isMobile ? 'text-white font-bold bg-emerald-600/40 backdrop-blur-sm border border-emerald-400/30 px-5 py-3 rounded-full' : 'text-emerald-100'} mb-12 max-w-3xl mx-auto relative z-20`}>
+                <p className={`text-lg md:text-2xl ${isMobile ? 'text-white font-bold bg-emerald-600/40 backdrop-blur-sm border border-emerald-400/30 px-5 py-3 rounded-full mb-8' : 'text-emerald-100 mb-12'} max-w-3xl mx-auto relative z-20`}>
                   {user ? 'Manage Golf tournaments, wagers, side bets and more' : 'Live Bets, Tournament & Golf Game Management'}
                 </p>
+              </div>
                 
-                {/* CTAs */}
-                <div className="flex flex-col items-center gap-6 relative z-20 mt-16">
-                  {isMobile ? (
-                    // Mobile: Show both buttons
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center w-full">
-                      <button onClick={handleCreateTournament} className="bg-white text-emerald-600 px-7 py-3 rounded-lg font-semibold text-[0.9rem] hover:bg-emerald-50 transition-colors flex items-center justify-center space-x-2">
-                        <Plus className="h-[18px] w-[18px]" />
-                        <span>Create Tournament</span>
-                      </button>
-                      <button onClick={handlePlayNow} className="border-2 border-white text-white px-7 py-3 rounded-lg font-semibold text-[0.9rem] hover:bg-white hover:text-emerald-600 transition-colors flex items-center justify-center space-x-2">
-                        <Play className="h-[18px] w-[18px]" />
-                        <span>Play Now</span>
-                      </button>
-                    </div>
-                  ) : (
-                    // Desktop/Tablet: Single CTA with feature pills
-                    <>
-                      <button onClick={handleCreateTournament} className="bg-white text-emerald-600 px-10 py-5 rounded-lg font-bold text-lg hover:bg-emerald-50 transition-colors flex items-center justify-center space-x-2 shadow-xl">
-                        <Plus className="h-6 w-6" />
-                        <span>Create Tournament</span>
-                      </button>
-                      
-                      {/* Feature Pills */}
-                      <div className="flex flex-wrap justify-center gap-4 mt-8 max-w-3xl">
-                        <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-6 py-3">
-                          <Smartphone className="h-5 w-5 text-emerald-300" />
-                          <span className="text-white font-semibold">Play on Mobile</span>
-                        </div>
-                        <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-6 py-3">
-                          <TrendingUp className="h-5 w-5 text-emerald-300" />
-                          <span className="text-white font-semibold">Track Live Scores</span>
-                        </div>
-                        <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-6 py-3">
-                          <Users className="h-5 w-5 text-emerald-300" />
-                          <span className="text-white font-semibold">Manage Wagers</span>
-                        </div>
+              {/* CTAs */}
+              <div className={`flex flex-col items-center gap-6 relative z-20 ${isMobile ? 'mb-4' : ''}`}>
+                {isMobile ? (
+                  // Mobile: Show both buttons
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center w-full">
+                    <button onClick={handleCreateTournament} className="bg-white text-emerald-600 px-7 py-3 rounded-lg font-semibold text-[0.9rem] hover:bg-emerald-50 transition-colors flex items-center justify-center space-x-2">
+                      <Plus className="h-[18px] w-[18px]" />
+                      <span>Create Tournament</span>
+                    </button>
+                    <button onClick={handlePlayNow} className="border-2 border-white text-white px-7 py-3 rounded-lg font-semibold text-[0.9rem] hover:bg-white hover:text-emerald-600 transition-colors flex items-center justify-center space-x-2">
+                      <Play className="h-[18px] w-[18px]" />
+                      <span>Play Now</span>
+                    </button>
+                  </div>
+                ) : (
+                  // Desktop/Tablet: Single CTA with feature pills
+                  <>
+                    <button onClick={handleCreateTournament} className="bg-white text-emerald-600 px-10 py-5 rounded-lg font-bold text-lg hover:bg-emerald-50 transition-colors flex items-center justify-center space-x-2 shadow-xl">
+                      <Plus className="h-6 w-6" />
+                      <span>Create Tournament</span>
+                    </button>
+                    
+                    {/* Feature Pills */}
+                    <div className="flex flex-wrap justify-center gap-4 mt-8 max-w-3xl">
+                      <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-6 py-3">
+                        <Smartphone className="h-5 w-5 text-emerald-300" />
+                        <span className="text-white font-semibold">Play on Mobile</span>
                       </div>
-                    </>
-                  )}
-                </div>
+                      <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-6 py-3">
+                        <TrendingUp className="h-5 w-5 text-emerald-300" />
+                        <span className="text-white font-semibold">Track Live Scores</span>
+                      </div>
+                      <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-6 py-3">
+                        <Users className="h-5 w-5 text-emerald-300" />
+                        <span className="text-white font-semibold">Manage Wagers</span>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
