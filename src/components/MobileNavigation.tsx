@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, TrendingUp, Zap, Users, Gamepad2 } from 'lucide-react';
+import { Home, TrendingUp, Zap, Users, Flag } from 'lucide-react';
 
 const MobileNavigation = () => {
   const location = useLocation();
@@ -12,7 +12,7 @@ const MobileNavigation = () => {
     { path: '/', icon: Home, label: 'Home' },
     { path: '/leaderboard', icon: TrendingUp, label: 'Leaderboard' },
     { path: '/groups', icon: Users, label: 'Groups' },
-    { path: '/game-formats', icon: Gamepad2, label: 'Games' },
+    { path: '/game-formats', icon: Flag, label: 'Games' },
   ];
   
   return (
