@@ -86,11 +86,11 @@ export const useTournaments = () => {
 
   const createTournament = async (tournamentData: Omit<TournamentInsert, 'created_by' | 'id' | 'created_at' | 'updated_at'> & { name: string }) => {
     if (!user) {
-      throw new Error('Must be authenticated to create tournament');
+      throw new Error('Authentication required. Please log in to create a tournament.');
     }
 
     if (!isValidUUID(user.id)) {
-      throw new Error('Invalid user ID');
+      throw new Error('Invalid user session. Please log out and log in again.');
     }
 
     // Validate tournament name

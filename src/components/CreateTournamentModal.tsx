@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useTournaments } from '@/hooks/useTournaments';
+import { useAuth } from '@/contexts/AuthContext';
 import InvitePlayersStep from './tournament-creation/InvitePlayersStep';
 import GameSettingsStep from './tournament-creation/GameSettingsStep';
 import BetsStep from './tournament-creation/BetsStep';
@@ -106,6 +107,7 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
   const [currentStep, setCurrentStep] = useState(0);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
 
   const standardPars = [4, 4, 3, 5, 4, 4, 3, 4, 5, 4, 3, 4, 5, 4, 4, 3, 5, 4];
 
@@ -206,6 +208,16 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
   const { createTournamentWithInvitations } = useTournaments();
 
   const handleCreate = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to create a tournament",
+        variant: "destructive"
+      });
+      navigate('/auth');
+      return;
+    }
+
     try {
       const playersToInvite = tournamentData.players
         .filter(p => p.name.trim() && p.email.trim())
@@ -332,11 +344,11 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
           {currentStep !== 0 && (
             <Button 
               onClick={currentStep < steps.length - 1 ? handleNext : handleCreate}
-              disabled={!canProceed()}
+              disabled={!canProceed() || authLoading || (currentStep === steps.length - 1 && !user)}
               size="lg"
               className="w-full h-14 text-lg font-semibold"
             >
-              {currentStep < steps.length - 1 ? 'Next' : 'Create Tournament'}
+              {authLoading ? 'Loading...' : currentStep < steps.length - 1 ? 'Next' : 'Create Tournament'}
             </Button>
           )}
         </div>
