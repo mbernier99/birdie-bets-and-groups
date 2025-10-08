@@ -312,22 +312,6 @@ const BetsStep: React.FC<BetsStepProps> = ({ data, onDataChange }) => {
           </p>
         </div>
 
-        {/* Match Wager */}
-        <div className="space-y-4">
-          <h3 className="text-xl font-semibold">Match Wager</h3>
-          
-          <button className="w-full p-4 rounded-xl border-2 hover:border-primary transition-colors text-left">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-semibold">Match Winner</div>
-                <div className="text-2xl text-muted-foreground">
-                  ${data.wagering.entryFee || 0}
-                </div>
-              </div>
-            </div>
-          </button>
-        </div>
-
         {/* Presses */}
         <div className="space-y-4">
           <h3 className="text-xl font-semibold">Presses</h3>
@@ -353,6 +337,43 @@ const BetsStep: React.FC<BetsStepProps> = ({ data, onDataChange }) => {
               <p className="text-sm text-muted-foreground">
                 <strong>Press</strong> - Any player or team that is at least 2 holes down can challenge their opponent to a new side bet. This creates an additional match that runs alongside the original bet, giving players a chance to recover losses.
               </p>
+            </div>
+          )}
+        </div>
+
+        {/* Side Bets */}
+        <div className="space-y-4">
+          <h3 className="text-xl font-semibold">Side Bets</h3>
+          
+          <div className="rounded-xl border-2 p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <Label htmlFor="allow-side-bets" className="text-base font-semibold">Enable Side Bets</Label>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Allow players to create custom side bets during play
+                </p>
+              </div>
+              <Switch
+                id="allow-side-bets"
+                checked={data.sideBets?.enabled || false}
+                onCheckedChange={(checked) => 
+                  onDataChange('sideBets', { ...data.sideBets, enabled: checked })
+                }
+              />
+            </div>
+          </div>
+
+          {data.sideBets?.enabled && (
+            <div className="rounded-lg bg-primary/5 p-4 space-y-2">
+              <p className="text-sm text-muted-foreground">
+                <strong>Side bets</strong> let players create custom wagers during the round:
+              </p>
+              <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+                <li>Closest to the pin on par 3s</li>
+                <li>Longest drive on par 5s</li>
+                <li>Birdie or better challenges</li>
+                <li>Custom hole-by-hole bets</li>
+              </ul>
             </div>
           )}
         </div>
