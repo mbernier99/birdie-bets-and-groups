@@ -171,7 +171,7 @@ const Index = memo(() => {
                     <div className="flex flex-col gap-4 justify-center w-full px-4">
                       <button 
                         onClick={handleCreateTournament} 
-                        className="relative overflow-hidden bg-gradient-to-r from-white via-emerald-50 to-white text-emerald-600 px-8 py-4 rounded-xl font-bold text-base shadow-[0_8px_30px_rgb(5,150,105,0.3)] hover:shadow-[0_12px_40px_rgb(5,150,105,0.4)] hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-3 border-2 border-emerald-200 animate-pulse"
+                        className="relative overflow-hidden bg-gradient-to-r from-white via-emerald-50 to-white text-emerald-600 px-8 py-4 rounded-xl font-bold text-base shadow-[0_8px_30px_rgb(5,150,105,0.3)] hover:shadow-[0_12px_40px_rgb(5,150,105,0.4)] hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-3 border-2 border-emerald-200"
                       >
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-[shimmer_2s_ease-in-out_infinite]" 
                              style={{ backgroundSize: '200% 100%' }} />
