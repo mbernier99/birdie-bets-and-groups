@@ -136,7 +136,7 @@ const Index = memo(() => {
       <div className="relative z-10">
         
         {/* Hero Section */}
-        <div className={`${isMobile ? 'mx-4 sm:mx-6 lg:mx-8 min-h-[calc(100dvh-5rem)] bg-cover bg-no-repeat' : 'flex items-center justify-center min-h-[80vh] bg-cover bg-center'}`}
+        <div className={`${isMobile ? 'min-h-[calc(100dvh-5rem)] bg-cover bg-no-repeat' : 'flex items-center justify-center min-h-[80vh] bg-cover bg-center'}`}
              style={isMobile 
                ? { 
                    backgroundImage: 'url(/lovable-uploads/mobile-hero-caddie-new.jpg)',
