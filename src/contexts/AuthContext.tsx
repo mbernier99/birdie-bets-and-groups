@@ -95,6 +95,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               title: 'Signed in',
               description: 'You have successfully signed in.',
             });
+            
+            // Handle OAuth redirects
+            const redirectPath = sessionStorage.getItem('redirectAfterLogin');
+            if (redirectPath) {
+              sessionStorage.removeItem('redirectAfterLogin');
+              window.location.href = redirectPath;
+            }
           }, 0);
         } else if (event === 'SIGNED_OUT') {
           setTimeout(() => {

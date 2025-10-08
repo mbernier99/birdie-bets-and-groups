@@ -61,15 +61,6 @@ const QuickLogin: React.FC = () => {
   };
 
   const handleQuickLogin = async (player: Player) => {
-    if (!selectedTournament) {
-      toast({
-        title: 'No tournament selected',
-        description: 'Please select a tournament first.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     setLoading(player.email);
     
     try {
@@ -82,10 +73,21 @@ const QuickLogin: React.FC = () => {
 
       toast({
         title: `Welcome back, ${player.nickname}!`,
-        description: 'Taking you to the tournament...',
+        description: 'Logging you in...',
       });
 
-      navigate(`/tournaments/${selectedTournament}/live`);
+      // Navigation priority: tournament > stored redirect > dashboard
+      if (selectedTournament) {
+        navigate(`/tournaments/${selectedTournament}/live`);
+      } else {
+        const redirectPath = sessionStorage.getItem('redirectAfterLogin');
+        if (redirectPath) {
+          sessionStorage.removeItem('redirectAfterLogin');
+          navigate(redirectPath);
+        } else {
+          navigate('/dashboard');
+        }
+      }
     } catch (error: any) {
       console.error('Login error:', error);
       toast({
@@ -148,58 +150,53 @@ const QuickLogin: React.FC = () => {
               <Loader2 className="w-8 h-8 animate-spin text-golf-green" />
             </CardContent>
           </Card>
-        ) : tournaments.length === 0 ? (
-          <Card className="border-2 border-golf-green/20">
-            <CardHeader className="text-center">
-              <CardTitle>No Active Tournaments</CardTitle>
-              <CardDescription>There are no live tournaments at the moment.</CardDescription>
-            </CardHeader>
-          </Card>
         ) : (
           <>
-            <Card className="border-2 border-golf-green/20">
-              <CardHeader>
-                <CardTitle className="text-2xl">Active Tournaments</CardTitle>
-                <CardDescription>Select a tournament to join</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {tournaments.map((tournament) => (
-                  <div
-                    key={tournament.id}
-                    onClick={() => setSelectedTournament(tournament.id)}
-                    className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                      selectedTournament === tournament.id
-                        ? 'border-golf-green bg-golf-green/10'
-                        : 'border-border hover:border-golf-green/50'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-1">
-                        <h3 className="font-semibold text-lg">{tournament.name}</h3>
-                        {tournament.courses && (
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <MapPin className="w-4 h-4" />
-                            <span>{tournament.courses.name}</span>
-                            {tournament.courses.location && (
-                              <span>• {tournament.courses.location}</span>
-                            )}
-                          </div>
-                        )}
-                        {tournament.start_time && (
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Calendar className="w-4 h-4" />
-                            <span>{new Date(tournament.start_time).toLocaleDateString()}</span>
-                          </div>
-                        )}
+            {tournaments.length > 0 && (
+              <Card className="border-2 border-golf-green/20">
+                <CardHeader>
+                  <CardTitle className="text-2xl">Active Tournaments</CardTitle>
+                  <CardDescription>Select a tournament to join directly</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {tournaments.map((tournament) => (
+                    <div
+                      key={tournament.id}
+                      onClick={() => setSelectedTournament(tournament.id)}
+                      className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                        selectedTournament === tournament.id
+                          ? 'border-golf-green bg-golf-green/10'
+                          : 'border-border hover:border-golf-green/50'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-1">
+                          <h3 className="font-semibold text-lg">{tournament.name}</h3>
+                          {tournament.courses && (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <MapPin className="w-4 h-4" />
+                              <span>{tournament.courses.name}</span>
+                              {tournament.courses.location && (
+                                <span>• {tournament.courses.location}</span>
+                              )}
+                            </div>
+                          )}
+                          {tournament.start_time && (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Calendar className="w-4 h-4" />
+                              <span>{new Date(tournament.start_time).toLocaleDateString()}</span>
+                            </div>
+                          )}
+                        </div>
+                        <Badge variant={tournament.status === 'live' ? 'default' : 'secondary'}>
+                          {tournament.status}
+                        </Badge>
                       </div>
-                      <Badge variant={tournament.status === 'live' ? 'default' : 'secondary'}>
-                        {tournament.status}
-                      </Badge>
                     </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
 
             <Card className="border-2 border-golf-green/20 shadow-2xl">
               <CardHeader className="text-center space-y-4">
@@ -210,7 +207,9 @@ const QuickLogin: React.FC = () => {
                 </div>
                 <CardTitle className="text-3xl font-bold">Select Your Profile</CardTitle>
                 <CardDescription className="text-base">
-                  Choose your profile to join the tournament
+                  {tournaments.length > 0 
+                    ? 'Choose your profile to join the tournament' 
+                    : 'Choose your profile to access your dashboard'}
                 </CardDescription>
                 <Badge variant="secondary" className="w-fit mx-auto">
                   Testing Mode - One-Click Access
@@ -218,67 +217,67 @@ const QuickLogin: React.FC = () => {
               </CardHeader>
 
               <CardContent className="px-6 pb-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {BANDON_PLAYERS.map((player) => (
-                <Button
-                  key={player.email}
-                  onClick={() => handleQuickLogin(player)}
-                  disabled={loading !== null}
-                  variant="outline"
-                  className="h-auto p-6 flex flex-col items-center gap-4 hover:scale-105 transition-transform"
-                >
-                  {loading === player.email ? (
-                    <Loader2 className="w-16 h-16 animate-spin text-muted-foreground" />
-                  ) : (
-                    <>
-                      <Avatar className={`w-16 h-16 border-4 border-white shadow-lg ${player.color}`}>
-                        <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${player.email}`} />
-                        <AvatarFallback className="text-white font-bold text-lg">
-                          {getInitials(player.firstName, player.lastName)}
-                        </AvatarFallback>
-                      </Avatar>
-                      
-                      <div className="text-center space-y-1">
-                        <p className="font-semibold text-base">
-                          {player.firstName} {player.lastName}
-                        </p>
-                        <p className="text-xl font-bold text-golf-green">
-                          {player.nickname}
-                        </p>
-                        <Badge variant="secondary" className="mt-2">
-                          HCP {player.handicap}
-                        </Badge>
-                      </div>
-                    </>
-                  )}
-                </Button>
-              ))}
-            </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {BANDON_PLAYERS.map((player) => (
+                    <Button
+                      key={player.email}
+                      onClick={() => handleQuickLogin(player)}
+                      disabled={loading !== null}
+                      variant="outline"
+                      className="h-auto p-6 flex flex-col items-center gap-4 hover:scale-105 transition-transform"
+                    >
+                      {loading === player.email ? (
+                        <Loader2 className="w-16 h-16 animate-spin text-muted-foreground" />
+                      ) : (
+                        <>
+                          <Avatar className={`w-16 h-16 border-4 border-white shadow-lg ${player.color}`}>
+                            <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${player.email}`} />
+                            <AvatarFallback className="text-white font-bold text-lg">
+                              {getInitials(player.firstName, player.lastName)}
+                            </AvatarFallback>
+                          </Avatar>
+                          
+                          <div className="text-center space-y-1">
+                            <p className="font-semibold text-base">
+                              {player.firstName} {player.lastName}
+                            </p>
+                            <p className="text-xl font-bold text-golf-green">
+                              {player.nickname}
+                            </p>
+                            <Badge variant="secondary" className="mt-2">
+                              HCP {player.handicap}
+                            </Badge>
+                          </div>
+                        </>
+                      )}
+                    </Button>
+                  ))}
+                </div>
 
-            <div className="mt-8 text-center space-y-4">
-              <div className="p-4 bg-muted/50 rounded-lg space-y-3">
-                <p className="text-sm font-medium">Don't have test accounts yet?</p>
-                <Button
-                  onClick={handleCreateTestUsers}
-                  disabled={creatingUsers || loading !== null}
-                  className="w-full max-w-xs"
-                >
-                  {creatingUsers && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Create All Test Users
-                </Button>
-                <p className="text-xs text-muted-foreground">
-                  This will create all 8 test accounts with password: <code className="bg-background px-2 py-1 rounded">BandonTest2025!</code>
-                </p>
-              </div>
-              
-              <Button
-                variant="ghost"
-                onClick={() => navigate('/auth')}
-                className="text-muted-foreground"
-              >
-                Back to Standard Login
-              </Button>
-            </div>
+                <div className="mt-8 text-center space-y-4">
+                  <div className="p-4 bg-muted/50 rounded-lg space-y-3">
+                    <p className="text-sm font-medium">Don't have test accounts yet?</p>
+                    <Button
+                      onClick={handleCreateTestUsers}
+                      disabled={creatingUsers || loading !== null}
+                      className="w-full max-w-xs"
+                    >
+                      {creatingUsers && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Create All Test Users
+                    </Button>
+                    <p className="text-xs text-muted-foreground">
+                      This will create all 8 test accounts with password: <code className="bg-background px-2 py-1 rounded">BandonTest2025!</code>
+                    </p>
+                  </div>
+                  
+                  <Button
+                    variant="ghost"
+                    onClick={() => navigate('/auth')}
+                    className="text-muted-foreground"
+                  >
+                    Back to Standard Login
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </>

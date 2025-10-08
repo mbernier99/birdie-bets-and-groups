@@ -134,7 +134,15 @@ const Auth = () => {
           description: 'You have successfully logged in.',
         });
         setLoginAttempts(0);
-        navigate('/');
+        
+        // Navigate to stored redirect path or dashboard
+        const redirectPath = sessionStorage.getItem('redirectAfterLogin');
+        if (redirectPath) {
+          sessionStorage.removeItem('redirectAfterLogin');
+          navigate(redirectPath);
+        } else {
+          navigate('/dashboard');
+        }
       }
     } catch (err: any) {
       toast({
@@ -183,6 +191,16 @@ const Auth = () => {
           title: 'Account Created!',
           description: 'Please check your email to verify your account.',
         });
+        
+        // Navigate to stored redirect path or dashboard
+        const redirectPath = sessionStorage.getItem('redirectAfterLogin');
+        if (redirectPath) {
+          sessionStorage.removeItem('redirectAfterLogin');
+          navigate(redirectPath);
+        } else {
+          navigate('/dashboard');
+        }
+        
         // Reset form after successful signup
         setSignupForm({ email: '', password: '', firstName: '', lastName: '' });
       }
