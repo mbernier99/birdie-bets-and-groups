@@ -48,16 +48,48 @@ Deno.serve(async (req) => {
       errors: [] as { email: string; error: string }[],
     };
 
-    // Create each test user
+    // Create each test user or reset password if exists
     for (const user of TEST_USERS) {
       try {
         // Check if user already exists
         const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
-        const userExists = existingUsers?.users?.some(u => u.email === user.email);
+        const existingUser = existingUsers?.users?.find(u => u.email === user.email);
 
-        if (userExists) {
+        if (existingUser) {
+          // Reset password for existing user
+          const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+            existingUser.id,
+            {
+              password: 'BandonTest2025!',
+              email_confirm: true,
+              user_metadata: {
+                first_name: user.firstName,
+                last_name: user.lastName,
+              },
+            }
+          );
+
+          if (updateError) {
+            results.errors.push({ email: user.email, error: updateError.message });
+            console.error(`Error resetting password for ${user.email}:`, updateError);
+            continue;
+          }
+
+          // Update the profile with additional data
+          const { error: profileError } = await supabaseAdmin
+            .from('profiles')
+            .update({
+              nickname: user.nickname,
+              handicap: user.handicap,
+            })
+            .eq('id', existingUser.id);
+
+          if (profileError) {
+            console.error(`Error updating profile for ${user.email}:`, profileError);
+          }
+
           results.alreadyExists.push(user.email);
-          console.log(`User ${user.email} already exists, skipping...`);
+          console.log(`User ${user.email} password reset successfully`);
           continue;
         }
 
