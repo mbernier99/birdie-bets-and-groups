@@ -129,10 +129,10 @@ const Index = memo(() => {
   const activeTournaments = user ? tournaments.filter(t => t.status === 'draft' || t.status === 'lobby' || t.status === 'live') : [];
 
   return (
-    <div className={`min-h-screen ${isMobile ? 'bg-cover bg-center bg-no-repeat bg-fixed' : ''} pb-20 md:pb-0`}
+    <div className={`min-h-screen min-h-[100dvh] ${isMobile ? 'bg-cover bg-no-repeat' : ''} pb-20 md:pb-0`}
          style={isMobile ? { 
            backgroundImage: 'url(/lovable-uploads/mobile-hero-caddie.jpg)',
-           backgroundSize: 'auto 100vh',
+           backgroundSize: 'cover',
            backgroundPosition: 'center center'
          } : {}}>
       <Navbar />
