@@ -167,15 +167,25 @@ const Index = memo(() => {
                 {/* CTAs */}
                 <div className={`flex flex-col items-center gap-6 relative z-20 ${isMobile ? 'mt-12' : 'mt-16'}`}>
                   {isMobile ? (
-                    // Mobile: Show both buttons
-                    <div className="flex flex-col sm:flex-row gap-3 justify-center w-full">
-                      <button onClick={handleCreateTournament} className="bg-white text-emerald-600 px-6 py-3 rounded-lg font-semibold hover:bg-emerald-50 transition-colors flex items-center justify-center space-x-2 text-sm">
-                        <Plus className="h-4 w-4" />
-                        <span>Create Tournament</span>
+                    // Mobile: Show both buttons with enhanced styling
+                    <div className="flex flex-col gap-4 justify-center w-full px-4">
+                      <button 
+                        onClick={handleCreateTournament} 
+                        className="relative overflow-hidden bg-gradient-to-r from-white via-emerald-50 to-white text-emerald-600 px-8 py-4 rounded-xl font-bold text-base shadow-[0_8px_30px_rgb(5,150,105,0.3)] hover:shadow-[0_12px_40px_rgb(5,150,105,0.4)] hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-3 border-2 border-emerald-200 animate-pulse"
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-[shimmer_2s_ease-in-out_infinite]" 
+                             style={{ backgroundSize: '200% 100%' }} />
+                        <Plus className="h-5 w-5 relative z-10" />
+                        <span className="relative z-10 tracking-wide">Create Tournament</span>
                       </button>
-                      <button onClick={handlePlayNow} className="border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-emerald-600 transition-colors flex items-center justify-center space-x-2 text-sm">
-                        <Play className="h-4 w-4" />
-                        <span>Play Now</span>
+                      <button 
+                        onClick={handlePlayNow} 
+                        className="relative overflow-hidden bg-gradient-to-r from-emerald-500 via-emerald-600 to-emerald-500 text-white px-8 py-4 rounded-xl font-bold text-base shadow-[0_8px_30px_rgb(5,150,105,0.4)] hover:shadow-[0_12px_40px_rgb(5,150,105,0.5)] hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-3 border-2 border-emerald-400"
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-50 animate-[shimmer_2s_ease-in-out_infinite]" 
+                             style={{ backgroundSize: '200% 100%' }} />
+                        <Play className="h-5 w-5 relative z-10 fill-white" />
+                        <span className="relative z-10 tracking-wide">Play Now</span>
                       </button>
                     </div>
                   ) : (
