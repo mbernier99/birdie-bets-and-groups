@@ -145,14 +145,6 @@ const Index = memo(() => {
                : { backgroundImage: 'url(/lovable-uploads/desktop-hero-background.jpg)' }
              }>
           <div className={`${isMobile ? '' : 'max-w-5xl mx-auto'} text-white relative overflow-hidden ${isMobile ? '' : 'rounded-2xl'}`}>
-            {isMobile && (
-              <div 
-                className="absolute inset-0"
-                style={{
-                  background: 'linear-gradient(to top, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.35) 40%, transparent 100%)'
-                }}
-              />
-            )}
             <div className={`max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 ${isMobile ? 'pt-8 pb-8' : 'py-16'} relative ${isMobile ? 'z-20' : 'z-10'}`}>
               <div className="text-center">
                 {/* Logo */}
