@@ -1,4 +1,4 @@
-import React, { useState, memo } from 'react';
+import React, { useState, memo, useEffect } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import InvitePlayersStep from './tournament-creation/InvitePlayersStep';
 import GameSettingsStep from './tournament-creation/GameSettingsStep';
 import BetsStep from './tournament-creation/BetsStep';
+import { InlineAuthSheet } from './tournament-creation/InlineAuthSheet';
 
 interface CreateTournamentModalProps {
   isOpen: boolean;
@@ -103,58 +104,81 @@ export interface TournamentData {
   };
 }
 
+const STORAGE_KEY = 'tournament_draft';
+
 const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOpen, onClose }) => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [showAuthSheet, setShowAuthSheet] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user } = useAuth();
 
   const standardPars = [4, 4, 3, 5, 4, 4, 3, 4, 5, 4, 3, 4, 5, 4, 4, 3, 5, 4];
 
-  const [tournamentData, setTournamentData] = useState<TournamentData>({
-    basicInfo: {
-      name: '',
-      maxPlayers: 16
-    },
-    course: {
-      name: '',
-      teeBox: 'white',
-      holes: Array.from({ length: 18 }, (_, i) => ({
-        number: i + 1,
-        par: standardPars[i],
-        yardage: 400,
-        handicapIndex: i + 1
-      })),
-      rating: 72.0,
-      slope: 113
-    },
-    gameType: {
-      type: '',
-      format: 'individual',
-      rules: {}
-    },
-    players: [],
-    teams: [],
-    teeTimeGroups: [],
-    pairings: [],
-    wagering: {
-      entryFee: 0,
-      payoutStructure: 'winner-takes-all',
-      currency: 'USD'
-    },
-    sideBets: {
-      enabled: false
-    },
-    adminBetting: {
-      liveEnabled: false,
-      maxBetAmount: 100,
-      livePermissions: {
-        initiators: 'all-players',
-        settlement: 'auto'
-      },
-      sidePools: {}
+  const [tournamentData, setTournamentData] = useState<TournamentData>(() => {
+    // Try to restore from localStorage
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Failed to parse saved tournament data');
+      }
     }
+    
+    return {
+      basicInfo: {
+        name: '',
+        maxPlayers: 16
+      },
+      course: {
+        name: '',
+        teeBox: 'white',
+        holes: Array.from({ length: 18 }, (_, i) => ({
+          number: i + 1,
+          par: standardPars[i],
+          yardage: 400,
+          handicapIndex: i + 1
+        })),
+        rating: 72.0,
+        slope: 113
+      },
+      gameType: {
+        type: '',
+        format: 'individual',
+        rules: {}
+      },
+      players: [],
+      teams: [],
+      teeTimeGroups: [],
+      pairings: [],
+      wagering: {
+        entryFee: 0,
+        payoutStructure: 'winner-takes-all',
+        currency: 'USD'
+      },
+      sideBets: {
+        enabled: false
+      },
+      adminBetting: {
+        liveEnabled: false,
+        maxBetAmount: 100,
+        livePermissions: {
+          initiators: 'all-players',
+          settlement: 'auto'
+        },
+        sidePools: {}
+      }
+    };
   });
+
+  // Save to localStorage whenever data changes
+  useEffect(() => {
+    if (tournamentData.basicInfo.name || tournamentData.players.length > 0) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tournamentData));
+    }
+  }, [tournamentData]);
 
   const steps = [
     { title: 'Invite Players' },
@@ -207,17 +231,26 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
 
   const { createTournamentWithInvitations } = useTournaments();
 
-  const handleCreate = async () => {
+  const handleCreateClick = () => {
     if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "Please log in to create a tournament",
-        variant: "destructive"
-      });
-      navigate('/auth');
+      setShowAuthSheet(true);
       return;
     }
+    handleCreate();
+  };
 
+  const handleAuthSuccess = () => {
+    setShowAuthSheet(false);
+    // Small delay to ensure auth state is updated
+    setTimeout(() => {
+      handleCreate();
+    }, 500);
+  };
+
+  const handleCreate = async () => {
+    if (!user) return;
+
+    setIsCreating(true);
     try {
       const playersToInvite = tournamentData.players
         .filter(p => p.name.trim() && p.email.trim())
@@ -248,6 +281,9 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
         description: "Opening tournament lobby..."
       });
 
+      // Clear localStorage draft
+      localStorage.removeItem(STORAGE_KEY);
+
       onClose();
       setCurrentStep(0);
       
@@ -259,6 +295,8 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
         title: "Error creating tournament",
         variant: "destructive"
       });
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -343,16 +381,22 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
         <div className="flex-shrink-0 p-6 border-t space-y-3">
           {currentStep !== 0 && (
             <Button 
-              onClick={currentStep < steps.length - 1 ? handleNext : handleCreate}
-              disabled={!canProceed() || authLoading || (currentStep === steps.length - 1 && !user)}
+              onClick={currentStep < steps.length - 1 ? handleNext : handleCreateClick}
+              disabled={!canProceed() || isCreating}
               size="lg"
               className="w-full h-14 text-lg font-semibold"
             >
-              {authLoading ? 'Loading...' : currentStep < steps.length - 1 ? 'Next' : 'Create Tournament'}
+              {isCreating ? 'Creating Tournament...' : currentStep < steps.length - 1 ? 'Next' : 'Create Tournament'}
             </Button>
           )}
         </div>
       </DialogContent>
+
+      <InlineAuthSheet 
+        isOpen={showAuthSheet}
+        onClose={() => setShowAuthSheet(false)}
+        onAuthSuccess={handleAuthSuccess}
+      />
     </Dialog>
   );
 });
