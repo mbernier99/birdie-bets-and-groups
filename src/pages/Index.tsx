@@ -138,7 +138,7 @@ const Index = memo(() => {
             style={{ 
               backgroundImage: 'url(/lovable-uploads/mobile-hero-caddie-new.jpg)',
               backgroundSize: 'cover',
-              backgroundPosition: 'center 60%',
+              backgroundPosition: 'center 45%',
               transform: 'translateZ(0)',
               willChange: 'transform'
             }}
@@ -160,10 +160,10 @@ const Index = memo(() => {
         <div className={`${isMobile ? 'mx-4 sm:mx-6 lg:mx-8' : 'flex items-center justify-center min-h-[80vh] bg-cover bg-center'}`}
              style={!isMobile ? { backgroundImage: 'url(/lovable-uploads/desktop-hero-background.jpg)' } : {}}>
           <div className={`${isMobile ? '' : 'max-w-5xl mx-auto'} text-white relative overflow-hidden ${isMobile ? '' : 'rounded-2xl'}`}>
-            <div className={`max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 ${isMobile ? 'pt-6 pb-12' : 'py-16'} relative ${isMobile ? 'z-20' : 'z-10'}`}>
+            <div className={`max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 ${isMobile ? 'pt-8 pb-24' : 'py-16'} relative ${isMobile ? 'z-20' : 'z-10'}`}>
               <div className="text-center">
                 {/* Logo */}
-                <div className={`flex justify-center ${isMobile ? 'mb-2' : 'mb-8'}`}>
+                <div className={`flex justify-center ${isMobile ? 'mb-8' : 'mb-8'}`}>
                   {isMobile ? (
                     <img src="/lovable-uploads/bandon-dunes-logo.png" alt="Bandon Dunes Logo" className="object-contain h-32 w-auto" />
                   ) : (
@@ -171,16 +171,16 @@ const Index = memo(() => {
                   )}
                 </div>
                 
-                <h1 className={`${isMobile ? 'text-4xl' : 'text-5xl sm:text-6xl md:text-7xl lg:text-9xl'} font-black font-orbitron ${isMobile ? 'mb-12' : 'mb-8'} tracking-wider w-full break-words bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 bg-clip-text text-transparent animate-pulse`}>
+                <h1 className={`${isMobile ? 'text-4xl' : 'text-5xl sm:text-6xl md:text-7xl lg:text-9xl'} font-black font-orbitron ${isMobile ? 'mb-16' : 'mb-8'} tracking-wider w-full break-words bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 bg-clip-text text-transparent animate-pulse`}>
                   BetLoopr
                 </h1>
                 
-                <p className={`${isMobile ? 'text-base' : 'text-xl md:text-2xl'} ${isMobile ? 'text-white font-bold bg-emerald-600/40 backdrop-blur-sm border border-emerald-400/30 px-6 py-4 rounded-full' : 'text-emerald-100'} mb-12 max-w-3xl mx-auto relative z-20`}>
+                <p className={`${isMobile ? 'text-base' : 'text-xl md:text-2xl'} ${isMobile ? 'text-white font-bold bg-emerald-600/40 backdrop-blur-sm border border-emerald-400/30 px-6 py-4 rounded-full' : 'text-emerald-100'} ${isMobile ? 'mb-16' : 'mb-12'} max-w-3xl mx-auto relative z-20`}>
                   {user ? 'Manage Golf tournaments, wagers, side bets and more' : 'Live Bets, Tournament & Golf Game Management'}
                 </p>
                 
                 {/* CTAs */}
-                <div className={`flex flex-col items-center gap-6 relative z-20 ${isMobile ? 'mt-8' : 'mt-16'}`}>
+                <div className={`flex flex-col items-center gap-6 relative z-20 ${isMobile ? 'mt-12' : 'mt-16'}`}>
                   {isMobile ? (
                     // Mobile: Show both buttons
                     <div className="flex flex-col sm:flex-row gap-3 justify-center w-full">
