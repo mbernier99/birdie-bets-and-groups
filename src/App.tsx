@@ -14,7 +14,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 // Lazy load pages for code splitting
 const Index = React.lazy(() => import("./pages/Index"));
 const Dashboard = React.lazy(() => import("./pages/Dashboard"));
-const GroupsPage = React.lazy(() => import("./pages/GroupsPage"));
+const MyTournamentsPage = React.lazy(() => import("./pages/MyTournamentsPage"));
 const BetPage = React.lazy(() => import("./pages/BetPage"));
 const BetRoom = React.lazy(() => import("./pages/BetRoom"));
 const Tournaments = React.lazy(() => import("./pages/Tournaments"));
@@ -67,9 +67,9 @@ const App = () => (
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/groups" element={
+                  <Route path="/my-tournaments" element={
                     <ProtectedRoute>
-                      <GroupsPage />
+                      <MyTournamentsPage />
                     </ProtectedRoute>
                   } />
                   <Route path="/bet" element={
