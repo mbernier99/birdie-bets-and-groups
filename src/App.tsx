@@ -72,6 +72,12 @@ const App = () => (
                       <MyTournamentsPage />
                     </ProtectedRoute>
                   } />
+                  {/* Redirect old groups route to my-tournaments */}
+                  <Route path="/groups" element={
+                    <ProtectedRoute>
+                      <MyTournamentsPage />
+                    </ProtectedRoute>
+                  } />
                   <Route path="/bet" element={
                     <ProtectedRoute>
                       <BetPage />
