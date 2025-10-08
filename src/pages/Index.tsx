@@ -129,37 +129,30 @@ const Index = memo(() => {
   const activeTournaments = user ? tournaments.filter(t => t.status === 'draft' || t.status === 'lobby' || t.status === 'live') : [];
 
   return (
-    <div className={`min-h-screen min-h-[100dvh] pb-20 md:pb-0 ${isMobile ? 'relative' : ''}`}>
-      {/* Mobile Background with Parallax */}
-      {isMobile && (
-        <>
-          <div 
-            className="fixed inset-0 bg-cover bg-no-repeat -z-10"
-            style={{ 
-              backgroundImage: 'url(/lovable-uploads/mobile-hero-caddie-new.jpg)',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center 30%',
-              transform: 'translateZ(0)',
-              willChange: 'transform'
-            }}
-          />
-          <div 
-            className="fixed inset-0 -z-10"
-            style={{
-              background: 'linear-gradient(to top, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.35) 40%, transparent 100%)'
-            }}
-          />
-        </>
-      )}
+    <div className={`min-h-screen min-h-[100dvh] pb-20 md:pb-0`}>
       <Navbar />
       
       {/* Content Wrapper */}
       <div className="relative z-10">
         
         {/* Hero Section */}
-        <div className={`${isMobile ? 'mx-4 sm:mx-6 lg:mx-8 min-h-[calc(100dvh-5rem)]' : 'flex items-center justify-center min-h-[80vh] bg-cover bg-center'}`}
-             style={!isMobile ? { backgroundImage: 'url(/lovable-uploads/desktop-hero-background.jpg)' } : {}}>
+        <div className={`${isMobile ? 'mx-4 sm:mx-6 lg:mx-8 min-h-[calc(100dvh-5rem)] bg-cover bg-no-repeat' : 'flex items-center justify-center min-h-[80vh] bg-cover bg-center'}`}
+             style={isMobile 
+               ? { 
+                   backgroundImage: 'url(/lovable-uploads/mobile-hero-caddie-new.jpg)',
+                   backgroundPosition: 'center 30%'
+                 }
+               : { backgroundImage: 'url(/lovable-uploads/desktop-hero-background.jpg)' }
+             }>
           <div className={`${isMobile ? '' : 'max-w-5xl mx-auto'} text-white relative overflow-hidden ${isMobile ? '' : 'rounded-2xl'}`}>
+            {isMobile && (
+              <div 
+                className="absolute inset-0"
+                style={{
+                  background: 'linear-gradient(to top, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.35) 40%, transparent 100%)'
+                }}
+              />
+            )}
             <div className={`max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 ${isMobile ? 'pt-8 pb-8' : 'py-16'} relative ${isMobile ? 'z-20' : 'z-10'}`}>
               <div className="text-center">
                 {/* Logo */}
