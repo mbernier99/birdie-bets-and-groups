@@ -4,15 +4,19 @@ import { Link, useLocation } from 'react-router-dom';
 import { LogOut, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
+import { NotificationBadge } from './notifications/NotificationBadge';
 
 interface MobileHeaderProps {
   title?: string;
+  notificationCount?: number;
+  onNotificationClick?: () => void;
 }
 
-const MobileHeader = ({ title }: MobileHeaderProps) => {
+const MobileHeader = ({ title, notificationCount = 0, onNotificationClick }: MobileHeaderProps) => {
   const { user, signOut } = useAuth();
   const location = useLocation();
   const isHomePage = location.pathname === '/';
+  const showNotifications = location.pathname.includes('/tournament/') && location.pathname.includes('/live');
 
   return (
     <header className={`md:hidden fixed top-0 left-0 right-0 z-50 ${
@@ -41,8 +45,16 @@ const MobileHeader = ({ title }: MobileHeaderProps) => {
           </h1>
         )}
         
-        {/* Right side - Profile icon */}
-        <div className="flex items-center">
+        {/* Right side - Notifications & Profile */}
+        <div className="flex items-center gap-2">
+          {showNotifications && onNotificationClick && (
+            <NotificationBadge
+              count={notificationCount}
+              onClick={onNotificationClick}
+              className={isHomePage ? 'text-white' : ''}
+            />
+          )}
+          
           {user ? (
             <button
               onClick={() => signOut()}

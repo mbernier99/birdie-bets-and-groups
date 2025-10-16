@@ -7,9 +7,12 @@ import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import MobileNavigation from '../components/MobileNavigation';
 import MobileHeader from '../components/MobileHeader';
-import LiveScorecard from '../components/LiveScorecard';
-import Leaderboard from '../components/Leaderboard';
+import { EnhancedLiveScorecard } from '../components/scorecard/EnhancedLiveScorecard';
+import { RealTimeLeaderboard } from '../components/leaderboard/RealTimeLeaderboard';
+import { NotificationCenter } from '../components/notifications/NotificationCenter';
 import LiveTournamentTracker from '../components/LiveTournamentTracker';
+import { useNotifications } from '@/hooks/useNotifications';
+import { useLiveTournamentData } from '@/hooks/useLiveTournamentData';
 
 const LiveTournament = () => {
   const { id } = useParams();
@@ -19,6 +22,24 @@ const LiveTournament = () => {
   const [activeTab, setActiveTab] = useState('scorecard');
   const [myRoundId, setMyRoundId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showNotifications, setShowNotifications] = useState(false);
+
+  // Enhanced hooks
+  const { 
+    notifications, 
+    unreadCount, 
+    markAsRead, 
+    markAllAsRead, 
+    clearNotification 
+  } = useNotifications(id || '', user?.id || '');
+  
+  const {
+    leaderboard,
+    myPosition,
+    activeBets,
+    courseHoles: liveCourseHoles,
+    loading: dataLoading
+  } = useLiveTournamentData(id || '', user?.id || '');
 
   useEffect(() => {
     if (!id) return;
@@ -145,11 +166,14 @@ const LiveTournament = () => {
   }
 
   const settings = tournament.settings || {};
-  const courseHoles = tournament.courses?.holes;
+  const courseHoles = liveCourseHoles.length > 0 ? liveCourseHoles : (tournament.courses?.holes || []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 pb-20 md:pb-0">
-      <MobileHeader />
+      <MobileHeader 
+        notificationCount={unreadCount}
+        onNotificationClick={() => setShowNotifications(true)}
+      />
       
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Tournament Header */}
@@ -233,20 +257,37 @@ const LiveTournament = () => {
         </div>
 
         {/* Tab Content */}
-        <div className={activeTab === 'betting' ? '' : 'bg-white rounded-lg shadow-sm border border-emerald-100'}>
+        <div className={activeTab === 'betting' ? '' : 'bg-white rounded-lg shadow-sm border border-emerald-100 p-6'}>
           {activeTab === 'scorecard' && id && (
-            <LiveScorecard 
+            <EnhancedLiveScorecard 
               tournamentId={id}
               roundId={myRoundId || undefined}
               courseHoles={courseHoles}
             />
           )}
-          {activeTab === 'leaderboard' && <Leaderboard />}
+          {activeTab === 'leaderboard' && user && (
+            <RealTimeLeaderboard
+              players={leaderboard}
+              myPosition={myPosition}
+              userId={user.id}
+              loading={dataLoading}
+            />
+          )}
           {activeTab === 'betting' && <LiveTournamentTracker />}
         </div>
       </div>
 
       <MobileNavigation />
+
+      {/* Notification Center */}
+      <NotificationCenter
+        isOpen={showNotifications}
+        onClose={() => setShowNotifications(false)}
+        notifications={notifications}
+        onMarkAsRead={markAsRead}
+        onMarkAllRead={markAllAsRead}
+        onClear={clearNotification}
+      />
     </div>
   );
 };
