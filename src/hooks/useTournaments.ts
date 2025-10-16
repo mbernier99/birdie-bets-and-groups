@@ -155,12 +155,20 @@ export const useTournaments = () => {
           await sendInvitations({
             tournamentName: tournament.name,
             tournamentId: tournament.id,
-            players: playersWithEmails,
+            players: playersWithEmails.map((p, idx) => ({
+              id: p.email || `guest-${idx}`, // Use email as id or fallback
+              name: p.name,
+              email: p.email,
+              handicapIndex: p.handicapIndex
+            })),
             tournamentDetails: {
               gameType: tournament.game_type,
               courseName: (tournamentData.settings as any)?.course?.name || 'TBD',
               maxPlayers: tournament.max_players || undefined,
-              entryFee: tournament.entry_fee || undefined
+              entryFee: tournament.entry_fee || undefined,
+              teams: (tournamentData.settings as any)?.teams || [],
+              teeTimeGroups: (tournamentData.settings as any)?.teeTimeGroups || [],
+              pairings: (tournamentData.settings as any)?.pairings || []
             }
           });
         } catch (invitationError) {

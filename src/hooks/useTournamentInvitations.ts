@@ -7,8 +7,10 @@ interface InvitationRequest {
   tournamentName: string;
   tournamentId: string;
   players: Array<{
+    id: string;
     name: string;
     email?: string;
+    phone?: string;
     userId?: string; // Support userId for roster players
     handicapIndex: number;
   }>;
@@ -17,6 +19,9 @@ interface InvitationRequest {
     courseName?: string;
     maxPlayers?: number;
     entryFee?: number;
+    teams?: Array<{ id: string; name: string; playerIds: string[] }>;
+    teeTimeGroups?: Array<{ id: string; time: string; playerIds: string[] }>;
+    pairings?: Array<{ id: string; name: string; playerIds: string[]; teeTime?: string }>;
   };
 }
 
@@ -72,6 +77,12 @@ export const useTournamentInvitations = () => {
 
       const hostEmail = profile?.email || user.email || '';
 
+      // Add player assignments
+      const playersWithAssignments = playersWithContact.map(player => ({
+        ...player,
+        assignment: getPlayerAssignment(player.id, tournamentDetails)
+      }));
+
       // Call the edge function
       const { data, error } = await supabase.functions.invoke('send-tournament-invitation', {
         body: {
@@ -79,7 +90,7 @@ export const useTournamentInvitations = () => {
           tournamentId,
           hostName,
           hostEmail,
-          invitees: playersWithContact,
+          invitees: playersWithAssignments,
           tournamentDetails
         }
       });
@@ -126,4 +137,37 @@ export const useTournamentInvitations = () => {
     sendInvitations,
     sending
   };
+};
+
+// Helper function to get player assignment details
+const getPlayerAssignment = (playerId: string, tournamentDetails?: any): string => {
+  if (!tournamentDetails) return 'No assignment yet';
+
+  // Check teams
+  if (tournamentDetails.teams?.length > 0) {
+    const team = tournamentDetails.teams.find((t: any) => 
+      t.playerIds?.includes(playerId)
+    );
+    if (team) return `Team: ${team.name}`;
+  }
+
+  // Check tee times
+  if (tournamentDetails.teeTimeGroups?.length > 0) {
+    const teeTime = tournamentDetails.teeTimeGroups.find((t: any) => 
+      t.playerIds?.includes(playerId)
+    );
+    if (teeTime) return `Tee Time: ${teeTime.time}`;
+  }
+
+  // Check pairings
+  if (tournamentDetails.pairings?.length > 0) {
+    const pairing = tournamentDetails.pairings.find((p: any) => 
+      p.playerIds?.includes(playerId)
+    );
+    if (pairing) {
+      return `${pairing.name}${pairing.teeTime ? ` at ${pairing.teeTime}` : ''}`;
+    }
+  }
+
+  return 'No assignment yet';
 };

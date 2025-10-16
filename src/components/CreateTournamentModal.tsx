@@ -7,7 +7,9 @@ import { useTournaments } from '@/hooks/useTournaments';
 import { useAuth } from '@/contexts/AuthContext';
 import InvitePlayersStep from './tournament-creation/InvitePlayersStep';
 import GameSettingsStep from './tournament-creation/GameSettingsStep';
+import TeamOrganizationStep from './tournament-creation/TeamOrganizationStep';
 import BetsStep from './tournament-creation/BetsStep';
+import ReviewStep from './tournament-creation/ReviewStep';
 import { InlineAuthSheet } from './tournament-creation/InlineAuthSheet';
 
 interface CreateTournamentModalProps {
@@ -181,9 +183,11 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
   }, [tournamentData]);
 
   const steps = [
-    { title: 'Invite Players' },
-    { title: 'Game Settings' },
-    { title: 'Bets' },
+    { title: 'Add Players' },
+    { title: 'Course & Game' },
+    { title: 'Organization' },
+    { title: 'Wagering' },
+    { title: 'Review & Invite' },
   ];
 
   const handleNext = () => {
@@ -272,6 +276,8 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
         settings: {
           course: tournamentData.course,
           teams: tournamentData.teams,
+          teeTimeGroups: tournamentData.teeTimeGroups,
+          pairings: tournamentData.pairings,
           wagering: tournamentData.wagering
         }
       }, playersToInvite);
@@ -311,11 +317,13 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
 
   const canProceed = () => {
     switch (currentStep) {
-      case 0:
+      case 0: // Add Players
         return tournamentData.basicInfo.name.trim() && tournamentData.players.length >= 2;
-      case 1:
+      case 1: // Course & Game
         return tournamentData.course.name.trim() && tournamentData.gameType.type;
-      case 2:
+      case 2: // Organization - optional, can always proceed
+        return true;
+      case 3: // Wagering
         // Validate prize distribution percentages if entry fee is set
         if (tournamentData.wagering.entryFee > 0) {
           const totalPercentage = (tournamentData.wagering.firstPlacePercentage || 100) + 
@@ -323,6 +331,8 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
             (tournamentData.wagering.thirdPlaceEnabled ? (tournamentData.wagering.thirdPlacePercentage || 0) : 0);
           return totalPercentage === 100;
         }
+        return true;
+      case 4: // Review & Invite
         return true;
       default:
         return false;
@@ -336,7 +346,11 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
       case 1:
         return <GameSettingsStep data={tournamentData} onDataChange={handleDataChange} />;
       case 2:
+        return <TeamOrganizationStep data={tournamentData} onDataChange={handleDataChange} />;
+      case 3:
         return <BetsStep data={tournamentData} onDataChange={handleDataChange} />;
+      case 4:
+        return <ReviewStep data={tournamentData} onDataChange={handleDataChange} onSaveTournament={handleCreateClick} />;
       default:
         return null;
     }
@@ -379,14 +393,14 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
         </div>
 
         <div className="flex-shrink-0 p-6 border-t space-y-3">
-          {currentStep !== 0 && (
+          {currentStep !== 0 && currentStep !== 4 && (
             <Button 
-              onClick={currentStep < steps.length - 1 ? handleNext : handleCreateClick}
+              onClick={handleNext}
               disabled={!canProceed() || isCreating}
               size="lg"
               className="w-full h-14 text-lg font-semibold"
             >
-              {isCreating ? 'Creating Tournament...' : currentStep < steps.length - 1 ? 'Next' : 'Create Tournament'}
+              Next
             </Button>
           )}
         </div>
