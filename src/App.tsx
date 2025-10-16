@@ -36,6 +36,7 @@ const NotFound = React.lazy(() => import("./pages/NotFound"));
 const EnhancedQuickBet = React.lazy(() => import("./pages/EnhancedQuickBet"));
 const QuickBetRoom = React.lazy(() => import("./pages/QuickBetRoom"));
 const BetInvite = React.lazy(() => import("./pages/BetInvite"));
+const Profile = React.lazy(() => import("./pages/Profile"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -125,6 +126,11 @@ const App = () => (
                   <Route path="/quick-bet" element={<EnhancedQuickBet />} />
                   <Route path="/quick-bet/:roomId" element={<QuickBetRoom />} />
                   <Route path="/bet-invite/:roomId" element={<BetInvite />} />
+                  <Route path="/profile" element={
+                    <ProtectedRoute>
+                      <Profile />
+                    </ProtectedRoute>
+                  } />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>

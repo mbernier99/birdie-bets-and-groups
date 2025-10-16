@@ -5,9 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ArrowRight, DollarSign, TrendingUp } from 'lucide-react';
 import { profileSchema, validateAndSanitizeForm } from '@/utils/validators';
 import { handleSecureError, logSecurityEvent } from '@/utils/securityHelpers';
+import { useProfileStats } from '@/hooks/useProfileStats';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Link } from 'react-router-dom';
 import {
   Sheet,
   SheetContent,
@@ -36,15 +39,8 @@ export const ProfileSheet = ({ open, onOpenChange }: ProfileSheetProps) => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
-  const [profile, setProfile] = useState<ProfileData>({
-    first_name: '',
-    last_name: '',
-    nickname: '',
-    email: '',
-    phone: '',
-    home_course: '',
-    handicap: 0,
-  });
+  const [profile, setProfile] = useState<any>(null);
+  const { stats, loading: statsLoading } = useProfileStats(user?.id);
 
   useEffect(() => {
     if (user && open) {
@@ -71,15 +67,7 @@ export const ProfileSheet = ({ open, onOpenChange }: ProfileSheetProps) => {
       }
 
       if (data) {
-        setProfile({
-          first_name: data.first_name || '',
-          last_name: data.last_name || '',
-          nickname: data.nickname || '',
-          email: data.email || user?.email || '',
-          phone: data.phone || '',
-          home_course: data.home_course || '',
-          handicap: data.handicap || 0,
-        });
+        setProfile(data);
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -95,11 +83,11 @@ export const ProfileSheet = ({ open, onOpenChange }: ProfileSheetProps) => {
     try {
       // Validate and sanitize form data
       const formData = {
-        firstName: profile.first_name || '',
-        lastName: profile.last_name || '',
-        phone: profile.phone || '',
-        handicap: (profile.handicap || 0).toString(),
-        homeCourse: profile.home_course || '',
+        firstName: profile?.first_name || '',
+        lastName: profile?.last_name || '',
+        phone: profile?.phone || '',
+        handicap: (profile?.handicap || 0).toString(),
+        homeCourse: profile?.home_course || '',
       };
 
       const validation = validateAndSanitizeForm(profileSchema, formData);
@@ -120,7 +108,7 @@ export const ProfileSheet = ({ open, onOpenChange }: ProfileSheetProps) => {
         .update({
           first_name: validation.data!.firstName,
           last_name: validation.data!.lastName,
-          nickname: profile.nickname || null,
+          nickname: profile?.nickname || null,
           phone: validation.data!.phone || null,
           handicap: validation.data!.handicap ? Math.round(validation.data!.handicap) : null,
           home_course: validation.data!.homeCourse || null,
@@ -159,8 +147,8 @@ export const ProfileSheet = ({ open, onOpenChange }: ProfileSheetProps) => {
   };
 
   const getInitials = () => {
-    const firstInitial = profile.first_name?.charAt(0) || '';
-    const lastInitial = profile.last_name?.charAt(0) || '';
+    const firstInitial = profile?.first_name?.charAt(0) || '';
+    const lastInitial = profile?.last_name?.charAt(0) || '';
     return `${firstInitial}${lastInitial}` || 'U';
   };
 
@@ -187,127 +175,122 @@ export const ProfileSheet = ({ open, onOpenChange }: ProfileSheetProps) => {
           </div>
         ) : (
           <div className="mt-6 space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="h-12 w-12 bg-emerald-100 rounded-full flex items-center justify-center">
-                  <span className="text-emerald-600 font-semibold text-lg">{getInitials()}</span>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">
-                    {profile.first_name} {profile.last_name}
-                  </h3>
-                  {profile.nickname && (
-                    <p className="text-sm text-golf-green font-medium">"{profile.nickname}"</p>
-                  )}
-                  <p className="text-sm text-gray-600">Handicap: {profile.handicap}</p>
-                </div>
-              </div>
-              {!editing && (
-                <Button size="sm" onClick={() => setEditing(true)}>
-                  Edit
-                </Button>
-              )}
-            </div>
-            
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input
-                    id="firstName"
-                    value={profile.first_name}
-                    onChange={(e) => setProfile({ ...profile, first_name: e.target.value })}
-                    disabled={!editing}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input
-                    id="lastName"
-                    value={profile.last_name}
-                    onChange={(e) => setProfile({ ...profile, last_name: e.target.value })}
-                    disabled={!editing}
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="nickname">Nickname</Label>
-                <Input
-                  id="nickname"
-                  value={profile.nickname}
-                  onChange={(e) => setProfile({ ...profile, nickname: e.target.value })}
-                  disabled={!editing}
-                  placeholder="Your golf nickname"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={profile.email}
-                  disabled
-                  className="bg-gray-50"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  value={profile.phone}
-                  onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-                  disabled={!editing}
-                  placeholder="Enter your phone number"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="homeCourse">Home Course</Label>
-                <Input
-                  id="homeCourse"
-                  value={profile.home_course}
-                  onChange={(e) => setProfile({ ...profile, home_course: e.target.value })}
-                  disabled={!editing}
-                  placeholder="Enter your home course"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="handicap">Handicap</Label>
-                <Input
-                  id="handicap"
-                  type="number"
-                  value={profile.handicap || ''}
-                  onChange={(e) => setProfile({ ...profile, handicap: parseInt(e.target.value) || 0 })}
-                  disabled={!editing}
-                  placeholder="Enter your handicap"
-                />
+            {/* Profile Header with Avatar */}
+            <div className="flex items-center gap-3">
+              <Avatar className="h-16 w-16">
+                <AvatarImage src={profile?.avatar_url || undefined} />
+                <AvatarFallback className="text-xl">{getInitials()}</AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
+                <h3 className="font-semibold text-foreground">
+                  {profile?.first_name} {profile?.last_name}
+                </h3>
+                {profile?.nickname && (
+                  <p className="text-sm text-muted-foreground">"{profile.nickname}"</p>
+                )}
+                <p className="text-sm text-muted-foreground">Handicap: {profile?.handicap ?? '—'}</p>
               </div>
             </div>
 
-            {editing && (
-              <div className="flex justify-end space-x-2 pt-4 border-t">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setEditing(false);
-                    fetchProfile();
-                  }}
-                  disabled={saving}
-                >
-                  Cancel
-                </Button>
-                <Button size="sm" onClick={saveProfile} disabled={saving}>
-                  {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Save
-                </Button>
+            {/* Quick Stats */}
+            {!statsLoading && (
+              <div className="grid grid-cols-2 gap-3 py-3 border-y">
+                <div className="text-center">
+                  <div className="flex items-center justify-center gap-1 text-muted-foreground mb-1">
+                    <TrendingUp className="h-3 w-3" />
+                    <span className="text-xs">Win Rate</span>
+                  </div>
+                  <div className="text-lg font-bold text-foreground">{stats.winRate}%</div>
+                </div>
+                <div className="text-center border-l">
+                  <div className="flex items-center justify-center gap-1 text-muted-foreground mb-1">
+                    <DollarSign className="h-3 w-3" />
+                    <span className="text-xs">Net Winnings</span>
+                  </div>
+                  <div className={`text-lg font-bold ${stats.netWinnings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    ${stats.netWinnings >= 0 ? '+' : ''}{stats.netWinnings}
+                  </div>
+                </div>
               </div>
             )}
+
+            {/* View Full Profile Button */}
+            <Link to="/profile" onClick={() => onOpenChange(false)}>
+              <Button variant="outline" className="w-full justify-between">
+                View Full Profile
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+
+            {/* Quick Edit Section */}
+            <div className="pt-3 border-t">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="font-medium text-foreground">Quick Edit</h4>
+                {!editing && (
+                  <Button size="sm" onClick={() => setEditing(true)}>
+                    Edit
+                  </Button>
+                )}
+              </div>
+            
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label htmlFor="firstName" className="text-sm">First Name</Label>
+                    <Input
+                      id="firstName"
+                      value={profile?.first_name || ''}
+                      onChange={(e) => setProfile({ ...profile, first_name: e.target.value })}
+                      disabled={!editing}
+                      className="h-9"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="lastName" className="text-sm">Last Name</Label>
+                    <Input
+                      id="lastName"
+                      value={profile?.last_name || ''}
+                      onChange={(e) => setProfile({ ...profile, last_name: e.target.value })}
+                      disabled={!editing}
+                      className="h-9"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <Label htmlFor="handicap" className="text-sm">Handicap</Label>
+                  <Input
+                    id="handicap"
+                    type="number"
+                    value={profile?.handicap || ''}
+                    onChange={(e) => setProfile({ ...profile, handicap: parseInt(e.target.value) || 0 })}
+                    disabled={!editing}
+                    placeholder="Enter your handicap"
+                    className="h-9"
+                  />
+                </div>
+              </div>
+
+              {editing && (
+                <div className="flex justify-end space-x-2 pt-4 border-t mt-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setEditing(false);
+                      fetchProfile();
+                    }}
+                    disabled={saving}
+                  >
+                    Cancel
+                  </Button>
+                  <Button size="sm" onClick={saveProfile} disabled={saving}>
+                    {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Save
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </SheetContent>
