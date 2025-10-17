@@ -144,6 +144,13 @@ export const InlineAuthSheet: React.FC<InlineAuthSheetProps> = ({ isOpen, onClos
       <SheetContent side="bottom" className="h-[85vh] overflow-y-auto">
         <SheetHeader>
           <SheetTitle>Sign in to create your tournament</SheetTitle>
+          <div className="flex justify-center py-3">
+            <img 
+              src="/lovable-uploads/loopr-logo-green.png" 
+              alt="BetLoopr Logo" 
+              className="h-12 w-auto object-contain"
+            />
+          </div>
           <SheetDescription>
             Your tournament configuration is ready. Sign in or create an account to save it and invite players.
           </SheetDescription>

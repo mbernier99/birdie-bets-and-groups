@@ -300,6 +300,13 @@ const Auth = () => {
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="space-y-2 pb-4">
           <CardTitle className="text-xl sm:text-2xl text-center font-bold">BetLoopr</CardTitle>
+          <div className="flex justify-center py-2">
+            <img 
+              src="/lovable-uploads/loopr-logo-green.png" 
+              alt="BetLoopr Logo" 
+              className="h-12 sm:h-16 w-auto object-contain"
+            />
+          </div>
           <CardDescription className="text-center text-sm sm:text-base">
             Sign in to your account or create a new one
           </CardDescription>
