@@ -40,21 +40,55 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const { withRateLimit } = useAuthRateLimit();
 
-  // Function to refresh the session
-  const refreshSession = async () => {
+  // Function to refresh the session with exponential backoff
+  const refreshSession = async (retryCount = 0) => {
+    const MAX_RETRIES = 3;
+    const BACKOFF_BASE = 2000; // 2 seconds
+
     try {
       const { data, error } = await supabase.auth.refreshSession();
       if (error) {
+        // Retry with exponential backoff if network-related error
+        if (retryCount < MAX_RETRIES && (error.message.includes('network') || error.message.includes('fetch'))) {
+          const backoffDelay = BACKOFF_BASE * Math.pow(2, retryCount);
+          console.log(`Session refresh failed, retrying in ${backoffDelay}ms...`);
+          
+          setTimeout(() => {
+            refreshSession(retryCount + 1);
+          }, backoffDelay);
+          return;
+        }
+        
         console.error('Failed to refresh session:', error);
+        
+        // Cache failure for offline recovery - store last known session
+        if (session) {
+          localStorage.setItem('last_valid_session', JSON.stringify({
+            expires_at: session.expires_at,
+            user_id: session.user.id,
+            cached_at: Date.now()
+          }));
+        }
         return;
       }
       
       if (data.session) {
         setSession(data.session);
         setUser(data.session.user);
+        // Clear cached session on successful refresh
+        localStorage.removeItem('last_valid_session');
       }
     } catch (error) {
       console.error('Error refreshing session:', error);
+      
+      // Attempt to recover from cache
+      const cachedSession = localStorage.getItem('last_valid_session');
+      if (cachedSession && retryCount < MAX_RETRIES) {
+        const backoffDelay = BACKOFF_BASE * Math.pow(2, retryCount);
+        setTimeout(() => {
+          refreshSession(retryCount + 1);
+        }, backoffDelay);
+      }
     }
   };
 

@@ -9,6 +9,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { PageSkeleton } from "./components/ui/loading-skeleton";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { NetworkStatusIndicator } from "./components/NetworkStatusIndicator";
 
 
 // Lazy load pages for code splitting
@@ -62,6 +63,7 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
+          <NetworkStatusIndicator />
             
             <BrowserRouter>
               <Suspense fallback={<PageSkeleton />}>

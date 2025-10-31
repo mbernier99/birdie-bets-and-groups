@@ -4,18 +4,24 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AlertCircle } from 'lucide-react';
 import { Press } from '../../types/press';
+import { ManualBetResolution } from './ManualBetResolution';
 
 interface PressLedgerProps {
   presses: Press[];
   currentUserId: string;
   players: Array<{ id: string; name: string }>;
+  isAdmin?: boolean;
+  onBetResolved?: () => void;
 }
 
 const PressLedger: React.FC<PressLedgerProps> = ({
   presses,
   currentUserId,
-  players
+  players,
+  isAdmin = false,
+  onBetResolved
 }) => {
   const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'pending' | 'pushed'>('all');
 
@@ -110,6 +116,12 @@ const PressLedger: React.FC<PressLedgerProps> = ({
                 const isInitiator = press.initiatorId === currentUserId;
                 const opponent = getPlayerName(isInitiator ? press.targetId : press.initiatorId);
                 
+                const needsManualResolution = 
+                  (press.gameType === 'closest-to-pin' || 
+                   press.gameType === 'longest-drive' || 
+                   press.gameType === 'first-to-green') && 
+                  (press.status === 'accepted' || press.status === 'active');
+
                 return (
                   <div key={press.id} className="border rounded-lg p-3 space-y-2">
                     <div className="flex items-center justify-between">
@@ -120,6 +132,12 @@ const PressLedger: React.FC<PressLedgerProps> = ({
                         <Badge className={getStatusColor(press.status)}>
                           {press.status}
                         </Badge>
+                        {needsManualResolution && (
+                          <Badge className="bg-orange-100 text-orange-800">
+                            <AlertCircle className="h-3 w-3 mr-1" />
+                            Needs Resolution
+                          </Badge>
+                        )}
                       </div>
                       <span className="font-bold">${press.amount}</span>
                     </div>
@@ -133,6 +151,16 @@ const PressLedger: React.FC<PressLedgerProps> = ({
                         </p>
                       )}
                     </div>
+
+                    {isAdmin && needsManualResolution && (
+                      <div className="pt-2 border-t">
+                        <ManualBetResolution
+                          press={press}
+                          players={players}
+                          onResolved={() => onBetResolved?.()}
+                        />
+                      </div>
+                    )}
                   </div>
                 );
               })

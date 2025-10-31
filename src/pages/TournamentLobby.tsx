@@ -8,6 +8,8 @@ import { useTournaments } from '@/hooks/useTournaments';
 import { Button } from '@/components/ui/button';
 import MobileNavigation from '../components/MobileNavigation';
 import MobileHeader from '../components/MobileHeader';
+import { ConnectionTest } from '@/components/ConnectionTest';
+import { NetworkStatusIndicator } from '@/components/NetworkStatusIndicator';
 
 interface Participant {
   id: string;
@@ -247,6 +249,7 @@ const TournamentLobby = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 pb-20 md:pb-0">
       <MobileHeader />
+      <NetworkStatusIndicator />
       
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Tournament Header */}
@@ -328,6 +331,11 @@ const TournamentLobby = () => {
             </Button>
           </div>
         </div>
+
+        {/* Connection Test - Show to organizer */}
+        {isOrganizer && (
+          <ConnectionTest />
+        )}
 
         {/* Players List */}
         <div className="bg-white rounded-lg shadow-sm border border-emerald-100 p-6">
