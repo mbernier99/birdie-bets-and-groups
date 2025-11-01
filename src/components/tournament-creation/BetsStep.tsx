@@ -2,6 +2,7 @@ import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TournamentData } from '../CreateTournamentModal';
 import { Info } from 'lucide-react';
@@ -105,7 +106,33 @@ const BetsStep: React.FC<BetsStepProps> = ({ data, onDataChange }) => {
         {/* Prize Distribution */}
         {data.wagering.entryFee > 0 && (
           <div className="space-y-4">
-            <h3 className="text-xl font-semibold">Prize Distribution</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-semibold">Prize Distribution</h3>
+              <div className="flex items-center gap-2">
+                <span className={`text-sm font-medium ${Math.round(totalPercentage) === 100 ? 'text-green-600' : 'text-destructive'}`}>
+                  Total: {Math.round(totalPercentage)}%
+                </span>
+                {Math.round(totalPercentage) !== 100 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const firstPct = data.wagering.firstPlacePercentage || 100;
+                      const secondPct = data.wagering.secondPlaceEnabled ? (data.wagering.secondPlacePercentage || 0) : 0;
+                      const thirdPct = data.wagering.thirdPlaceEnabled ? (data.wagering.thirdPlacePercentage || 0) : 0;
+                      const current = firstPct + secondPct + thirdPct;
+                      const diff = 100 - current;
+                      
+                      // Add difference to first place
+                      updateWagering({ firstPlacePercentage: firstPct + diff });
+                    }}
+                    className="h-8 text-xs"
+                  >
+                    Auto-balance
+                  </Button>
+                )}
+              </div>
+            </div>
             
             {/* First Place */}
             <div className="rounded-xl border-2 p-4 space-y-3">
@@ -119,7 +146,7 @@ const BetsStep: React.FC<BetsStepProps> = ({ data, onDataChange }) => {
                       type="number"
                       min="0"
                       max="100"
-                      step="5"
+                       step="1"
                       value={data.wagering.firstPlacePercentage ?? 100}
                       onChange={(e) => {
                         const inputValue = e.target.value;
@@ -131,7 +158,7 @@ const BetsStep: React.FC<BetsStepProps> = ({ data, onDataChange }) => {
                         const value = parseFloat(inputValue);
                         if (isNaN(value)) return;
                         
-                        const clampedValue = Math.max(0, Math.min(100, value));
+                        const clampedValue = Math.round(Math.max(0, Math.min(100, value)));
                         const secondEnabled = !!data.wagering.secondPlaceEnabled;
                         const thirdEnabled = !!data.wagering.thirdPlaceEnabled;
                         
@@ -209,7 +236,7 @@ const BetsStep: React.FC<BetsStepProps> = ({ data, onDataChange }) => {
                         type="number"
                         min="0"
                         max="100"
-                        step="5"
+                        step="1"
                         value={data.wagering.secondPlacePercentage ?? 30}
                         onChange={(e) => {
                           const inputValue = e.target.value;
@@ -221,7 +248,7 @@ const BetsStep: React.FC<BetsStepProps> = ({ data, onDataChange }) => {
                           const value = parseFloat(inputValue);
                           if (isNaN(value)) return;
                           
-                          const clampedValue = Math.max(0, Math.min(100, value));
+                          const clampedValue = Math.round(Math.max(0, Math.min(100, value)));
                           const thirdPct = data.wagering.thirdPlaceEnabled ? (data.wagering.thirdPlacePercentage || 0) : 0;
                           const firstPct = Math.max(0, 100 - clampedValue - thirdPct);
                           
@@ -278,7 +305,7 @@ const BetsStep: React.FC<BetsStepProps> = ({ data, onDataChange }) => {
                         type="number"
                         min="0"
                         max="100"
-                        step="5"
+                        step="1"
                         value={data.wagering.thirdPlacePercentage ?? 20}
                         onChange={(e) => {
                           const inputValue = e.target.value;
@@ -290,7 +317,7 @@ const BetsStep: React.FC<BetsStepProps> = ({ data, onDataChange }) => {
                           const value = parseFloat(inputValue);
                           if (isNaN(value)) return;
                           
-                          const clampedValue = Math.max(0, Math.min(100, value));
+                          const clampedValue = Math.round(Math.max(0, Math.min(100, value)));
                           const secondPct = data.wagering.secondPlaceEnabled ? (data.wagering.secondPlacePercentage || 0) : 0;
                           const firstPct = Math.max(0, 100 - clampedValue - secondPct);
                           
