@@ -39,7 +39,7 @@ export const PersonalInfoTab = ({ profile, onUpdate }: PersonalInfoTabProps) => 
           nickname: formData.nickname,
           phone: formData.phone,
           home_course: formData.home_course,
-          handicap: formData.handicap ? parseInt(formData.handicap) : null,
+          handicap: formData.handicap ? parseFloat(formData.handicap) : null,
           ghin_number: formData.ghin_number,
           bio: formData.bio,
           preferred_tees: formData.preferred_tees,
@@ -195,9 +195,10 @@ export const PersonalInfoTab = ({ profile, onUpdate }: PersonalInfoTabProps) => 
           <Input
             id="handicap"
             type="number"
+            step="0.1"
             value={formData.handicap}
             onChange={(e) => setFormData({ ...formData, handicap: e.target.value })}
-            placeholder="e.g., 12"
+            placeholder="e.g., 16.5"
           />
         </div>
         <div>
