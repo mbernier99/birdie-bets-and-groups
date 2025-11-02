@@ -2,6 +2,13 @@ import { GameFormat } from './GameFormatCard';
 
 export const traditionalFormats: GameFormat[] = [
   {
+    id: 'wolf-turd',
+    name: 'Wolf Turd',
+    description: 'Wolf hits first and must play with the worst shot',
+    icon: 'star',
+    hasRules: true,
+  },
+  {
     id: '2-man-best-ball',
     name: '2 Man Best Ball',
     description: 'Combined total',
@@ -61,13 +68,6 @@ export const traditionalFormats: GameFormat[] = [
     id: 'wolf',
     name: 'Wolf',
     description: 'Tee off last, pick your partner',
-    icon: 'star',
-    hasRules: true,
-  },
-  {
-    id: 'wolf-turd',
-    name: 'Wolf Turd',
-    description: 'Wolf hits first and must play with the worst shot',
     icon: 'star',
     hasRules: true,
   },

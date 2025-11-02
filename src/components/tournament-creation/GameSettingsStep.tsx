@@ -171,9 +171,9 @@ const GameSettingsStep: React.FC<GameSettingsStepProps> = ({ data, onDataChange 
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto space-y-6 pb-4">
-        {/* Traditional Formats - Horizontal Scroll */}
+        {/* Golf Games - Horizontal Scroll */}
         <div className="space-y-3">
-          <Label className="text-lg font-semibold px-6">Traditional Formats</Label>
+          <Label className="text-lg font-semibold px-6">Golf Games</Label>
           <div className="relative">
             <div 
               className="flex gap-4 overflow-x-auto pb-4 px-6 snap-x snap-mandatory scrollbar-hide touch-pan-x"
