@@ -321,6 +321,7 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
       console.error('Error creating tournament:', error);
       toast({
         title: "Error creating tournament",
+        description: (error as any)?.message || (error as any)?.details || 'Something went wrong. Please try again.',
         variant: "destructive"
       });
     } finally {
