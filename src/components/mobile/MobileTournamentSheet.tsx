@@ -52,7 +52,7 @@ const MobileTournamentSheet: React.FC<MobileTournamentSheetProps> = ({ isOpen, o
     pairings: [],
     wagering: {
       entryFee: 0,
-      payoutStructure: 'winner-take-all',
+      payoutStructure: 'winner-takes-all',
       currency: 'USD',
     },
     sideBets: {

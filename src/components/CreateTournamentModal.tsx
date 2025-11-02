@@ -118,61 +118,105 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
 
   const standardPars = [4, 4, 3, 5, 4, 4, 3, 4, 5, 4, 3, 4, 5, 4, 4, 3, 5, 4];
 
-  const [tournamentData, setTournamentData] = useState<TournamentData>(() => {
-    // Try to restore from localStorage
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error('Failed to parse saved tournament data');
-      }
-    }
-    
-    return {
-      basicInfo: {
-        name: '',
-        maxPlayers: 16
+  const getDefaultData = (): TournamentData => ({
+    basicInfo: {
+      name: '',
+      maxPlayers: 16
+    },
+    course: {
+      name: '',
+      teeBox: 'white',
+      holes: Array.from({ length: 18 }, (_, i) => ({
+        number: i + 1,
+        par: standardPars[i],
+        yardage: 400,
+        handicapIndex: i + 1
+      })),
+      rating: 72.0,
+      slope: 113
+    },
+    gameType: {
+      type: '',
+      format: 'individual',
+      rules: {}
+    },
+    players: [],
+    teams: [],
+    teeTimeGroups: [],
+    pairings: [],
+    wagering: {
+      entryFee: 0,
+      payoutStructure: 'winner-takes-all',
+      currency: 'USD'
+    },
+    sideBets: {
+      enabled: false
+    },
+    adminBetting: {
+      liveEnabled: false,
+      maxBetAmount: 100,
+      livePermissions: {
+        initiators: 'all-players',
+        settlement: 'auto'
       },
+      sidePools: {}
+    }
+  });
+
+  const mergeWithDefaults = (saved: Partial<TournamentData>): TournamentData => {
+    const defaults = getDefaultData();
+    return {
+      basicInfo: { ...defaults.basicInfo, ...(saved.basicInfo || {}) },
       course: {
-        name: '',
-        teeBox: 'white',
-        holes: Array.from({ length: 18 }, (_, i) => ({
-          number: i + 1,
-          par: standardPars[i],
-          yardage: 400,
-          handicapIndex: i + 1
-        })),
-        rating: 72.0,
-        slope: 113
+        ...defaults.course,
+        ...(saved.course || {}),
+        holes: Array.isArray(saved.course?.holes) 
+          ? saved.course.holes.map(h => ({
+              number: h.number ?? 1,
+              par: h.par ?? 4,
+              yardage: h.yardage ?? 350,
+              handicapIndex: h.handicapIndex ?? 1,
+            })) 
+          : defaults.course.holes,
       },
       gameType: {
-        type: '',
-        format: 'individual',
-        rules: {}
+        ...defaults.gameType,
+        ...(saved.gameType || {}),
+        rules: { ...defaults.gameType.rules, ...(saved.gameType?.rules || {}) },
       },
-      players: [],
-      teams: [],
-      teeTimeGroups: [],
-      pairings: [],
-      wagering: {
-        entryFee: 0,
-        payoutStructure: 'winner-takes-all',
-        currency: 'USD'
+      players: saved.players ?? [],
+      teams: saved.teams ?? [],
+      teeTimeGroups: saved.teeTimeGroups ?? [],
+      pairings: saved.pairings ?? [],
+      wagering: { 
+        ...defaults.wagering, 
+        ...(saved.wagering || {}),
+        payoutStructure: saved.wagering?.payoutStructure || defaults.wagering.payoutStructure
       },
-      sideBets: {
-        enabled: false
-      },
+      sideBets: { ...defaults.sideBets, ...(saved.sideBets || {}) },
       adminBetting: {
-        liveEnabled: false,
-        maxBetAmount: 100,
+        ...defaults.adminBetting,
+        ...(saved.adminBetting || {}),
         livePermissions: {
-          initiators: 'all-players',
-          settlement: 'auto'
+          ...defaults.adminBetting!.livePermissions,
+          ...(saved.adminBetting?.livePermissions || {}),
         },
-        sidePools: {}
-      }
+        sidePools: saved.adminBetting?.sidePools || {},
+      },
     };
+  };
+
+  const [tournamentData, setTournamentData] = useState<TournamentData>(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return getDefaultData();
+    
+    try {
+      const parsed = JSON.parse(saved);
+      return mergeWithDefaults(parsed);
+    } catch (e) {
+      console.error('Failed to parse saved tournament data', e);
+      return getDefaultData();
+    }
   });
 
   // Save to localStorage whenever data changes
@@ -219,6 +263,7 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
     if (currentStep === 3 && tournamentData.wagering.entryFee === 0) {
       handleDataChange('wagering', {
         ...tournamentData.wagering,
+        payoutStructure: tournamentData.wagering.payoutStructure || 'winner-takes-all',
         firstPlacePercentage: undefined,
         secondPlaceEnabled: false,
         secondPlacePercentage: undefined,

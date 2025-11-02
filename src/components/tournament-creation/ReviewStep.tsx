@@ -11,8 +11,14 @@ interface ReviewStepProps {
 }
 
 const ReviewStep: React.FC<ReviewStepProps> = ({ data, onSaveTournament }) => {
-  const totalPar = data.course.holes.reduce((sum, hole) => sum + hole.par, 0);
-  const totalYardage = data.course.holes.reduce((sum, hole) => sum + hole.yardage, 0);
+  // Guard against missing/malformed fields from stale drafts
+  const holes = Array.isArray(data.course?.holes) ? data.course.holes : [];
+  const totalPar = holes.reduce((sum, hole) => sum + (hole.par || 0), 0);
+  const totalYardage = holes.reduce((sum, hole) => sum + (hole.yardage || 0), 0);
+  
+  const payoutLabel = (data.wagering?.payoutStructure || 'winner-takes-all').replace(/-/g, ' ');
+  const currency = data.wagering?.currency || 'USD';
+  const entryFee = Number(data.wagering?.entryFee || 0);
 
   const getPlayerAssignment = (playerId: string) => {
     // Check if player is in a team
@@ -112,16 +118,16 @@ const ReviewStep: React.FC<ReviewStepProps> = ({ data, onSaveTournament }) => {
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Entry Fee:</span>
-              <span className="font-medium">{data.wagering.currency} ${data.wagering.entryFee}</span>
+              <span className="font-medium">{currency} ${entryFee}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Payout:</span>
-              <span className="font-medium capitalize">{data.wagering.payoutStructure.replace(/-/g, ' ')}</span>
+              <span className="font-medium capitalize">{payoutLabel}</span>
             </div>
-            {data.wagering.entryFee > 0 && (
+            {entryFee > 0 && (
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Total Pool:</span>
-                <span className="font-medium">{data.wagering.currency} ${(data.wagering.entryFee * data.players.length).toFixed(2)}</span>
+                <span className="font-medium">{currency} ${(entryFee * data.players.length).toFixed(2)}</span>
               </div>
             )}
           </div>
