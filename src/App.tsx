@@ -128,11 +128,7 @@ const App = () => (
                   <Route path="/quick-bet" element={<EnhancedQuickBet />} />
                   <Route path="/quick-bet/:roomId" element={<QuickBetRoom />} />
                   <Route path="/bet-invite/:roomId" element={<BetInvite />} />
-                  <Route path="/profile" element={
-                    <ProtectedRoute>
-                      <Profile />
-                    </ProtectedRoute>
-                  } />
+                  <Route path="/profile" element={<Profile />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>

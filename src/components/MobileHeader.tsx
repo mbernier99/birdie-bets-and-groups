@@ -56,8 +56,8 @@ const MobileHeader = ({ title, notificationCount = 0, onNotificationClick }: Mob
           )}
           
           {user ? (
-            <button
-              onClick={() => signOut()}
+            <Link 
+              to="/profile"
               className={`flex items-center justify-center rounded-full transition-colors drop-shadow-lg ${
                 isHomePage 
                   ? 'bg-white/20 backdrop-blur-sm text-white border-2 border-emerald-600 hover:bg-white/30' 
@@ -67,7 +67,7 @@ const MobileHeader = ({ title, notificationCount = 0, onNotificationClick }: Mob
               aria-label="Profile"
             >
               <User className="h-5 w-5" />
-            </button>
+            </Link>
           ) : (
             <Link 
               to="/auth"

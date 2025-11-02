@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import MobileHeader from "@/components/MobileHeader";
@@ -16,11 +17,19 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 const Profile = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [avatarModalOpen, setAvatarModalOpen] = useState(false);
   const { stats, loading: statsLoading, refetch: refetchStats } = useProfileStats(user?.id);
+
+  // Redirect to quick-login if not authenticated
+  useEffect(() => {
+    if (!user) {
+      navigate('/quick-login');
+    }
+  }, [user, navigate]);
 
   const fetchProfile = async () => {
     if (!user) return;
