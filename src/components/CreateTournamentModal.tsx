@@ -269,11 +269,12 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
     setIsCreating(true);
     try {
       const playersToInvite = tournamentData.players
-        .filter(p => p.name.trim() && p.email.trim())
+        .filter(p => typeof p.name === 'string' && p.name.trim().length > 0)
+        .filter(p => typeof p.email === 'string' && p.email.trim().length > 0)
         .map(p => ({
-          name: p.name,
-          email: p.email,
-          handicapIndex: p.handicapIndex
+          name: p.name.trim(),
+          email: p.email.trim(),
+          handicapIndex: Number.isFinite(p.handicapIndex) ? p.handicapIndex : 0
         }));
 
       // Sanitize wagering data
@@ -285,6 +286,8 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
         sanitizedWagering.secondPlaceEnabled = false;
         sanitizedWagering.thirdPlaceEnabled = false;
       }
+      // Strip undefined values from wagering
+      const cleanWagering = JSON.parse(JSON.stringify(sanitizedWagering));
 
       const tournament = await createTournamentWithInvitations({
         name: tournamentData.basicInfo.name,
@@ -292,16 +295,16 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
         status: 'lobby',
         game_type: mapGameTypeToDatabase(tournamentData.gameType.type),
         entry_fee: tournamentData.wagering.entryFee,
-        prize_pool: tournamentData.wagering.entryFee * tournamentData.basicInfo.maxPlayers,
+        prize_pool: tournamentData.wagering.entryFee * tournamentData.players.length,
         max_players: tournamentData.basicInfo.maxPlayers,
         rules: tournamentData.gameType.rules,
-        settings: {
+        settings: JSON.parse(JSON.stringify({
           course: tournamentData.course,
           teams: tournamentData.teams,
           teeTimeGroups: tournamentData.teeTimeGroups,
           pairings: tournamentData.pairings,
-          wagering: sanitizedWagering
-        }
+          wagering: cleanWagering
+        }))
       }, playersToInvite);
 
       toast({
