@@ -8,9 +8,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { autoResolveBets } from '@/utils/betResolution';
+import { calculateHoleGames, type GameNotification } from '@/utils/gameCalculationOrchestrator';
 import { HoleMiniMap } from './HoleMiniMap';
 import { InlineBettingPanel } from '../betting/InlineBettingPanel';
 import { QuickReactions } from '../social/QuickReactions';
+import { LiveGameStatus } from './LiveGameStatus';
+import { HoleCompletionModal } from './HoleCompletionModal';
+import { SnakeTrackingPrompt } from './SnakeTrackingPrompt';
 import PressInitiationModal from '../press/PressInitiationModal';
 import PlayerSelectionModal from '../PlayerSelectionModal';
 import type { PressRequest } from '@/types/press';
@@ -41,6 +45,12 @@ export const EnhancedLiveScorecard: React.FC<EnhancedLiveScorecardProps> = ({
   const [selectedPlayer, setSelectedPlayer] = useState<{ id: string; name: string; currentHole: number } | null>(null);
   const [profiles, setProfiles] = useState<Map<string, any>>(new Map());
   const [viewMode, setViewMode] = useState<'focus' | 'overview'>('focus');
+  const [tournamentSettings, setTournamentSettings] = useState<any>(null);
+  const [notifications, setNotifications] = useState<GameNotification[]>([]);
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const [showSnakePrompt, setShowSnakePrompt] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [playerNames, setPlayerNames] = useState<Map<string, string>>(new Map());
 
   const currentHoleData = courseHoles.find(h => h.number === currentHole) || courseHoles[0];
   const currentScore = scores[currentHole];
@@ -50,6 +60,8 @@ export const EnhancedLiveScorecard: React.FC<EnhancedLiveScorecardProps> = ({
     if (!roundId) return;
     fetchScores();
     fetchPressBets();
+    fetchTournamentSettings();
+    fetchParticipants();
 
     const scoresChannel = supabase
       .channel(`round-${roundId}-scores`)
@@ -88,6 +100,36 @@ export const EnhancedLiveScorecard: React.FC<EnhancedLiveScorecardProps> = ({
     if (data) setPressBets(data);
   };
 
+  const fetchTournamentSettings = async () => {
+    const { data } = await supabase
+      .from('tournaments')
+      .select('settings, created_by')
+      .eq('id', tournamentId)
+      .single();
+    
+    if (data) {
+      setTournamentSettings(data.settings);
+      setIsAdmin(user?.id === data.created_by);
+    }
+  };
+
+  const fetchParticipants = async () => {
+    const { data } = await supabase
+      .from('tournament_participants')
+      .select('user_id, profiles!inner(first_name, last_name, nickname)')
+      .eq('tournament_id', tournamentId);
+    
+    if (data) {
+      const namesMap = new Map(
+        data.map(p => [
+          p.user_id,
+          (p.profiles as any).nickname || (p.profiles as any).first_name || 'Player'
+        ])
+      );
+      setPlayerNames(namesMap);
+    }
+  };
+
   const saveScore = async (hole: number, strokes: number) => {
     if (!roundId) {
       toast({ title: "No active round", description: "Start a round to enter scores", variant: "destructive" });
@@ -105,6 +147,21 @@ export const EnhancedLiveScorecard: React.FC<EnhancedLiveScorecardProps> = ({
 
       setScores(prev => ({ ...prev, [hole]: strokes }));
       toast({ title: "Score saved!", description: `Hole ${hole}: ${strokes} strokes` });
+
+      // Calculate all game results for this hole
+      if (tournamentSettings) {
+        const results = await calculateHoleGames(tournamentId, hole);
+        
+        if (results.notifications.length > 0) {
+          setNotifications(results.notifications);
+          setShowNotificationModal(true);
+        }
+
+        // Show snake prompt if enabled and user is admin
+        if (isAdmin && tournamentSettings.sideGames?.includes('snake')) {
+          setTimeout(() => setShowSnakePrompt(true), 1000);
+        }
+      }
       
       if (hole < 18) setTimeout(() => setCurrentHole(hole + 1), 300);
 
@@ -256,6 +313,16 @@ export const EnhancedLiveScorecard: React.FC<EnhancedLiveScorecardProps> = ({
             </div>
           </Card>
 
+          {/* Live Game Status */}
+          {tournamentSettings && (
+            <LiveGameStatus
+              tournamentId={tournamentId}
+              currentHole={currentHole}
+              settings={tournamentSettings}
+              playerNames={playerNames}
+            />
+          )}
+
           {/* Inline Betting Panel */}
           {user && (
             <InlineBettingPanel
@@ -349,6 +416,35 @@ export const EnhancedLiveScorecard: React.FC<EnhancedLiveScorecardProps> = ({
         currentHole={currentHole}
         courseHoles={courseHoles}
       />
+      
+      {/* Hole Completion Notifications */}
+      {user && (
+        <HoleCompletionModal
+          open={showNotificationModal}
+          onOpenChange={setShowNotificationModal}
+          notifications={notifications}
+          currentUserId={user.id}
+        />
+      )}
+
+      {/* Snake Tracking Prompt (Admin Only) */}
+      {isAdmin && (
+        <SnakeTrackingPrompt
+          open={showSnakePrompt}
+          onOpenChange={setShowSnakePrompt}
+          tournamentId={tournamentId}
+          holeNumber={currentHole}
+          players={Array.from(playerNames.entries()).map(([id, name]) => ({
+            id,
+            name,
+            putts: scores[currentHole] // Would need actual putt data
+          }))}
+          onComplete={() => {
+            setShowSnakePrompt(false);
+            // Refresh game status
+          }}
+        />
+      )}
     </div>
   );
 };

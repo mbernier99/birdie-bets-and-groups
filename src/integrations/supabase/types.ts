@@ -734,6 +734,58 @@ export type Database = {
           },
         ]
       }
+      team_hole_scores: {
+        Row: {
+          best_player_id: string | null
+          created_at: string | null
+          hole_number: number
+          id: string
+          team_id: string
+          team_score: number
+          tournament_id: string
+        }
+        Insert: {
+          best_player_id?: string | null
+          created_at?: string | null
+          hole_number: number
+          id?: string
+          team_id: string
+          team_score: number
+          tournament_id: string
+        }
+        Update: {
+          best_player_id?: string | null
+          created_at?: string | null
+          hole_number?: number
+          id?: string
+          team_id?: string
+          team_score?: number
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_hole_scores_best_player_id_fkey"
+            columns: ["best_player_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_hole_scores_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_hole_scores_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_messages: {
         Row: {
           created_at: string
