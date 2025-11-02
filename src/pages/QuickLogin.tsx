@@ -271,7 +271,7 @@ const QuickLogin: React.FC = () => {
                       Create All Test Users
                     </Button>
                     <p className="text-xs text-muted-foreground">
-                      This will create all 8 test accounts with password: <code className="bg-background px-2 py-1 rounded">Bandontest2025!</code>
+                      Password will be shared privately with test users
                     </p>
                   </div>
                   
