@@ -66,7 +66,7 @@ const QuickLogin: React.FC = () => {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email: player.email,
-        password: 'BandonTest2025!',
+        password: 'Bandontest2025!',
       });
 
       if (error) throw error;
@@ -104,26 +104,31 @@ const QuickLogin: React.FC = () => {
     setCreatingUsers(true);
     
     try {
-      const response = await fetch(
-        'https://oxwauckpccujkwfagogf.supabase.co/functions/v1/create-test-users',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im94d2F1Y2twY2N1amt3ZmFnb2dmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI3NjI2NDgsImV4cCI6MjA2ODMzODY0OH0.lmKlbq0mu51-NtuWPEE3zCCPB93_FmCiKqaD_E8oI8E',
-          },
+      const { data, error } = await supabase.functions.invoke('create-test-users');
+
+      if (error) {
+        throw new Error(error.message || 'Failed to create users');
+      }
+
+      if (data?.success) {
+        const { results } = data;
+        const summary = `Created ${results.created.length}, Reset ${results.reset.length}`;
+        
+        if (results.errors.length > 0) {
+          toast({
+            title: 'Partially Complete',
+            description: `${summary}, ${results.errors.length} errors. Check console for details.`,
+            variant: 'destructive',
+          });
+          console.error('User creation errors:', results.errors);
+        } else {
+          toast({
+            title: 'Success!',
+            description: `✓ ${summary}`,
+          });
         }
-      );
-
-      const result = await response.json();
-
-      if (result.success) {
-        toast({
-          title: 'Test Users Created!',
-          description: `Created ${result.results.created.length} users. ${result.results.alreadyExists.length} already existed.`,
-        });
       } else {
-        throw new Error(result.error || 'Failed to create users');
+        throw new Error('Failed to create users');
       }
     } catch (error: any) {
       console.error('Error creating test users:', error);
@@ -266,7 +271,7 @@ const QuickLogin: React.FC = () => {
                       Create All Test Users
                     </Button>
                     <p className="text-xs text-muted-foreground">
-                      This will create all 8 test accounts with password: <code className="bg-background px-2 py-1 rounded">BandonTest2025!</code>
+                      This will create all 8 test accounts with password: <code className="bg-background px-2 py-1 rounded">Bandontest2025!</code>
                     </p>
                   </div>
                   

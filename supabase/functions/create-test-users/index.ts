@@ -44,23 +44,32 @@ Deno.serve(async (req) => {
 
     const results = {
       created: [] as string[],
-      alreadyExists: [] as string[],
+      reset: [] as string[],
       errors: [] as { email: string; error: string }[],
     };
 
     // Create each test user or reset password if exists
     for (const user of TEST_USERS) {
       try {
-        // Check if user already exists
-        const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
-        const existingUser = existingUsers?.users?.find(u => u.email === user.email);
+        // Check if user already exists by querying profiles table
+        const { data: profileData, error: profileQueryError } = await supabaseAdmin
+          .from('profiles')
+          .select('id')
+          .eq('email', user.email)
+          .maybeSingle();
 
-        if (existingUser) {
-          // Reset password for existing user
+        if (profileQueryError) {
+          console.error(`Error querying profile for ${user.email}:`, profileQueryError);
+          results.errors.push({ email: user.email, error: profileQueryError.message });
+          continue;
+        }
+
+        if (profileData) {
+          // User exists - reset password
           const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
-            existingUser.id,
+            profileData.id,
             {
-              password: 'BandonTest2025!',
+              password: 'Bandontest2025!',
               email_confirm: true,
               user_metadata: {
                 first_name: user.firstName,
@@ -82,21 +91,21 @@ Deno.serve(async (req) => {
               nickname: user.nickname,
               handicap: user.handicap,
             })
-            .eq('id', existingUser.id);
+            .eq('id', profileData.id);
 
           if (profileError) {
             console.error(`Error updating profile for ${user.email}:`, profileError);
           }
 
-          results.alreadyExists.push(user.email);
-          console.log(`User ${user.email} password reset successfully`);
+          results.reset.push(user.email);
+          console.log(`User ${user.email} password reset successfully to Bandontest2025!`);
           continue;
         }
 
         // Create the user
         const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
           email: user.email,
-          password: 'BandonTest2025!',
+          password: 'Bandontest2025!',
           email_confirm: true, // Auto-confirm email
           user_metadata: {
             first_name: user.firstName,
@@ -136,7 +145,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        message: `Created ${results.created.length} users, ${results.alreadyExists.length} already existed, ${results.errors.length} errors`,
+        message: `Created ${results.created.length} users, reset ${results.reset.length} passwords, ${results.errors.length} errors`,
         results,
       }),
       {
