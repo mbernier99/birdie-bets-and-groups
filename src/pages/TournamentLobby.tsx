@@ -371,9 +371,16 @@ const TournamentLobby = () => {
 
         {/* Players List */}
         <div className="bg-white rounded-lg shadow-sm border border-emerald-100 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Players ({confirmedPlayers.length})
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-900">
+              Players ({participants.length})
+            </h2>
+            {tournament.max_players && (
+              <span className="text-sm text-muted-foreground">
+                {confirmedPlayers.length} confirmed / {tournament.max_players} max
+              </span>
+            )}
+          </div>
           
           {participants.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
@@ -381,46 +388,109 @@ const TournamentLobby = () => {
               <p>No players yet. Invite players to join!</p>
             </div>
           ) : (
-            <div className="space-y-3">
-              {participants.map((participant) => (
-                <div key={participant.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="h-10 w-10 bg-emerald-100 rounded-full flex items-center justify-center">
-                      <span className="text-emerald-600 font-medium">
-                        {getPlayerName(participant).substring(0, 2).toUpperCase()}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">{getPlayerName(participant)}</p>
-                      <p className="text-sm text-gray-600">
-                        {participant.handicap !== null ? `Handicap: ${participant.handicap}` : 'No handicap'}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    {getStatusBadge(participant.status)}
-                  </div>
-                </div>
-              ))}
-              
-              {/* Empty slots */}
-              {tournament.max_players && participants.length < tournament.max_players && (
-                Array.from({ length: tournament.max_players - participants.length }).map((_, index) => (
-                  <div key={`empty-${index}`} className="flex items-center justify-between p-3 border-2 border-dashed border-gray-200 rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <div className="h-10 w-10 bg-gray-100 rounded-full flex items-center justify-center">
-                        <UserPlus className="h-5 w-5 text-gray-400" />
+            <div className="space-y-4">
+              {/* Confirmed Players */}
+              {confirmedPlayers.length > 0 && (
+                <div className="space-y-2">
+                  {confirmedPlayers.map((participant) => (
+                    <div key={participant.id} className="flex items-center justify-between p-3 bg-emerald-50 border border-emerald-100 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div className="h-10 w-10 bg-emerald-100 rounded-full flex items-center justify-center">
+                          <span className="text-emerald-600 font-medium">
+                            {getPlayerName(participant).substring(0, 2).toUpperCase()}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">{getPlayerName(participant)}</p>
+                          <p className="text-sm text-gray-600">
+                            {participant.handicap !== null ? `Handicap: ${participant.handicap}` : 'No handicap'}
+                          </p>
+                        </div>
                       </div>
-                      <p className="text-gray-500">Waiting for player...</p>
+                      <div className="flex items-center space-x-2">
+                        {getStatusBadge(participant.status)}
+                      </div>
                     </div>
-                    <button 
+                  ))}
+                </div>
+              )}
+
+              {/* Pending Players */}
+              {participants.filter(p => p.status === 'pending').length > 0 && (
+                <div className="space-y-2">
+                  {participants.filter(p => p.status === 'pending').map((participant) => (
+                    <div key={participant.id} className="flex items-center justify-between p-3 bg-yellow-50 border border-yellow-100 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div className="h-10 w-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                          <span className="text-yellow-600 font-medium">
+                            {getPlayerName(participant).substring(0, 2).toUpperCase()}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">{getPlayerName(participant)}</p>
+                          <p className="text-sm text-gray-600">
+                            {participant.profiles?.email || 'Invitation sent'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        {getStatusBadge(participant.status)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Declined Players (optional - show but less prominent) */}
+              {participants.filter(p => p.status === 'declined').length > 0 && (
+                <div className="space-y-2">
+                  {participants.filter(p => p.status === 'declined').map((participant) => (
+                    <div key={participant.id} className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg opacity-60">
+                      <div className="flex items-center space-x-3">
+                        <div className="h-10 w-10 bg-gray-100 rounded-full flex items-center justify-center">
+                          <span className="text-gray-600 font-medium">
+                            {getPlayerName(participant).substring(0, 2).toUpperCase()}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">{getPlayerName(participant)}</p>
+                          <p className="text-sm text-gray-600">
+                            {participant.profiles?.email || 'Declined invitation'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        {getStatusBadge(participant.status)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Available Spots Indicator */}
+              {tournament.max_players && confirmedPlayers.length < tournament.max_players && (
+                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <UserPlus className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-blue-900">
+                          {tournament.max_players - confirmedPlayers.length} spot{tournament.max_players - confirmedPlayers.length !== 1 ? 's' : ''} available
+                        </p>
+                        <p className="text-sm text-blue-700">Invite more players to fill the tournament</p>
+                      </div>
+                    </div>
+                    <Button 
                       onClick={handleInvitePlayers}
-                      className="text-emerald-600 hover:text-emerald-700 text-sm font-medium"
+                      size="sm"
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
                     >
                       Invite
-                    </button>
+                    </Button>
                   </div>
-                ))
+                </div>
               )}
             </div>
           )}
