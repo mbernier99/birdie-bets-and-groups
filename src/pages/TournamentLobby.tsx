@@ -1,11 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Users, Trophy, Play, Settings, UserPlus, Share2, Mail, CheckCircle, Clock, XCircle, AlertCircle } from 'lucide-react';
+import { Users, Trophy, Play, Settings, UserPlus, Share2, Mail, CheckCircle, Clock, XCircle, AlertCircle, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { useTournaments } from '@/hooks/useTournaments';
 import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import MobileNavigation from '../components/MobileNavigation';
 import MobileHeader from '../components/MobileHeader';
 import { ConnectionTest } from '@/components/ConnectionTest';
@@ -28,11 +38,12 @@ const TournamentLobby = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { updateTournament } = useTournaments();
+  const { updateTournament, deleteTournament } = useTournaments();
   const [tournament, setTournament] = useState<any>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [loading, setLoading] = useState(true);
   const [isOrganizer, setIsOrganizer] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   // Fetch tournament and participants
   const fetchTournamentData = async () => {
@@ -168,6 +179,18 @@ const TournamentLobby = () => {
     navigator.clipboard.writeText(`${window.location.origin}/tournament/invite/${id}`);
   };
 
+  const handleDeleteTournament = async () => {
+    if (!tournament || !isOrganizer) return;
+
+    try {
+      await deleteTournament(tournament.id);
+      navigate('/tournaments');
+    } catch (error) {
+      console.error('Error deleting tournament:', error);
+    }
+    setShowDeleteDialog(false);
+  };
+
   const getPlayerName = (participant: Participant) => {
     const profile = participant.profiles;
     if (profile?.nickname) return profile.nickname;
@@ -280,9 +303,18 @@ const TournamentLobby = () => {
             </div>
             <div className="mt-4 sm:mt-0 flex space-x-2">
               {isOrganizer && (
-                <button className="p-2 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors">
-                  <Settings className="h-5 w-5" />
-                </button>
+                <>
+                  <button className="p-2 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors">
+                    <Settings className="h-5 w-5" />
+                  </button>
+                  <button 
+                    onClick={() => setShowDeleteDialog(true)}
+                    className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    title="Delete tournament"
+                  >
+                    <Trash2 className="h-5 w-5" />
+                  </button>
+                </>
               )}
               <button 
                 onClick={handleInvitePlayers}
@@ -394,6 +426,26 @@ const TournamentLobby = () => {
           )}
         </div>
       </div>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Tournament?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{tournament?.name}"? This action cannot be undone and will remove all associated data including participants, rounds, and messages.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteTournament}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <MobileNavigation />
     </div>

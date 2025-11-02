@@ -290,6 +290,41 @@ export const useTournaments = () => {
     }
   };
 
+  const deleteTournament = async (tournamentId: string) => {
+    if (!user) {
+      throw new Error('Must be authenticated to delete tournament');
+    }
+
+    if (!isValidUUID(tournamentId)) {
+      throw new Error('Invalid tournament ID');
+    }
+
+    try {
+      const { error } = await supabase
+        .from('tournaments')
+        .delete()
+        .eq('id', tournamentId)
+        .eq('created_by', user.id);
+
+      if (error) throw error;
+
+      await fetchTournaments();
+      
+      toast({
+        title: "Tournament deleted",
+        description: "The tournament has been successfully deleted."
+      });
+    } catch (err: any) {
+      setError(err.message);
+      toast({
+        title: "Error deleting tournament",
+        description: err.message,
+        variant: "destructive"
+      });
+      throw err;
+    }
+  };
+
   useEffect(() => {
     fetchTournaments();
 
@@ -334,6 +369,7 @@ export const useTournaments = () => {
     updateTournament,
     joinTournament,
     leaveTournament,
+    deleteTournament,
     refetch: fetchTournaments
   };
 };
