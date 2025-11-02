@@ -141,58 +141,59 @@ const BetsStep: React.FC<BetsStepProps> = ({ data, onDataChange }) => {
                   <div className="flex-1">
                   <Label htmlFor="first-percentage" className="text-sm">Percentage</Label>
                   <div className="flex items-center gap-2">
-                    <Input
-                      id="first-percentage"
-                      type="number"
-                      min="0"
-                      max="100"
+                     <Input
+                       id="first-percentage"
+                       type="number"
+                       min="0"
+                       max="100"
                        step="1"
-                      value={data.wagering.firstPlacePercentage ?? 100}
-                      onChange={(e) => {
-                        const inputValue = e.target.value;
-                        if (inputValue === '') {
-                          updateWagering({ firstPlacePercentage: 0 });
-                          return;
-                        }
-                        
-                        const value = parseFloat(inputValue);
-                        if (isNaN(value)) return;
-                        
-                        const clampedValue = Math.round(Math.max(0, Math.min(100, value)));
-                        const secondEnabled = !!data.wagering.secondPlaceEnabled;
-                        const thirdEnabled = !!data.wagering.thirdPlaceEnabled;
-                        
-                        const remaining = 100 - clampedValue;
+                       value={data.wagering.firstPlacePercentage === 0 ? '' : data.wagering.firstPlacePercentage ?? 100}
+                       onChange={(e) => {
+                         const inputValue = e.target.value;
+                         if (inputValue === '' || inputValue === null) {
+                           updateWagering({ firstPlacePercentage: 0 });
+                           return;
+                         }
+                         
+                         const value = parseFloat(inputValue);
+                         if (isNaN(value)) return;
+                         
+                         const clampedValue = Math.round(Math.max(0, Math.min(100, value)));
+                         const secondEnabled = !!data.wagering.secondPlaceEnabled;
+                         const thirdEnabled = !!data.wagering.thirdPlaceEnabled;
+                         
+                         const remaining = 100 - clampedValue;
 
-                        let newSecond = 0;
-                        let newThird = 0;
-                        
-                        if (secondEnabled && thirdEnabled) {
-                          // Split remaining proportionally
-                          const currentSecond = data.wagering.secondPlacePercentage || 0;
-                          const currentThird = data.wagering.thirdPlacePercentage || 0;
-                          const total = currentSecond + currentThird;
-                          if (total > 0) {
-                            newSecond = Math.round((currentSecond / total) * remaining);
-                            newThird = remaining - newSecond;
-                          } else {
-                            newSecond = Math.round(remaining / 2);
-                            newThird = remaining - newSecond;
-                          }
-                        } else if (secondEnabled) {
-                          newSecond = remaining;
-                        } else if (thirdEnabled) {
-                          newThird = remaining;
-                        }
+                         let newSecond = 0;
+                         let newThird = 0;
+                         
+                         if (secondEnabled && thirdEnabled) {
+                           // Split remaining proportionally
+                           const currentSecond = data.wagering.secondPlacePercentage || 0;
+                           const currentThird = data.wagering.thirdPlacePercentage || 0;
+                           const total = currentSecond + currentThird;
+                           if (total > 0) {
+                             newSecond = Math.round((currentSecond / total) * remaining);
+                             newThird = remaining - newSecond;
+                           } else {
+                             newSecond = Math.round(remaining / 2);
+                             newThird = remaining - newSecond;
+                           }
+                         } else if (secondEnabled) {
+                           newSecond = remaining;
+                         } else if (thirdEnabled) {
+                           newThird = remaining;
+                         }
 
-                        updateWagering({
-                          firstPlacePercentage: clampedValue,
-                          ...(secondEnabled ? { secondPlacePercentage: Math.max(0, newSecond) } : {}),
-                          ...(thirdEnabled ? { thirdPlacePercentage: Math.max(0, newThird) } : {}),
-                        });
-                      }}
-                      className="h-12 text-lg"
-                    />
+                         updateWagering({
+                           firstPlacePercentage: clampedValue,
+                           ...(secondEnabled ? { secondPlacePercentage: Math.max(0, newSecond) } : {}),
+                           ...(thirdEnabled ? { thirdPlacePercentage: Math.max(0, newThird) } : {}),
+                         });
+                       }}
+                       onFocus={(e) => e.target.select()}
+                       className="h-12 text-lg"
+                     />
                     <span className="text-lg">%</span>
                   </div>
                 </div>
@@ -231,34 +232,35 @@ const BetsStep: React.FC<BetsStepProps> = ({ data, onDataChange }) => {
                   <div className="flex-1">
                     <Label htmlFor="second-percentage" className="text-sm">Percentage</Label>
                     <div className="flex items-center gap-2">
-                      <Input
-                        id="second-percentage"
-                        type="number"
-                        min="0"
-                        max="100"
-                        step="1"
-                        value={data.wagering.secondPlacePercentage ?? 30}
-                        onChange={(e) => {
-                          const inputValue = e.target.value;
-                          if (inputValue === '') {
-                            updateWagering({ secondPlacePercentage: 0 });
-                            return;
-                          }
-                          
-                          const value = parseFloat(inputValue);
-                          if (isNaN(value)) return;
-                          
-                          const clampedValue = Math.round(Math.max(0, Math.min(100, value)));
-                          const thirdPct = data.wagering.thirdPlaceEnabled ? (data.wagering.thirdPlacePercentage || 0) : 0;
-                          const firstPct = Math.max(0, 100 - clampedValue - thirdPct);
-                          
-                          updateWagering({ 
-                            secondPlacePercentage: clampedValue, 
-                            firstPlacePercentage: firstPct 
-                          });
-                        }}
-                        className="h-12 text-lg"
-                      />
+                       <Input
+                         id="second-percentage"
+                         type="number"
+                         min="0"
+                         max="100"
+                         step="1"
+                         value={data.wagering.secondPlacePercentage === 0 ? '' : data.wagering.secondPlacePercentage ?? 30}
+                         onChange={(e) => {
+                           const inputValue = e.target.value;
+                           if (inputValue === '' || inputValue === null) {
+                             updateWagering({ secondPlacePercentage: 0 });
+                             return;
+                           }
+                           
+                           const value = parseFloat(inputValue);
+                           if (isNaN(value)) return;
+                           
+                           const clampedValue = Math.round(Math.max(0, Math.min(100, value)));
+                           const thirdPct = data.wagering.thirdPlaceEnabled ? (data.wagering.thirdPlacePercentage || 0) : 0;
+                           const firstPct = Math.max(0, 100 - clampedValue - thirdPct);
+                           
+                           updateWagering({ 
+                             secondPlacePercentage: clampedValue, 
+                             firstPlacePercentage: firstPct 
+                           });
+                         }}
+                         onFocus={(e) => e.target.select()}
+                         className="h-12 text-lg"
+                       />
                       <span className="text-lg">%</span>
                     </div>
                   </div>
@@ -300,34 +302,35 @@ const BetsStep: React.FC<BetsStepProps> = ({ data, onDataChange }) => {
                   <div className="flex-1">
                     <Label htmlFor="third-percentage" className="text-sm">Percentage</Label>
                     <div className="flex items-center gap-2">
-                      <Input
-                        id="third-percentage"
-                        type="number"
-                        min="0"
-                        max="100"
-                        step="1"
-                        value={data.wagering.thirdPlacePercentage ?? 20}
-                        onChange={(e) => {
-                          const inputValue = e.target.value;
-                          if (inputValue === '') {
-                            updateWagering({ thirdPlacePercentage: 0 });
-                            return;
-                          }
-                          
-                          const value = parseFloat(inputValue);
-                          if (isNaN(value)) return;
-                          
-                          const clampedValue = Math.round(Math.max(0, Math.min(100, value)));
-                          const secondPct = data.wagering.secondPlaceEnabled ? (data.wagering.secondPlacePercentage || 0) : 0;
-                          const firstPct = Math.max(0, 100 - clampedValue - secondPct);
-                          
-                          updateWagering({ 
-                            thirdPlacePercentage: clampedValue, 
-                            firstPlacePercentage: firstPct 
-                          });
-                        }}
-                        className="h-12 text-lg"
-                      />
+                       <Input
+                         id="third-percentage"
+                         type="number"
+                         min="0"
+                         max="100"
+                         step="1"
+                         value={data.wagering.thirdPlacePercentage === 0 ? '' : data.wagering.thirdPlacePercentage ?? 20}
+                         onChange={(e) => {
+                           const inputValue = e.target.value;
+                           if (inputValue === '' || inputValue === null) {
+                             updateWagering({ thirdPlacePercentage: 0 });
+                             return;
+                           }
+                           
+                           const value = parseFloat(inputValue);
+                           if (isNaN(value)) return;
+                           
+                           const clampedValue = Math.round(Math.max(0, Math.min(100, value)));
+                           const secondPct = data.wagering.secondPlaceEnabled ? (data.wagering.secondPlacePercentage || 0) : 0;
+                           const firstPct = Math.max(0, 100 - clampedValue - secondPct);
+                           
+                           updateWagering({ 
+                             thirdPlacePercentage: clampedValue, 
+                             firstPlacePercentage: firstPct 
+                           });
+                         }}
+                         onFocus={(e) => e.target.select()}
+                         className="h-12 text-lg"
+                       />
                       <span className="text-lg">%</span>
                     </div>
                   </div>
