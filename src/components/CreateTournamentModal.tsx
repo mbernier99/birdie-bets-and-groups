@@ -215,6 +215,18 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
       return;
     }
 
+    // Normalize wagering data when leaving the wagering step
+    if (currentStep === 3 && tournamentData.wagering.entryFee === 0) {
+      handleDataChange('wagering', {
+        ...tournamentData.wagering,
+        firstPlacePercentage: undefined,
+        secondPlaceEnabled: false,
+        secondPlacePercentage: undefined,
+        thirdPlaceEnabled: false,
+        thirdPlacePercentage: undefined,
+      });
+    }
+
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     }
@@ -264,6 +276,16 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
           handicapIndex: p.handicapIndex
         }));
 
+      // Sanitize wagering data
+      const sanitizedWagering = { ...tournamentData.wagering };
+      if (sanitizedWagering.entryFee === 0) {
+        delete sanitizedWagering.firstPlacePercentage;
+        delete sanitizedWagering.secondPlacePercentage;
+        delete sanitizedWagering.thirdPlacePercentage;
+        sanitizedWagering.secondPlaceEnabled = false;
+        sanitizedWagering.thirdPlaceEnabled = false;
+      }
+
       const tournament = await createTournamentWithInvitations({
         name: tournamentData.basicInfo.name,
         description: `${tournamentData.gameType.type} tournament`,
@@ -278,7 +300,7 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
           teams: tournamentData.teams,
           teeTimeGroups: tournamentData.teeTimeGroups,
           pairings: tournamentData.pairings,
-          wagering: tournamentData.wagering
+          wagering: sanitizedWagering
         }
       }, playersToInvite);
 
