@@ -15,6 +15,7 @@ import { QuickReactions } from '../social/QuickReactions';
 import { LiveGameStatus } from './LiveGameStatus';
 import { HoleCompletionModal } from './HoleCompletionModal';
 import { SnakeTrackingPrompt } from './SnakeTrackingPrompt';
+import { AdminPlayerSelector } from './AdminPlayerSelector';
 import PressInitiationModal from '../press/PressInitiationModal';
 import PlayerSelectionModal from '../PlayerSelectionModal';
 import type { PressRequest } from '@/types/press';
@@ -51,22 +52,78 @@ export const EnhancedLiveScorecard: React.FC<EnhancedLiveScorecardProps> = ({
   const [showSnakePrompt, setShowSnakePrompt] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [playerNames, setPlayerNames] = useState<Map<string, string>>(new Map());
+  const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
+  const [participants, setParticipants] = useState<any[]>([]);
+  const [activeRoundId, setActiveRoundId] = useState<string | null>(null);
 
   const currentHoleData = courseHoles.find(h => h.number === currentHole) || courseHoles[0];
   const currentScore = scores[currentHole];
   const completedHoles = Object.keys(scores).map(Number);
 
   useEffect(() => {
-    if (!roundId) return;
-    fetchScores();
     fetchPressBets();
     fetchTournamentSettings();
     fetchParticipants();
+    
+    // Set initial selected player to current user
+    if (user && !selectedPlayerId) {
+      setSelectedPlayerId(user.id);
+    }
+  }, [tournamentId, user]);
+
+  // Separate effect for handling player selection and round fetching
+  useEffect(() => {
+    if (!selectedPlayerId || !tournamentId) return;
+
+    const loadRoundForPlayer = async () => {
+      // Check if player has a round for this tournament
+      const { data: existingTournamentRound } = await supabase
+        .from('tournament_rounds')
+        .select('round_id')
+        .eq('tournament_id', tournamentId)
+        .eq('user_id', selectedPlayerId)
+        .maybeSingle();
+
+      if (existingTournamentRound) {
+        setActiveRoundId(existingTournamentRound.round_id);
+        return;
+      }
+
+      // If admin is selecting a player who doesn't have a round yet, create one
+      if (isAdmin && selectedPlayerId !== user?.id) {
+        const newRoundId = await createRoundForPlayer(selectedPlayerId);
+        if (newRoundId) {
+          setActiveRoundId(newRoundId);
+        }
+      } else if (roundId) {
+        setActiveRoundId(roundId);
+      }
+    };
+
+    loadRoundForPlayer();
+  }, [selectedPlayerId, tournamentId, isAdmin, user, roundId]);
+
+  // Effect for real-time score updates
+  useEffect(() => {
+    if (!activeRoundId) return;
+
+    fetchScoresForRound(activeRoundId);
 
     const scoresChannel = supabase
-      .channel(`round-${roundId}-scores`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'hole_scores', filter: `round_id=eq.${roundId}` }, () => fetchScores())
+      .channel(`round-${activeRoundId}-scores`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'hole_scores', filter: `round_id=eq.${activeRoundId}` }, () => fetchScoresForRound(activeRoundId))
       .subscribe();
+
+    return () => {
+      supabase.removeChannel(scoresChannel);
+    };
+  }, [activeRoundId]);
+
+  // Effect for bets
+  useEffect(() => {
+    if (!tournamentId) return;
+
+    fetchPressBets();
 
     const betsChannel = supabase
       .channel(`tournament-${tournamentId}-bets`)
@@ -74,18 +131,54 @@ export const EnhancedLiveScorecard: React.FC<EnhancedLiveScorecardProps> = ({
       .subscribe();
 
     return () => {
-      supabase.removeChannel(scoresChannel);
       supabase.removeChannel(betsChannel);
     };
-  }, [roundId, tournamentId]);
+  }, [tournamentId]);
 
-  const fetchScores = async () => {
-    if (!roundId) return;
-    const { data } = await supabase.from('hole_scores').select('hole_number, strokes').eq('round_id', roundId);
+  const fetchScoresForRound = async (rId: string) => {
+    const { data } = await supabase.from('hole_scores').select('hole_number, strokes').eq('round_id', rId);
     if (data) {
       const scoresMap: Record<number, number> = {};
       data.forEach(score => { scoresMap[score.hole_number] = score.strokes; });
       setScores(scoresMap);
+    }
+  };
+
+  const createRoundForPlayer = async (playerId: string) => {
+    try {
+      const { data: tournament } = await supabase
+        .from('tournaments')
+        .select('course_id')
+        .eq('id', tournamentId)
+        .single();
+
+      const { data: newRound, error: roundError } = await supabase
+        .from('rounds')
+        .insert({
+          user_id: playerId,
+          course_id: tournament?.course_id || null,
+          started_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (roundError) throw roundError;
+
+      const { error: linkError } = await supabase
+        .from('tournament_rounds')
+        .insert({
+          tournament_id: tournamentId,
+          round_id: newRound.id,
+          user_id: playerId
+        });
+
+      if (linkError) throw linkError;
+
+      return newRound.id;
+    } catch (error: any) {
+      console.error('Error creating round:', error);
+      toast({ title: "Error creating round", description: error.message, variant: "destructive" });
+      return null;
     }
   };
 
@@ -116,10 +209,11 @@ export const EnhancedLiveScorecard: React.FC<EnhancedLiveScorecardProps> = ({
   const fetchParticipants = async () => {
     const { data } = await supabase
       .from('tournament_participants')
-      .select('user_id, profiles!inner(first_name, last_name, nickname)')
+      .select('user_id, status, profiles!inner(first_name, last_name, nickname, email)')
       .eq('tournament_id', tournamentId);
     
     if (data) {
+      setParticipants(data);
       const namesMap = new Map(
         data.map(p => [
           p.user_id,
@@ -131,7 +225,9 @@ export const EnhancedLiveScorecard: React.FC<EnhancedLiveScorecardProps> = ({
   };
 
   const saveScore = async (hole: number, strokes: number) => {
-    if (!roundId) {
+    const currentRoundId = activeRoundId || roundId;
+    
+    if (!currentRoundId) {
       toast({ title: "No active round", description: "Start a round to enter scores", variant: "destructive" });
       return;
     }
@@ -139,14 +235,21 @@ export const EnhancedLiveScorecard: React.FC<EnhancedLiveScorecardProps> = ({
     setSaving(true);
     try {
       await supabase.from('hole_scores').upsert({
-        round_id: roundId,
+        round_id: currentRoundId,
         hole_number: hole,
         strokes: strokes,
         updated_at: new Date().toISOString()
       }, { onConflict: 'round_id,hole_number' });
 
       setScores(prev => ({ ...prev, [hole]: strokes }));
-      toast({ title: "Score saved!", description: `Hole ${hole}: ${strokes} strokes` });
+      
+      const playerName = playerNames.get(selectedPlayerId || user?.id || '') || 'Player';
+      const isSelf = selectedPlayerId === user?.id;
+      
+      toast({ 
+        title: isSelf ? "Score saved!" : `Score saved for ${playerName}`, 
+        description: `Hole ${hole}: ${strokes} strokes` 
+      });
 
       // Calculate all game results for this hole
       if (tournamentSettings) {
@@ -232,6 +335,16 @@ export const EnhancedLiveScorecard: React.FC<EnhancedLiveScorecardProps> = ({
 
   return (
     <div className="space-y-4">
+      {/* Admin Player Selector */}
+      {isAdmin && user && participants.length > 0 && (
+        <AdminPlayerSelector
+          participants={participants}
+          selectedPlayerId={selectedPlayerId || user.id}
+          onSelectPlayer={setSelectedPlayerId}
+          currentUserId={user.id}
+        />
+      )}
+
       {/* View Mode Selector */}
       <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)}>
         <TabsList className="grid w-full grid-cols-2">

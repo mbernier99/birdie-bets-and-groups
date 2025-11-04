@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Users, Trophy, Play, Settings, UserPlus, Share2, Mail, CheckCircle, Clock, XCircle, AlertCircle, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 import { useTournaments } from '@/hooks/useTournaments';
 import { Button } from '@/components/ui/button';
@@ -20,6 +21,7 @@ import MobileNavigation from '../components/MobileNavigation';
 import MobileHeader from '../components/MobileHeader';
 import { ConnectionTest } from '@/components/ConnectionTest';
 import { NetworkStatusIndicator } from '@/components/NetworkStatusIndicator';
+import { ResendInviteModal } from '@/components/tournament-creation/ResendInviteModal';
 
 interface Participant {
   id: string;
@@ -44,6 +46,8 @@ const TournamentLobby = () => {
   const [loading, setLoading] = useState(true);
   const [isOrganizer, setIsOrganizer] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [selectedParticipant, setSelectedParticipant] = useState<Participant | null>(null);
+  const [showResendModal, setShowResendModal] = useState(false);
 
   // Fetch tournament and participants
   const fetchTournamentData = async () => {
@@ -148,22 +152,34 @@ const TournamentLobby = () => {
   const handleStartTournament = async () => {
     if (!tournament || !isOrganizer) return;
 
+    const totalPlayers = participants.length;
     const confirmedCount = participants.filter(p => p.status === 'confirmed').length;
+    const pendingCount = participants.filter(p => p.status === 'pending').length;
     
-    if (confirmedCount < 2) {
+    if (totalPlayers < 2) {
       toast({
         title: "Not enough players",
-        description: "At least 2 confirmed players are required to start",
+        description: "At least 2 players (invited or confirmed) are required",
         variant: "destructive"
       });
       return;
+    }
+
+    // Show warning if there are pending players
+    if (pendingCount > 0) {
+      const confirmed = window.confirm(
+        `${pendingCount} player(s) haven't joined yet. You can enter their scores manually. Continue?`
+      );
+      if (!confirmed) return;
     }
 
     try {
       await updateTournament(tournament.id, { status: 'active' });
       toast({
         title: "Tournament started!",
-        description: "Good luck to all players"
+        description: confirmedCount > 0 
+          ? `${confirmedCount} confirmed, ${pendingCount} pending` 
+          : "You can enter scores for all players"
       });
       navigate(`/tournament/${id}/live`);
     } catch (error) {
@@ -419,7 +435,19 @@ const TournamentLobby = () => {
               {participants.filter(p => p.status === 'pending').length > 0 && (
                 <div className="space-y-2">
                   {participants.filter(p => p.status === 'pending').map((participant) => (
-                    <div key={participant.id} className="flex items-center justify-between p-3 bg-yellow-50 border border-yellow-100 rounded-lg">
+                    <button
+                      key={participant.id}
+                      onClick={() => {
+                        if (isOrganizer) {
+                          setSelectedParticipant(participant);
+                          setShowResendModal(true);
+                        }
+                      }}
+                      className={cn(
+                        "w-full flex items-center justify-between p-3 bg-yellow-50 border border-yellow-100 rounded-lg transition-colors text-left",
+                        isOrganizer && "hover:bg-yellow-100 cursor-pointer active:scale-[0.99]"
+                      )}
+                    >
                       <div className="flex items-center space-x-3">
                         <div className="h-10 w-10 bg-yellow-100 rounded-full flex items-center justify-center">
                           <span className="text-yellow-600 font-medium">
@@ -430,13 +458,14 @@ const TournamentLobby = () => {
                           <p className="font-medium text-gray-900">{getPlayerName(participant)}</p>
                           <p className="text-sm text-gray-600">
                             {participant.profiles?.email || 'Invitation sent'}
+                            {isOrganizer && <span className="ml-2 text-xs text-muted-foreground">(Click to resend)</span>}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
                         {getStatusBadge(participant.status)}
                       </div>
-                    </div>
+                    </button>
                   ))}
                 </div>
               )}
@@ -516,6 +545,13 @@ const TournamentLobby = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ResendInviteModal
+        open={showResendModal}
+        onClose={() => setShowResendModal(false)}
+        participant={selectedParticipant}
+        tournamentId={id || ''}
+      />
 
       <MobileNavigation />
     </div>

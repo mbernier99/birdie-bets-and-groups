@@ -128,6 +128,59 @@ const LiveTournament = () => {
     }
   };
 
+  // Helper function to get or create a round for any player (admin use)
+  const getOrCreateRoundForPlayer = async (playerId: string) => {
+    if (!id || !tournament) return null;
+
+    try {
+      // Check if player has a round for this tournament
+      const { data: existingTournamentRound } = await supabase
+        .from('tournament_rounds')
+        .select('round_id')
+        .eq('tournament_id', id)
+        .eq('user_id', playerId)
+        .maybeSingle();
+
+      if (existingTournamentRound) {
+        return existingTournamentRound.round_id;
+      }
+
+      // Create a new round for this player
+      const { data: newRound, error: roundError } = await supabase
+        .from('rounds')
+        .insert({
+          user_id: playerId,
+          course_id: tournament.course_id || null,
+          started_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (roundError) throw roundError;
+
+      // Link round to tournament
+      const { error: linkError } = await supabase
+        .from('tournament_rounds')
+        .insert({
+          tournament_id: id,
+          round_id: newRound.id,
+          user_id: playerId
+        });
+
+      if (linkError) throw linkError;
+
+      return newRound.id;
+    } catch (error: any) {
+      console.error('Error creating round for player:', error);
+      toast({
+        title: "Error creating round",
+        description: error.message,
+        variant: "destructive"
+      });
+      return null;
+    }
+  };
+
   const handleBackToLobby = () => {
     navigate(`/tournament/${id}/lobby`);
   };

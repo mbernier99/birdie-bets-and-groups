@@ -231,7 +231,7 @@ const CreateTournamentModal: React.FC<CreateTournamentModalProps> = memo(({ isOp
     { title: 'Course & Game' },
     { title: 'Organization' },
     { title: 'Wagering' },
-    { title: 'Review & Invite' },
+    { title: 'Tournament Review' },
   ];
 
   const handleNext = () => {

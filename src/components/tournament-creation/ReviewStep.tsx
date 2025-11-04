@@ -41,7 +41,7 @@ const ReviewStep: React.FC<ReviewStepProps> = ({ data, onSaveTournament }) => {
       <div className="text-center mb-8">
         <CheckCircle className="h-12 w-12 text-primary mx-auto mb-4" />
         <h3 className="text-2xl font-bold mb-2">Review Your Tournament</h3>
-        <p className="text-muted-foreground">Confirm all details and send invitations to players</p>
+        <p className="text-muted-foreground">Confirm all details before creating your tournament</p>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -166,9 +166,9 @@ const ReviewStep: React.FC<ReviewStepProps> = ({ data, onSaveTournament }) => {
             <p className="font-medium">What happens next:</p>
             <ul className="text-left space-y-1 text-muted-foreground ml-6 list-disc">
               <li>Tournament will be created in the lobby</li>
-              <li>Email invitations sent to all players</li>
-              <li>Players receive their team/pairing/tee time assignments</li>
-              <li>You'll be taken to the tournament lobby</li>
+              <li>You can run connection tests before starting</li>
+              <li>Start the tournament even if players haven't joined yet</li>
+              <li>You can enter scores for all players as admin</li>
             </ul>
           </div>
           <Button 
@@ -176,7 +176,7 @@ const ReviewStep: React.FC<ReviewStepProps> = ({ data, onSaveTournament }) => {
             className="w-full max-w-md text-lg py-6 font-semibold"
             size="lg"
           >
-            Create Tournament & Send Invitations
+            Create Tournament
           </Button>
         </div>
       </div>
