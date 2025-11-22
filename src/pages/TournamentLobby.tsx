@@ -156,20 +156,13 @@ const TournamentLobby = () => {
     const confirmedCount = participants.filter(p => p.status === 'confirmed').length;
     const pendingCount = participants.filter(p => p.status === 'pending').length;
     
-    if (totalPlayers < 2) {
-      toast({
-        title: "Not enough players",
-        description: "At least 2 players (invited or confirmed) are required",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Show warning if there are pending players
-    if (pendingCount > 0) {
-      const confirmed = window.confirm(
-        `${pendingCount} player(s) haven't joined yet. You can enter their scores manually. Continue?`
-      );
+    // Show warning if there are pending players or only 1 player total
+    if (pendingCount > 0 || totalPlayers === 1) {
+      const message = totalPlayers === 1 
+        ? "Starting with just 1 player. You can enter scores and invite others later. Continue?"
+        : `${pendingCount} player(s) haven't joined yet. You can enter their scores manually. Continue?`;
+      
+      const confirmed = window.confirm(message);
       if (!confirmed) return;
     }
 
